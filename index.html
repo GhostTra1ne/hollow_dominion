@@ -1,0 +1,1370 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Hollow Dominion</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    :root {
+      --bg1: #090c13;
+      --bg2: #141a25;
+      --panel: rgba(16, 18, 27, 0.94);
+      --panel-soft: rgba(18, 21, 31, 0.82);
+      --border: rgba(255, 219, 156, 0.14);
+      --border-soft: rgba(255,255,255,0.08);
+      --gold: #d7b06b;
+      --gold-deep: #8f6a2b;
+      --text: #f2ecdf;
+      --muted: rgba(242,236,223,0.7);
+      --danger: #ff9d9d;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-left: env(safe-area-inset-left, 0px);
+      --safe-right: env(safe-area-inset-right, 0px);
+      --shell-width: min(100%, 1480px);
+      --page-padding: clamp(10px, 1.6vw, 18px);
+      --font-main: Georgia, "Times New Roman", serif;
+      --font-ui: Arial, sans-serif;
+      --shadow: 0 18px 40px rgba(0,0,0,0.35);
+    }
+
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 100%);
+      color: var(--text);
+      font-family: var(--font-ui);
+    }
+
+    body { position: relative; }
+
+    .screen {
+      display: none;
+      width: 100%;
+      height: 100dvh;
+      overflow: hidden;
+    }
+
+    .screen.active { display: block; }
+
+    .btn {
+      border: 0;
+      border-radius: 16px;
+      padding: 14px 16px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      color: white;
+      background: #2a2f3a;
+      transition: transform .16s ease, opacity .16s ease, background .16s ease;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+    .btn.primary {
+      background: linear-gradient(180deg, #b8893c 0%, #8f6a2b 100%);
+      color: #fff7e8;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 10px 18px rgba(0,0,0,.16);
+    }
+    .btn.ghost { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); }
+    .btn.small { padding: 10px 12px; border-radius: 12px; font-size: 13px; }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      min-height: 0;
+    }
+    .panel-inner { padding: 16px; min-height: 0; }
+
+    .title {
+      margin: 0 0 8px;
+      font-size: clamp(22px, 2vw, 28px);
+      color: #f0d59e;
+      font-family: var(--font-main);
+      font-weight: 700;
+    }
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 14px;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-size: 13px;
+      color: #f7f0e2;
+      white-space: nowrap;
+    }
+
+    .intro-screen { position: relative; background: #080808; }
+    .intro-bg {
+      position: absolute; inset: 0;
+      background: url('./assets/backgrounds/intro/intro_main.png') center center / cover no-repeat;
+      transform: scale(1.03);
+      filter: saturate(1.02);
+    }
+    .intro-overlay {
+      position: absolute; inset: 0;
+      background:
+        linear-gradient(90deg, rgba(5,3,2,0.72) 0%, rgba(12,7,4,0.48) 34%, rgba(12,7,4,0.18) 58%, rgba(5,3,2,0.16) 100%),
+        radial-gradient(circle at 68% 40%, rgba(255,199,103,0.18) 0%, rgba(255,199,103,0) 34%),
+        linear-gradient(180deg, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.44) 100%);
+    }
+    .intro-content {
+      position: relative; z-index: 2; height: 100%;
+      width: var(--shell-width); margin: 0 auto;
+      padding: calc(28px + var(--safe-top)) calc(24px + var(--safe-right)) calc(28px + var(--safe-bottom)) calc(24px + var(--safe-left));
+      display: grid; grid-template-columns: minmax(300px, 640px) 1fr;
+      align-items: center;
+    }
+    .intro-card {
+      max-width: 620px;
+      padding: clamp(20px, 2.2vw, 32px);
+      border-radius: 26px;
+      background: rgba(9, 8, 10, 0.38);
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(255,255,255,0.08);
+      animation: fadeUp .8s ease both;
+    }
+    .intro-kicker {
+      margin: 0 0 12px;
+      letter-spacing: .24em;
+      text-transform: uppercase;
+      color: rgba(255,228,184,0.82);
+      font-size: 12px;
+    }
+    .intro-title {
+      margin: 0 0 14px;
+      font-family: var(--font-main);
+      font-size: clamp(42px, 6vw, 78px);
+      line-height: .94;
+      color: #fff9ee;
+      text-shadow: 0 10px 24px rgba(0,0,0,0.42);
+    }
+    .intro-subtitle {
+      margin: 0 0 22px;
+      font-size: clamp(15px, 2vw, 19px);
+      line-height: 1.65;
+      color: rgba(255,245,223,0.92);
+      max-width: 540px;
+    }
+    .intro-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+    .creator-screen {
+      padding: calc(var(--page-padding) + var(--safe-top)) calc(var(--page-padding) + var(--safe-right)) calc(var(--page-padding) + var(--safe-bottom)) calc(var(--page-padding) + var(--safe-left));
+    }
+    .creator-layout {
+      width: var(--shell-width);
+      height: calc(100dvh - var(--safe-top) - var(--safe-bottom) - (var(--page-padding) * 2));
+      margin: 0 auto;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 12px;
+      min-height: 0;
+    }
+    .creator-header { text-align: center; padding-top: 4px; }
+    .preview-shell { position: relative; min-height: 0; overflow: hidden; background: #0f1118; }
+    .preview-bg, .portrait-bg, .city-scene-bg, .market-illustration-bg {
+      position: absolute; inset: 0;
+      background-size: cover; background-position: center center; background-repeat: no-repeat;
+    }
+    .preview-bg::after, .portrait-bg::after, .city-scene-bg::after, .market-illustration-bg::after {
+      content: ""; position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(10,12,17,0.14) 0%, rgba(10,12,17,0.36) 100%);
+    }
+    .character-zone {
+      position: absolute; inset: 0;
+      display: flex; align-items: flex-end; justify-content: center;
+      padding: 16px 18px 14px;
+    }
+    .shadow {
+      position: absolute; bottom: 16px; width: 210px; height: 36px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0) 72%);
+      filter: blur(8px); z-index: 1; pointer-events: none;
+    }
+    .character-box {
+      position: relative; width: min(100%, 310px); aspect-ratio: 2 / 3; z-index: 2; overflow: visible;
+    }
+    .character-layer {
+      position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block;
+      pointer-events: none; user-select: none; -webkit-user-drag: none;
+    }
+    .upper-body { position: absolute; inset: 0; animation: breathe 3.4s ease-in-out infinite; transform-origin: 50% 62%; }
+    .arm-back-group { position: absolute; inset: 0; animation: armBackIdle 4.2s ease-in-out infinite; transform-origin: 50% 58%; }
+    .arm-front-group { position: absolute; inset: 0; animation: armFrontIdle 4.6s ease-in-out infinite; transform-origin: 50% 58%; }
+    .head-group { position: absolute; inset: 0; animation: headIdle 5.2s ease-in-out infinite; transform-origin: 50% 38%; }
+
+    @keyframes breathe { 0%,100% { transform: translateY(0) scaleY(1); } 50% { transform: translateY(-3px) scaleY(1.01); } }
+    @keyframes headIdle { 0%,100% { transform: rotate(0deg) translateY(0); } 25% { transform: rotate(-0.45deg) translateY(-1px); } 50% { transform: rotate(0.25deg) translateY(0); } 75% { transform: rotate(-0.2deg) translateY(-1px); } }
+    @keyframes armBackIdle { 0%,100% { transform: rotate(0deg) translateY(0); } 50% { transform: rotate(-0.45deg) translateY(1px); } }
+    @keyframes armFrontIdle { 0%,100% { transform: rotate(0deg) translateY(0); } 50% { transform: rotate(0.35deg) translateY(1px); } }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+    .wizard-panel { display: grid; gap: 12px; }
+    .chooser-label { text-align: center; font-size: 15px; color: var(--muted); }
+    .chooser-row { display: grid; grid-template-columns: 54px 1fr 54px; gap: 8px; align-items: center; }
+    .chooser-value {
+      min-height: 56px; display: flex; align-items: center; justify-content: center; text-align: center;
+      border-radius: 16px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
+      padding: 10px 12px; font-size: 17px; font-weight: 700;
+    }
+    .chooser-helper { font-size: 12px; color: var(--muted); text-align: center; min-height: 16px; }
+    .nickname-wrap input {
+      width: 100%; border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 14px 16px;
+      background: #202028; color: white; font-size: 15px; outline: none; text-align: center;
+    }
+    .error-text { color: var(--danger); font-size: 13px; min-height: 18px; text-align: center; }
+    .wizard-actions { display: flex; gap: 10px; }
+    .wizard-actions .btn { flex: 1; }
+
+    .arrival-screen { position: relative; overflow: hidden; background: #000; }
+    .arrival-bg {
+      position: absolute; inset: 0; transform: scale(1.02);
+      background: url('./assets/backgrounds/arrival_ship.jpg') center center / cover no-repeat;
+    }
+    .arrival-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.48) 100%);
+    }
+    .arrival-content {
+      position: relative; height: 100%; display: grid; place-items: center; text-align: center;
+      padding: calc(24px + var(--safe-top)) 24px calc(24px + var(--safe-bottom));
+    }
+    .arrival-inner { max-width: 760px; animation: fadeUp .8s ease both; }
+    .arrival-title { margin: 0 0 14px; font-family: var(--font-main); font-size: clamp(34px, 6vw, 64px); color: #fff; }
+    .arrival-text { margin: 0 0 24px; font-size: clamp(16px, 2vw, 20px); line-height: 1.65; color: rgba(255,255,255,0.92); }
+
+    .world-screen {
+      padding: calc(var(--page-padding) + var(--safe-top)) calc(var(--page-padding) + var(--safe-right)) calc(var(--page-padding) + var(--safe-bottom)) calc(var(--page-padding) + var(--safe-left));
+      background:
+        radial-gradient(circle at top center, rgba(255,183,79,0.08) 0%, rgba(255,183,79,0) 26%),
+        linear-gradient(180deg, #090d15 0%, #121824 100%);
+    }
+    .world-wrap {
+      width: var(--shell-width);
+      height: calc(100dvh - var(--safe-top) - var(--safe-bottom) - (var(--page-padding) * 2));
+      margin: 0 auto;
+      display: grid; grid-template-rows: auto 1fr; gap: 14px; min-height: 0;
+    }
+    .world-topbar {
+      display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+      background: var(--panel); border: 1px solid var(--border); border-radius: 20px; padding: 14px 16px; box-shadow: var(--shadow);
+    }
+    .world-title { font-family: var(--font-main); font-size: clamp(24px, 2vw, 30px); color: #f1d59a; }
+    .world-grid {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(320px, 380px) minmax(0, 1fr) minmax(280px, 360px);
+      gap: 14px;
+    }
+    .world-col { min-height: 0; display: grid; gap: 14px; }
+
+    .profile-panel { display: grid; grid-template-rows: minmax(0, 1fr) auto; min-height: 0; }
+    .portrait-card {
+      position: relative;
+      min-height: 0;
+      display: grid;
+      grid-template-rows: minmax(260px, 1fr) auto;
+      overflow: hidden;
+      border-radius: 20px;
+      background: #10131b;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .portrait-stage {
+      position: relative;
+      min-height: 0;
+      overflow: hidden;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 14px 14px 10px;
+    }
+    .portrait-stage .shadow { width: 170px; bottom: 10px; }
+    .portrait-stage .character-box { width: min(100%, 230px); }
+    .portrait-footer {
+      position: relative;
+      z-index: 2;
+      padding: 14px;
+      background: linear-gradient(180deg, rgba(12,14,20,0.24) 0%, rgba(12,14,20,0.86) 100%);
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .profile-name { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+    .profile-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+    .city-menu {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .city-menu-btn {
+      text-align: left;
+      padding: 12px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .16s ease, transform .16s ease, border-color .16s ease;
+    }
+    .city-menu-btn:hover { transform: translateY(-1px); }
+    .city-menu-btn.active { background: rgba(207,163,90,0.14); border-color: rgba(207,163,90,0.44); color: #ffe7b8; }
+    .profile-list { display: grid; gap: 8px; margin-top: 14px; overflow: auto; padding-right: 4px; }
+    .profile-row {
+      display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px;
+    }
+    .profile-row:last-child { border-bottom: 0; }
+    .stats-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+    .stat-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 14px; }
+    .stat-label { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+    .stat-value { font-size: 18px; font-weight: 800; }
+
+    .city-scene {
+      position: relative; min-height: 0; overflow: hidden; border-radius: 22px;
+      background: #101319; border: 1px solid rgba(255,255,255,0.06);
+    }
+    .city-scene-content {
+      position: relative; z-index: 2; height: 100%; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: 14px; padding: 18px;
+    }
+    .city-scene-badges { display: flex; gap: 10px; flex-wrap: wrap; }
+    .city-story {
+      align-self: end; max-width: 640px; padding: 16px 18px; border-radius: 18px; background: rgba(10,12,18,0.64);
+      border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 16px 34px rgba(0,0,0,0.3);
+    }
+    .city-story h3 { margin: 0 0 8px; font-family: var(--font-main); color: #f1d59a; font-size: 26px; }
+    .city-story p { margin: 0; color: rgba(255,255,255,0.86); line-height: 1.6; font-size: 14px; }
+
+    .module-panel { display: grid; grid-template-rows: auto minmax(0, 1fr); min-height: 0; }
+    .module-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+    .module-header .subtitle { max-width: 620px; }
+    .module-scroll { min-height: 0; overflow: auto; padding-right: 4px; }
+    .item-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .item-card {
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 18px; padding: 14px;
+      display: grid; gap: 8px;
+    }
+    .item-card h4 { margin: 0; font-size: 16px; }
+    .item-card p { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.55; }
+    .item-bottom { display: flex; justify-content: space-between; gap: 8px; align-items: center; margin-top: 4px; }
+    .price { font-weight: 800; color: #ffd995; }
+
+    .market-layout { display: grid; grid-template-columns: minmax(240px, 320px) 1fr; gap: 14px; min-height: 0; }
+    .market-illustration {
+      position: relative; min-height: 240px; border-radius: 18px; overflow: hidden; border: 1px solid rgba(255,255,255,0.06); background: #101319;
+    }
+    .market-illustration-copy {
+      position: absolute; left: 14px; right: 14px; bottom: 14px; z-index: 2;
+      border-radius: 14px; background: rgba(10,12,18,0.66); border: 1px solid rgba(255,255,255,0.06); padding: 12px;
+      font-size: 13px; line-height: 1.55; color: rgba(255,255,255,0.84);
+    }
+    .search-box { display: grid; gap: 10px; margin-bottom: 14px; }
+    .search-row { display: grid; grid-template-columns: 1fr 120px; gap: 10px; }
+    .text-input, .select-input {
+      width: 100%; border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 13px 14px;
+      background: #1d222d; color: #fff; font-size: 14px; outline: none;
+    }
+    .market-results { display: grid; gap: 10px; }
+    .result-card {
+      display: grid; gap: 8px; padding: 13px; border-radius: 16px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+    }
+    .result-top { display: flex; justify-content: space-between; gap: 10px; align-items: center; }
+
+    .destinations { display: grid; gap: 12px; }
+    .destination-card {
+      display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center;
+      padding: 14px; border-radius: 18px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+    }
+    .destination-title { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
+    .destination-copy { font-size: 13px; color: var(--muted); line-height: 1.55; }
+    .destination-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+
+    .travel-layout { display: grid; gap: 14px; }
+    .route-map { display: grid; gap: 10px; }
+    .route-card {
+      position: relative; padding: 14px; border-radius: 18px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+      cursor: pointer; transition: border-color .16s ease, background .16s ease, transform .16s ease;
+    }
+    .route-card:hover { transform: translateY(-1px); }
+    .route-card.active { border-color: rgba(207,163,90,0.5); background: rgba(207,163,90,0.1); }
+    .route-card h4 { margin: 0 0 6px; font-size: 16px; }
+    .route-card p { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.55; }
+    .route-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .travel-box {
+      padding: 16px; border-radius: 18px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); display: grid; gap: 12px;
+    }
+    .travel-status {
+      padding: 12px 14px; border-radius: 14px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.05); font-size: 14px; line-height: 1.6;
+    }
+    .route-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    .toast {
+      position: fixed; left: 50%; bottom: calc(22px + var(--safe-bottom)); transform: translateX(-50%) translateY(24px);
+      padding: 12px 16px; border-radius: 14px; background: rgba(14,16,22,0.94); border: 1px solid rgba(255,255,255,0.08);
+      color: #fff; font-size: 14px; opacity: 0; pointer-events: none; transition: all .24s ease; z-index: 100;
+      max-width: min(92vw, 520px); text-align: center; box-shadow: 0 14px 30px rgba(0,0,0,.3);
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 1100px) {
+      .world-grid { grid-template-columns: 320px minmax(0, 1fr); }
+      .world-col.right { grid-column: 1 / -1; grid-template-columns: 1fr 1fr; display: grid; }
+    }
+
+    @media (max-width: 860px) {
+      html, body { overflow: auto; }
+      .screen { height: auto; min-height: 100dvh; overflow: visible; }
+      .intro-content { grid-template-columns: 1fr; align-items: end; }
+      .creator-layout, .world-wrap { height: auto; min-height: calc(100dvh - var(--safe-top) - var(--safe-bottom) - (var(--page-padding) * 2)); }
+      .world-grid, .world-col.right { grid-template-columns: 1fr; display: grid; }
+      .world-col.right { grid-column: auto; }
+      .market-layout, .item-grid { grid-template-columns: 1fr; }
+      .city-menu { grid-template-columns: 1fr 1fr; }
+      .portrait-card { grid-template-rows: auto auto; }
+      .portrait-stage { min-height: 280px; }
+      .module-scroll, .profile-list { overflow: visible; }
+    }
+
+    @media (max-width: 560px) {
+      .creator-screen, .world-screen { padding-left: 10px; padding-right: 10px; }
+      .panel-inner { padding: 14px; }
+      .chooser-row { grid-template-columns: 48px 1fr 48px; }
+      .city-menu { grid-template-columns: 1fr; }
+      .search-row { grid-template-columns: 1fr; }
+      .destination-card { grid-template-columns: 1fr; }
+      .route-actions, .wizard-actions, .intro-actions { flex-direction: column; }
+      .btn { width: 100%; }
+      .world-topbar { align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <section class="screen intro-screen active" id="introScreen">
+    <div class="intro-bg"></div>
+    <div class="intro-overlay"></div>
+    <div class="intro-content">
+      <div class="intro-card">
+        <p class="intro-kicker">Telegram Mini App • Fantasy MMO</p>
+        <h1 class="intro-title">Hollow Dominion</h1>
+        <p class="intro-subtitle">
+          С берега начинается история героя. Создай персонажа, пройди прибытие в порт и войди в первый город,
+          где тебя уже ждут оружейник, рынок, телепорты и путь в соседние земли.
+        </p>
+        <div class="intro-actions">
+          <button class="btn primary" id="beginIntroBtn">Войти в мир</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="screen creator-screen" id="creatorScreen">
+    <div class="creator-layout">
+      <div class="creator-header">
+        <h1 class="title">Создание героя</h1>
+        <p class="subtitle">Один шаг — один выбор.</p>
+      </div>
+
+      <div class="panel preview-shell">
+        <div class="preview-bg" id="creatorPreviewBg"></div>
+        <div class="character-zone">
+          <div class="shadow"></div>
+          <div class="character-box" id="creatorPreviewRoot">
+            <img data-slot="legL" class="character-layer" alt="">
+            <img data-slot="legR" class="character-layer" alt="">
+            <img data-slot="armorLegL" class="character-layer" alt="">
+            <img data-slot="armorLegR" class="character-layer" alt="">
+            <div class="upper-body">
+              <div class="arm-back-group">
+                <img data-slot="armL" class="character-layer" alt="">
+                <img data-slot="armorArmL" class="character-layer" alt="">
+              </div>
+              <div class="head-group">
+                <img data-slot="headBase" class="character-layer" alt="">
+                <img data-slot="face" class="character-layer" alt="">
+              </div>
+              <img data-slot="torso" class="character-layer" alt="">
+              <img data-slot="armorTorso" class="character-layer" alt="">
+              <div class="arm-front-group">
+                <img data-slot="armR" class="character-layer" alt="">
+                <img data-slot="armorArmR" class="character-layer" alt="">
+                <img data-slot="weapon" class="character-layer" alt="">
+              </div>
+            </div>
+            <img data-slot="pelvis" class="character-layer" alt="">
+            <img data-slot="armorPelvis" class="character-layer" alt="">
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-inner wizard-panel">
+          <div class="chooser-label" id="stepLabel">Раса</div>
+          <div id="stepArea"></div>
+          <div class="chooser-helper" id="stepHelper"></div>
+          <div class="error-text" id="nicknameError"></div>
+          <div class="wizard-actions">
+            <button class="btn" id="backStepBtn">Назад</button>
+            <button class="btn primary" id="nextStepBtn">Далее</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="screen arrival-screen" id="arrivalScreen">
+    <div class="arrival-bg"></div>
+    <div class="arrival-overlay"></div>
+    <div class="arrival-content">
+      <div class="arrival-inner">
+        <h1 class="arrival-title">Навстречу приключениям</h1>
+        <p class="arrival-text">
+          Корабль доставил тебя к первому берегу. За портом раскинулся стартовый город — место, где начинается путь,
+          снаряжение и первые решения.
+        </p>
+        <button class="btn primary" id="enterWorldBtn">Сойти на берег</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="screen world-screen" id="worldScreen">
+    <div class="world-wrap">
+      <div class="world-topbar">
+        <div>
+          <div class="world-title">Hollow Dominion</div>
+          <div class="subtitle" id="worldSubtitle">Городская площадь и профиль героя</div>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <div class="chip" id="worldNickChip">—</div>
+          <div class="chip" id="worldCityChip">Стартовый город</div>
+          <div class="chip" id="worldAdenChip">Аден: 0</div>
+        </div>
+      </div>
+
+      <div class="world-grid">
+        <div class="world-col left">
+          <div class="panel profile-panel">
+            <div class="panel-inner" style="display:grid; grid-template-rows:minmax(0,1fr) auto; min-height:0;">
+              <div class="portrait-card">
+                <div class="portrait-bg" id="portraitBg"></div>
+                <div class="portrait-stage">
+                  <div class="shadow"></div>
+                  <div class="character-box" id="profilePreviewRoot">
+                    <img data-slot="legL" class="character-layer" alt="">
+                    <img data-slot="legR" class="character-layer" alt="">
+                    <img data-slot="armorLegL" class="character-layer" alt="">
+                    <img data-slot="armorLegR" class="character-layer" alt="">
+                    <div class="upper-body">
+                      <div class="arm-back-group">
+                        <img data-slot="armL" class="character-layer" alt="">
+                        <img data-slot="armorArmL" class="character-layer" alt="">
+                      </div>
+                      <div class="head-group">
+                        <img data-slot="headBase" class="character-layer" alt="">
+                        <img data-slot="face" class="character-layer" alt="">
+                      </div>
+                      <img data-slot="torso" class="character-layer" alt="">
+                      <img data-slot="armorTorso" class="character-layer" alt="">
+                      <div class="arm-front-group">
+                        <img data-slot="armR" class="character-layer" alt="">
+                        <img data-slot="armorArmR" class="character-layer" alt="">
+                        <img data-slot="weapon" class="character-layer" alt="">
+                      </div>
+                    </div>
+                    <img data-slot="pelvis" class="character-layer" alt="">
+                    <img data-slot="armorPelvis" class="character-layer" alt="">
+                  </div>
+                </div>
+                <div class="portrait-footer">
+                  <div class="profile-name" id="profileHeroName">—</div>
+                  <div class="profile-meta">
+                    <div class="chip" id="profileClassChip">Класс —</div>
+                    <div class="chip" id="profileRaceChip">Раса —</div>
+                    <div class="chip" id="profileFaceChip">Лицо —</div>
+                  </div>
+                  <div class="city-menu">
+                    <button class="city-menu-btn active" data-module="blacksmith">Магазин оружейника</button>
+                    <button class="city-menu-btn" data-module="consumables">Магазин расходников</button>
+                    <button class="city-menu-btn" data-module="market">Рынок</button>
+                    <button class="city-menu-btn" data-module="teleport">Телепортации</button>
+                    <button class="city-menu-btn" data-module="travel">Пеший путь</button>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div class="profile-list" id="worldProfileList"></div>
+                <div class="stats-grid" id="worldStatsGrid"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="world-col center">
+          <div class="panel city-scene">
+            <div class="city-scene-bg" id="citySceneBg"></div>
+            <div class="city-scene-content">
+              <div class="city-scene-badges">
+                <div class="chip" id="citySceneBadge">🏰 Стартовый город</div>
+                <div class="chip" id="cityDangerBadge">Дороги спокойны</div>
+              </div>
+              <div></div>
+              <div class="city-story">
+                <h3 id="cityStoryTitle">Ты входишь в город</h3>
+                <p id="cityStoryText">
+                  На площади слышны голоса торговцев, у кузни звенит металл, а у телепортатора мерцают руны.
+                  Здесь начинается удобный городской интерфейс: портрет героя, магазины, рынок, телепорты и выбор пути.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="world-col right">
+          <div class="panel module-panel">
+            <div class="panel-inner" style="display:grid; grid-template-rows:auto minmax(0,1fr); min-height:0;">
+              <div class="module-header">
+                <div>
+                  <h2 class="title" id="moduleTitle">Магазин оружейника</h2>
+                  <p class="subtitle" id="moduleSubtitle">Первое снаряжение для старта героя.</p>
+                </div>
+              </div>
+              <div class="module-scroll" id="moduleContent"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const tg = window.Telegram?.WebApp;
+    if (tg) { tg.expand(); tg.ready?.(); }
+
+    const STORAGE_STATE = 'hd_city_profile_v3';
+    const STORAGE_TAKEN_NICKS = 'hd_taken_nicknames_city_v3';
+
+    const FALLBACK_PATH = './assets/characters/human/male';
+    const CREATE_BG_DEFAULT = './assets/backgrounds/create_bg.jpg';
+    const INTRO_BG = './assets/backgrounds/intro/intro_main.png';
+
+    const screens = {
+      intro: document.getElementById('introScreen'),
+      creator: document.getElementById('creatorScreen'),
+      arrival: document.getElementById('arrivalScreen'),
+      world: document.getElementById('worldScreen')
+    };
+
+    const steps = [
+      { key: 'race', label: 'Раса' },
+      { key: 'classId', label: 'Класс' },
+      { key: 'gender', label: 'Пол' },
+      { key: 'face', label: 'Лицо' },
+      { key: 'nickname', label: 'Никнейм' }
+    ];
+
+    const races = [
+      { id: 'human', name: 'Человек' },
+      { id: 'elf', name: 'Эльф' },
+      { id: 'dark_elf', name: 'Тёмный эльф' },
+      { id: 'orc', name: 'Орк' },
+      { id: 'dwarf', name: 'Гном' }
+    ];
+    const classes = [
+      { id: 'warrior', name: 'Воин' },
+      { id: 'mage', name: 'Маг' }
+    ];
+    const genders = [
+      { id: 'male', name: 'Мужчина' },
+      { id: 'female', name: 'Женщина' }
+    ];
+    const faces = ['01', '02', '03', '04', '05', '06'];
+
+    const classStats = {
+      warrior: { hp: 120, maxHp: 120, mp: 45, maxMp: 45, str: 12, dex: 10, int: 8, def: 11, adena: 100 },
+      mage: { hp: 82, maxHp: 82, mp: 100, maxMp: 100, str: 7, dex: 9, int: 15, def: 8, adena: 100 }
+    };
+
+    const marketItems = [
+      { name: 'Железный меч', type: 'weapon', city: 'start_city', price: 42, seller: 'Кузнец Бром', desc: 'Надёжный клинок для первых боёв.' },
+      { name: 'Кожаный доспех', type: 'armor', city: 'start_city', price: 36, seller: 'Лавка щитов', desc: 'Лёгкая броня для дороги.' },
+      { name: 'Посох ученика', type: 'weapon', city: 'start_city', price: 38, seller: 'Рунный ряд', desc: 'Простой посох для начинающего мага.' },
+      { name: 'Зелье лечения', type: 'consumable', city: 'start_city', price: 9, seller: 'Травница Мира', desc: 'Небольшое восстановление сил.' },
+      { name: 'Лук охотника', type: 'weapon', city: 'lyon', price: 58, seller: 'Лионская мастерская', desc: 'Точный лук для дальнего боя.' },
+      { name: 'Дорожный плащ', type: 'armor', city: 'lyon', price: 24, seller: 'Путевой склад', desc: 'Хорош для долгих переходов.' }
+    ];
+
+    const cities = {
+      start_city: {
+        id: 'start_city',
+        name: 'Стартовый город',
+        sceneTitle: '🏰 Стартовый город • первая площадь',
+        dangerText: 'Дороги спокойны',
+        storyTitle: 'Ты входишь в город',
+        storyText: 'На площади слышны голоса торговцев, у кузни звенит металл, а у телепортатора мерцают руны. Здесь начинается удобный городской интерфейс: портрет героя, магазины, рынок, телепорты и выбор пути.',
+        sceneBg: './assets/backgrounds/cities/start_city/scene.jpg',
+        portraitBg: './assets/backgrounds/cities/start_city/portrait.jpg',
+        marketBg: './assets/locations/market/market_preview.jpg',
+        teleportDestinations: [
+          { cityId: 'lyon', cost: 18, text: 'Быстрый переход в Лион по магическому кругу.' },
+          { cityId: 'ravenford', cost: 26, text: 'Крепость у северной дороги и торгового тракта.' }
+        ],
+        walkingRoutes: [
+          { cityId: 'lyon', durationMin: 30, risk: 0.35, text: 'Соседний город на дороге к торговым полям.' },
+          { cityId: 'ravenford', durationMin: 55, risk: 0.45, text: 'Дальняя крепость с более опасным трактом.' }
+        ]
+      },
+      lyon: {
+        id: 'lyon',
+        name: 'Лион',
+        sceneTitle: '🛡️ Лион • ворота южного тракта',
+        dangerText: 'На дорогах тревожно',
+        storyTitle: 'Ты прибыл в Лион',
+        storyText: 'Лион встречает тебя караванами, охраной на воротах и широкой дорогой назад к побережью. Отсюда удобно торговать и уходить глубже в земли королевства.',
+        sceneBg: './assets/backgrounds/cities/lyon/scene.jpg',
+        portraitBg: './assets/backgrounds/cities/lyon/portrait.jpg',
+        marketBg: './assets/locations/market/market_preview.jpg',
+        teleportDestinations: [
+          { cityId: 'start_city', cost: 18, text: 'Вернуться на стартовую площадь.' },
+          { cityId: 'ravenford', cost: 16, text: 'Северный переход к крепости.' }
+        ],
+        walkingRoutes: [
+          { cityId: 'start_city', durationMin: 30, risk: 0.30, text: 'Спокойный путь назад к берегу.' },
+          { cityId: 'ravenford', durationMin: 35, risk: 0.4, text: 'Тракт под присмотром, но с риском засады.' }
+        ]
+      },
+      ravenford: {
+        id: 'ravenford',
+        name: 'Рейвенфорд',
+        sceneTitle: '⚔️ Рейвенфорд • северная крепость',
+        dangerText: 'Разбойники замечены',
+        storyTitle: 'Ты входишь в Рейвенфорд',
+        storyText: 'Крепостные стены прикрывают рынок и гарнизон. Это суровый город, где уже чувствуется близость опасных дорог и приграничных земель.',
+        sceneBg: './assets/backgrounds/cities/ravenford/scene.jpg',
+        portraitBg: './assets/backgrounds/cities/ravenford/portrait.jpg',
+        marketBg: './assets/locations/market/market_preview.jpg',
+        teleportDestinations: [
+          { cityId: 'lyon', cost: 16, text: 'Вернуться в Лион.' },
+          { cityId: 'start_city', cost: 26, text: 'Переход обратно к морю.' }
+        ],
+        walkingRoutes: [
+          { cityId: 'lyon', durationMin: 35, risk: 0.40, text: 'Дорога вдоль караванного тракта.' },
+          { cityId: 'start_city', durationMin: 55, risk: 0.5, text: 'Дальний маршрут с шансом нападения.' }
+        ]
+      }
+    };
+
+    const modules = {
+      blacksmith: {
+        title: 'Магазин оружейника',
+        subtitle: 'Базовое оружие и броня для первых шагов героя.'
+      },
+      consumables: {
+        title: 'Магазин расходников',
+        subtitle: 'Зелья, свитки и дорожные запасы.'
+      },
+      market: {
+        title: 'Рынок',
+        subtitle: 'Поиск по рынку уже есть. Позже сюда легко добавить настоящие лоты игроков.'
+      },
+      teleport: {
+        title: 'Менеджер телепортаций',
+        subtitle: 'Переход в другие города за Аден.'
+      },
+      travel: {
+        title: 'Пеший путь',
+        subtitle: 'Выбери соседний город и отправься по дороге в реальном времени.'
+      }
+    };
+
+    const stateDefault = {
+      creator: { race: 'human', classId: 'warrior', gender: 'male', face: '01', nickname: '' },
+      stepIndex: 0,
+      activeModule: 'blacksmith',
+      activeRouteCityId: 'lyon',
+      marketQuery: '',
+      marketType: 'all',
+      hero: null,
+      travel: null
+    };
+
+    let state = loadState();
+
+    const beginIntroBtn = document.getElementById('beginIntroBtn');
+    const enterWorldBtn = document.getElementById('enterWorldBtn');
+    const creatorPreviewBg = document.getElementById('creatorPreviewBg');
+    const creatorPreviewRoot = document.getElementById('creatorPreviewRoot');
+    const profilePreviewRoot = document.getElementById('profilePreviewRoot');
+    const portraitBg = document.getElementById('portraitBg');
+    const citySceneBg = document.getElementById('citySceneBg');
+    const worldNickChip = document.getElementById('worldNickChip');
+    const worldCityChip = document.getElementById('worldCityChip');
+    const worldAdenChip = document.getElementById('worldAdenChip');
+    const worldSubtitle = document.getElementById('worldSubtitle');
+    const profileHeroName = document.getElementById('profileHeroName');
+    const profileClassChip = document.getElementById('profileClassChip');
+    const profileRaceChip = document.getElementById('profileRaceChip');
+    const profileFaceChip = document.getElementById('profileFaceChip');
+    const worldProfileList = document.getElementById('worldProfileList');
+    const worldStatsGrid = document.getElementById('worldStatsGrid');
+    const citySceneBadge = document.getElementById('citySceneBadge');
+    const cityDangerBadge = document.getElementById('cityDangerBadge');
+    const cityStoryTitle = document.getElementById('cityStoryTitle');
+    const cityStoryText = document.getElementById('cityStoryText');
+    const moduleTitle = document.getElementById('moduleTitle');
+    const moduleSubtitle = document.getElementById('moduleSubtitle');
+    const moduleContent = document.getElementById('moduleContent');
+    const stepLabel = document.getElementById('stepLabel');
+    const stepArea = document.getElementById('stepArea');
+    const stepHelper = document.getElementById('stepHelper');
+    const nicknameError = document.getElementById('nicknameError');
+    const backStepBtn = document.getElementById('backStepBtn');
+    const nextStepBtn = document.getElementById('nextStepBtn');
+    const toast = document.getElementById('toast');
+
+    function clone(obj) { return JSON.parse(JSON.stringify(obj)); }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_STATE);
+        if (!raw) return clone(stateDefault);
+        const parsed = JSON.parse(raw);
+        return {
+          ...clone(stateDefault),
+          ...parsed,
+          creator: { ...clone(stateDefault.creator), ...(parsed.creator || {}) }
+        };
+      } catch {
+        return clone(stateDefault);
+      }
+    }
+    function saveState() { localStorage.setItem(STORAGE_STATE, JSON.stringify(state)); }
+    function showScreen(screenEl) { Object.values(screens).forEach(s => s.classList.remove('active')); screenEl.classList.add('active'); }
+    function showToast(text) {
+      toast.textContent = text;
+      toast.classList.add('show');
+      clearTimeout(showToast.t);
+      showToast.t = setTimeout(() => toast.classList.remove('show'), 2300);
+    }
+
+    function getTakenNicknames() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_TAKEN_NICKS) || '[]'); }
+      catch { return []; }
+    }
+    function saveTakenNicknames(list) { localStorage.setItem(STORAGE_TAKEN_NICKS, JSON.stringify(list)); }
+    function normalizeNickname(value) { return (value || '').trim(); }
+    function nicknameKey(value) { return normalizeNickname(value).toLowerCase(); }
+    function validateNickname(value) {
+      const nickname = normalizeNickname(value);
+      if (!nickname) return 'Введите никнейм.';
+      if (nickname.length < 3) return 'Ник должен быть не короче 3 символов.';
+      if (nickname.length > 16) return 'Ник не должен быть длиннее 16 символов.';
+      if (!/^[A-Za-zА-Яа-яЁё0-9_]+$/.test(nickname)) return 'Разрешены буквы, цифры и знак _.';
+      const taken = getTakenNicknames();
+      const key = nicknameKey(nickname);
+      const currentNick = state.hero ? nicknameKey(state.hero.nickname) : null;
+      if (taken.includes(key) && currentNick !== key) return 'Этот ник уже занят.';
+      return '';
+    }
+    function reserveNickname(nickname) {
+      const taken = getTakenNicknames();
+      const key = nicknameKey(nickname);
+      if (!taken.includes(key)) {
+        taken.push(key);
+        saveTakenNicknames(taken);
+      }
+    }
+
+    function getRaceName(id) { return races.find(r => r.id === id)?.name || '—'; }
+    function getClassName(id) { return classes.find(c => c.id === id)?.name || '—'; }
+    function getGenderName(id) { return genders.find(g => g.id === id)?.name || '—'; }
+    function escapeHtml(str) {
+      return String(str).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;');
+    }
+
+    function safeSetCandidates(imgEl, candidates) {
+      let index = 0;
+      imgEl.style.display = 'block';
+      function tryNext() {
+        if (index >= candidates.length) {
+          imgEl.style.display = 'none';
+          imgEl.removeAttribute('src');
+          imgEl.onerror = null;
+          imgEl.onload = null;
+          return;
+        }
+        const src = candidates[index++];
+        imgEl.onerror = tryNext;
+        imgEl.onload = () => { imgEl.style.display = 'block'; imgEl.onerror = null; imgEl.onload = null; };
+        imgEl.src = src;
+      }
+      tryNext();
+    }
+    function safeSetBackground(el, candidates, extraOverlay = '') {
+      let index = 0;
+      function tryNext() {
+        if (index >= candidates.length) {
+          el.style.backgroundImage = extraOverlay || 'none';
+          return;
+        }
+        const src = candidates[index++];
+        const img = new Image();
+        img.onload = () => {
+          el.style.backgroundImage = `${extraOverlay ? extraOverlay + ', ' : ''}url("${src}")`;
+        };
+        img.onerror = tryNext;
+        img.src = src;
+      }
+      tryNext();
+    }
+    function getSlot(root, slot) { return root.querySelector(`[data-slot="${slot}"]`); }
+    function buildBases(race, gender) {
+      return [`./assets/characters/${race}/${gender}`, FALLBACK_PATH];
+    }
+    function setPreview(root, config) {
+      const bases = buildBases(config.race, config.gender);
+      safeSetCandidates(getSlot(root, 'legL'), bases.map(p => `${p}/base/leg_l.png`));
+      safeSetCandidates(getSlot(root, 'legR'), bases.map(p => `${p}/base/leg_r.png`));
+      safeSetCandidates(getSlot(root, 'armL'), bases.map(p => `${p}/base/arm_l.png`));
+      safeSetCandidates(getSlot(root, 'armR'), bases.map(p => `${p}/base/arm_r.png`));
+      safeSetCandidates(getSlot(root, 'torso'), bases.map(p => `${p}/base/torso.png`));
+      safeSetCandidates(getSlot(root, 'pelvis'), bases.map(p => `${p}/base/pelvis.png`));
+      safeSetCandidates(getSlot(root, 'headBase'), bases.map(p => `${p}/base/head_base.png`));
+      safeSetCandidates(getSlot(root, 'face'), bases.map(p => `${p}/faces/${config.face}.png`));
+      const classBases = bases.map(p => `${p}/class_preview/${config.classId}`);
+      safeSetCandidates(getSlot(root, 'armorTorso'), classBases.map(p => `${p}/torso.png`));
+      safeSetCandidates(getSlot(root, 'armorArmL'), classBases.map(p => `${p}/arm_l.png`));
+      safeSetCandidates(getSlot(root, 'armorArmR'), classBases.map(p => `${p}/arm_r.png`));
+      safeSetCandidates(getSlot(root, 'armorPelvis'), classBases.map(p => `${p}/pelvis.png`));
+      safeSetCandidates(getSlot(root, 'armorLegL'), classBases.map(p => `${p}/leg_l.png`));
+      safeSetCandidates(getSlot(root, 'armorLegR'), classBases.map(p => `${p}/leg_r.png`));
+      safeSetCandidates(getSlot(root, 'weapon'), classBases.map(p => `${p}/weapon.png`));
+    }
+    function setPreviewBackground() {
+      safeSetBackground(creatorPreviewBg, [
+        `./assets/backgrounds/create_${state.creator.race}.jpg`,
+        CREATE_BG_DEFAULT
+      ], 'linear-gradient(180deg, rgba(10,12,17,0.08) 0%, rgba(10,12,17,0.28) 100%)');
+    }
+
+    function cycleArray(arr, currentId, direction) {
+      const index = arr.findIndex(item => item.id === currentId || item === currentId);
+      const nextIndex = (index + direction + arr.length) % arr.length;
+      return arr[nextIndex];
+    }
+    function renderChooser(label, value, helper, onPrev, onNext) {
+      stepArea.innerHTML = `
+        <div class="chooser-row">
+          <button class="btn" id="chooserPrevBtn">&lt;</button>
+          <div class="chooser-value">${label}: ${value}</div>
+          <button class="btn" id="chooserNextBtn">&gt;</button>
+        </div>`;
+      stepHelper.textContent = helper;
+      document.getElementById('chooserPrevBtn').addEventListener('click', onPrev);
+      document.getElementById('chooserNextBtn').addEventListener('click', onNext);
+    }
+    function renderCurrentStep() {
+      const step = steps[state.stepIndex];
+      stepLabel.textContent = step.label;
+      stepArea.innerHTML = '';
+      stepHelper.textContent = '';
+      nicknameError.textContent = '';
+      if (step.key === 'race') {
+        renderChooser('Раса', getRaceName(state.creator.race), 'Кнопками меняй расу, затем жми «Далее».', () => {
+          state.creator.race = cycleArray(races, state.creator.race, -1).id; saveState(); renderCreator();
+        }, () => {
+          state.creator.race = cycleArray(races, state.creator.race, 1).id; saveState(); renderCreator();
+        });
+      }
+      if (step.key === 'classId') {
+        renderChooser('Класс', getClassName(state.creator.classId), 'Кнопками меняй класс, затем жми «Далее».', () => {
+          state.creator.classId = cycleArray(classes, state.creator.classId, -1).id; saveState(); renderCreator();
+        }, () => {
+          state.creator.classId = cycleArray(classes, state.creator.classId, 1).id; saveState(); renderCreator();
+        });
+      }
+      if (step.key === 'gender') {
+        renderChooser('Пол', getGenderName(state.creator.gender), 'Пока отсутствующие ассеты заменяются fallback на human male.', () => {
+          state.creator.gender = cycleArray(genders, state.creator.gender, -1).id; saveState(); renderCreator();
+        }, () => {
+          state.creator.gender = cycleArray(genders, state.creator.gender, 1).id; saveState(); renderCreator();
+        });
+      }
+      if (step.key === 'face') {
+        renderChooser('Лицо', state.creator.face, 'Кнопками меняй лицо, затем жми «Далее».', () => {
+          state.creator.face = cycleArray(faces, state.creator.face, -1); saveState(); renderCreator();
+        }, () => {
+          state.creator.face = cycleArray(faces, state.creator.face, 1); saveState(); renderCreator();
+        });
+      }
+      if (step.key === 'nickname') {
+        stepArea.innerHTML = `<div class="nickname-wrap"><input id="wizardNicknameInput" maxlength="16" placeholder="Введите ник" value="${escapeHtml(state.creator.nickname || '')}"></div>`;
+        stepHelper.textContent = 'Введи никнейм, затем жми «Создать персонажа».';
+        const input = document.getElementById('wizardNicknameInput');
+        input.addEventListener('input', () => { state.creator.nickname = input.value; saveState(); nicknameError.textContent = validateNickname(state.creator.nickname); });
+        nicknameError.textContent = validateNickname(state.creator.nickname);
+      }
+      backStepBtn.disabled = state.stepIndex === 0;
+      nextStepBtn.textContent = state.stepIndex === steps.length - 1 ? 'Создать персонажа' : 'Далее';
+    }
+    function renderCreator() { setPreviewBackground(); setPreview(creatorPreviewRoot, state.creator); renderCurrentStep(); }
+    function canProceedCurrentStep() {
+      const step = steps[state.stepIndex];
+      if (step.key === 'nickname') return !validateNickname(state.creator.nickname);
+      return true;
+    }
+    function buildHero() {
+      const stats = classStats[state.creator.classId];
+      return {
+        nickname: normalizeNickname(state.creator.nickname),
+        race: state.creator.race,
+        classId: state.creator.classId,
+        gender: state.creator.gender,
+        face: state.creator.face,
+        cityId: 'start_city',
+        cityName: cities.start_city.name,
+        ...stats
+      };
+    }
+
+    function getCurrentCity() { return cities[state.hero?.cityId || 'start_city']; }
+    function updateTravelStatus() {
+      if (!state.travel) return null;
+      if (state.travel.status === 'arrived') return state.travel;
+      const now = Date.now();
+      if (now >= state.travel.endsAt) {
+        state.travel.status = 'arrived';
+        saveState();
+      }
+      return state.travel;
+    }
+    function formatDuration(ms) {
+      const totalSec = Math.max(0, Math.floor(ms / 1000));
+      const min = Math.floor(totalSec / 60);
+      const sec = totalSec % 60;
+      return `${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+    }
+    function tryArriveFromTravel() {
+      updateTravelStatus();
+      if (!state.travel || state.travel.status !== 'arrived' || !state.hero) return;
+      const destination = cities[state.travel.toCityId];
+      state.hero.cityId = destination.id;
+      state.hero.cityName = destination.name;
+      const eventText = state.travel.bandits ? 'По дороге на тебя напали разбойники. Ты отбился, но путь запомнился надолго.' : 'Дорога прошла без нападений. Ты благополучно прибыл в новый город.';
+      state.travel = null;
+      state.activeRouteCityId = destination.walkingRoutes?.[0]?.cityId || 'start_city';
+      saveState();
+      showToast(eventText);
+      renderWorld();
+    }
+
+    function buyItem(price, name) {
+      if (!state.hero) return;
+      if (state.hero.adena < price) {
+        showToast('Недостаточно Адена.');
+        return;
+      }
+      state.hero.adena -= price;
+      saveState();
+      renderWorld();
+      showToast(`Куплено: ${name}.`);
+    }
+    function teleportTo(cityId, cost) {
+      if (!state.hero) return;
+      if (state.travel && state.travel.status !== 'arrived') {
+        showToast('Сначала заверши текущее путешествие.');
+        return;
+      }
+      if (state.hero.adena < cost) {
+        showToast('Недостаточно Адена для телепортации.');
+        return;
+      }
+      const city = cities[cityId];
+      state.hero.adena -= cost;
+      state.hero.cityId = city.id;
+      state.hero.cityName = city.name;
+      state.activeRouteCityId = city.walkingRoutes?.[0]?.cityId || 'start_city';
+      saveState();
+      renderWorld();
+      showToast(`Телепортация выполнена: ${city.name}.`);
+    }
+    function startWalking(route) {
+      if (!state.hero) return;
+      if (state.travel && state.travel.status !== 'arrived') {
+        showToast('Ты уже в пути.');
+        return;
+      }
+      const endsAt = Date.now() + route.durationMin * 60 * 1000;
+      state.travel = {
+        fromCityId: state.hero.cityId,
+        toCityId: route.cityId,
+        startedAt: Date.now(),
+        endsAt,
+        durationMin: route.durationMin,
+        bandits: Math.random() < route.risk,
+        status: 'walking'
+      };
+      saveState();
+      renderWorld();
+      showToast(`Ты отправился пешком в ${cities[route.cityId].name}.`);
+    }
+
+    function renderBlacksmith() {
+      return `
+        <div class="item-grid">
+          <div class="item-card"><h4>Меч новобранца</h4><p>Простой клинок для первых схваток на дорогах.</p><div class="item-bottom"><span class="price">34 Адена</span><button class="btn small primary" data-buy="34" data-name="Меч новобранца">Купить</button></div></div>
+          <div class="item-card"><h4>Щит караула</h4><p>Базовая защита для тех, кто идёт по опасной дороге.</p><div class="item-bottom"><span class="price">28 Адена</span><button class="btn small primary" data-buy="28" data-name="Щит караула">Купить</button></div></div>
+          <div class="item-card"><h4>Кожаные поножи</h4><p>Лёгкая броня, не сковывающая шаг в пути.</p><div class="item-bottom"><span class="price">22 Адена</span><button class="btn small primary" data-buy="22" data-name="Кожаные поножи">Купить</button></div></div>
+          <div class="item-card"><h4>Посох ученика</h4><p>Дешёвый посох для мага, которого ждёт длинная дорога.</p><div class="item-bottom"><span class="price">31 Адена</span><button class="btn small primary" data-buy="31" data-name="Посох ученика">Купить</button></div></div>
+        </div>`;
+    }
+    function renderConsumables() {
+      return `
+        <div class="item-grid">
+          <div class="item-card"><h4>Малое зелье лечения</h4><p>Восстанавливает силы после стычки в пути.</p><div class="item-bottom"><span class="price">8 Адена</span><button class="btn small primary" data-buy="8" data-name="Малое зелье лечения">Купить</button></div></div>
+          <div class="item-card"><h4>Свиток возвращения</h4><p>Заглушка под будущую механику экстренного отхода.</p><div class="item-bottom"><span class="price">15 Адена</span><button class="btn small primary" data-buy="15" data-name="Свиток возвращения">Купить</button></div></div>
+          <div class="item-card"><h4>Дорожный паёк</h4><p>Подходит для длительного перехода между городами.</p><div class="item-bottom"><span class="price">6 Адена</span><button class="btn small primary" data-buy="6" data-name="Дорожный паёк">Купить</button></div></div>
+          <div class="item-card"><h4>Масло для оружия</h4><p>Небольшой расходник для будущих баффов оружия.</p><div class="item-bottom"><span class="price">11 Адена</span><button class="btn small primary" data-buy="11" data-name="Масло для оружия">Купить</button></div></div>
+        </div>`;
+    }
+    function renderMarket() {
+      const city = getCurrentCity();
+      const query = (state.marketQuery || '').trim().toLowerCase();
+      const filtered = marketItems.filter(item => {
+        const matchType = state.marketType === 'all' || item.type === state.marketType;
+        const matchQuery = !query || [item.name, item.seller, item.desc].join(' ').toLowerCase().includes(query);
+        const matchCity = item.city === city.id || city.id === 'start_city';
+        return matchType && matchQuery && matchCity;
+      });
+      const resultsHtml = filtered.length ? filtered.map(item => `
+        <div class="result-card">
+          <div class="result-top"><strong>${item.name}</strong><span class="price">${item.price} Адена</span></div>
+          <div class="subtitle" style="font-size:13px;">Продавец: ${item.seller}</div>
+          <div style="font-size:13px; color:var(--muted); line-height:1.55;">${item.desc}</div>
+        </div>`).join('') : `<div class="travel-status">По текущему запросу ничего не найдено.</div>`;
+      return `
+        <div class="market-layout">
+          <div class="market-illustration">
+            <div class="market-illustration-bg" id="marketIllustrationBg"></div>
+            <div class="market-illustration-copy">
+              Здесь будет иллюстрация рынка. Путь для картинки уже создан: <b>./assets/locations/market/market_preview.jpg</b>
+            </div>
+          </div>
+          <div>
+            <div class="search-box">
+              <div class="search-row">
+                <input class="text-input" id="marketSearchInput" placeholder="Поиск по рынку" value="${escapeHtml(state.marketQuery || '')}">
+                <select class="select-input" id="marketTypeSelect">
+                  <option value="all" ${state.marketType === 'all' ? 'selected' : ''}>Все</option>
+                  <option value="weapon" ${state.marketType === 'weapon' ? 'selected' : ''}>Оружие</option>
+                  <option value="armor" ${state.marketType === 'armor' ? 'selected' : ''}>Броня</option>
+                  <option value="consumable" ${state.marketType === 'consumable' ? 'selected' : ''}>Расходники</option>
+                </select>
+              </div>
+            </div>
+            <div class="market-results">${resultsHtml}</div>
+          </div>
+        </div>`;
+    }
+    function renderTeleport() {
+      const city = getCurrentCity();
+      return `<div class="destinations">${city.teleportDestinations.map(dest => {
+        const target = cities[dest.cityId];
+        return `
+          <div class="destination-card">
+            <div>
+              <div class="destination-title">${target.name}</div>
+              <div class="destination-copy">${dest.text}</div>
+              <div class="destination-meta">
+                <div class="chip">Стоимость: ${dest.cost} Адена</div>
+                <div class="chip">Мгновенно</div>
+              </div>
+            </div>
+            <button class="btn primary" data-teleport="${dest.cityId}" data-cost="${dest.cost}">Телепорт</button>
+          </div>`;
+      }).join('')}</div>`;
+    }
+    function renderTravel() {
+      const city = getCurrentCity();
+      const activeId = state.activeRouteCityId || city.walkingRoutes?.[0]?.cityId;
+      const activeRoute = city.walkingRoutes.find(route => route.cityId === activeId) || city.walkingRoutes[0];
+      const travel = updateTravelStatus();
+      let statusHtml = `<div class="travel-status">Выбери соседний город на карте маршрутов. Пешее путешествие идёт в реальном времени. Для примера путь до Лиона занимает 30 минут.</div>`;
+      let actionHtml = `
+        <div class="route-actions">
+          <button class="btn primary" id="walkToCityBtn">Отправиться пешком</button>
+        </div>`;
+      if (travel && travel.status === 'walking') {
+        statusHtml = `<div class="travel-status">Ты уже в пути: <b>${cities[travel.toCityId].name}</b>.<br>Осталось: <b>${formatDuration(travel.endsAt - Date.now())}</b><br>По дороге возможна встреча с разбойниками.</div>`;
+        actionHtml = `<div class="route-actions"><button class="btn ghost" disabled>Путешествие уже началось</button></div>`;
+      }
+      if (travel && travel.status === 'arrived') {
+        statusHtml = `<div class="travel-status">Путешествие завершено. ${travel.bandits ? 'На дороге была стычка с разбойниками.' : 'Путь прошёл спокойно.'}</div>`;
+        actionHtml = `<div class="route-actions"><button class="btn primary" id="arriveCityBtn">Прибыть в ${cities[travel.toCityId].name}</button></div>`;
+      }
+      return `
+        <div class="travel-layout">
+          <div class="route-map">${city.walkingRoutes.map(route => `
+            <div class="route-card ${route.cityId === activeRoute.cityId ? 'active' : ''}" data-route-city="${route.cityId}">
+              <h4>${cities[route.cityId].name}</h4>
+              <p>${route.text}</p>
+              <div class="route-meta">
+                <div class="chip">${route.durationMin} минут</div>
+                <div class="chip">Шанс нападения: ${Math.round(route.risk * 100)}%</div>
+              </div>
+            </div>`).join('')}</div>
+          <div class="travel-box">
+            <div>
+              <strong>Выбранный маршрут:</strong> ${cities[activeRoute.cityId].name}<br>
+              <span style="color:var(--muted); font-size:13px; line-height:1.55;">${activeRoute.text}</span>
+            </div>
+            ${statusHtml}
+            ${actionHtml}
+          </div>
+        </div>`;
+    }
+
+    function renderModule() {
+      const current = modules[state.activeModule];
+      moduleTitle.textContent = current.title;
+      moduleSubtitle.textContent = current.subtitle;
+      let html = '';
+      if (state.activeModule === 'blacksmith') html = renderBlacksmith();
+      if (state.activeModule === 'consumables') html = renderConsumables();
+      if (state.activeModule === 'market') html = renderMarket();
+      if (state.activeModule === 'teleport') html = renderTeleport();
+      if (state.activeModule === 'travel') html = renderTravel();
+      moduleContent.innerHTML = html;
+
+      moduleContent.querySelectorAll('[data-buy]').forEach(btn => {
+        btn.addEventListener('click', () => buyItem(Number(btn.dataset.buy), btn.dataset.name));
+      });
+      moduleContent.querySelectorAll('[data-teleport]').forEach(btn => {
+        btn.addEventListener('click', () => teleportTo(btn.dataset.teleport, Number(btn.dataset.cost)));
+      });
+      moduleContent.querySelectorAll('[data-route-city]').forEach(card => {
+        card.addEventListener('click', () => {
+          state.activeRouteCityId = card.dataset.routeCity;
+          saveState();
+          renderModule();
+        });
+      });
+      const walkBtn = document.getElementById('walkToCityBtn');
+      if (walkBtn) {
+        walkBtn.addEventListener('click', () => {
+          const route = getCurrentCity().walkingRoutes.find(r => r.cityId === state.activeRouteCityId) || getCurrentCity().walkingRoutes[0];
+          startWalking(route);
+        });
+      }
+      const arriveBtn = document.getElementById('arriveCityBtn');
+      if (arriveBtn) arriveBtn.addEventListener('click', tryArriveFromTravel);
+      const marketInput = document.getElementById('marketSearchInput');
+      if (marketInput) marketInput.addEventListener('input', () => { state.marketQuery = marketInput.value; saveState(); renderModule(); });
+      const marketTypeSelect = document.getElementById('marketTypeSelect');
+      if (marketTypeSelect) marketTypeSelect.addEventListener('change', () => { state.marketType = marketTypeSelect.value; saveState(); renderModule(); });
+      const marketIllustrationBg = document.getElementById('marketIllustrationBg');
+      if (marketIllustrationBg) {
+        safeSetBackground(marketIllustrationBg, [getCurrentCity().marketBg], 'linear-gradient(180deg, rgba(10,12,18,0.04) 0%, rgba(10,12,18,0.24) 100%)');
+      }
+    }
+
+    function renderWorld() {
+      if (!state.hero) return;
+      const city = getCurrentCity();
+      updateTravelStatus();
+      setPreview(profilePreviewRoot, state.hero);
+      safeSetBackground(portraitBg, [city.portraitBg, city.sceneBg], 'linear-gradient(180deg, rgba(10,12,18,0.06) 0%, rgba(10,12,18,0.26) 100%)');
+      safeSetBackground(citySceneBg, [city.sceneBg, './assets/backgrounds/arrival_ship.jpg'], 'linear-gradient(180deg, rgba(10,12,18,0.08) 0%, rgba(10,12,18,0.34) 100%)');
+
+      worldNickChip.textContent = state.hero.nickname;
+      worldCityChip.textContent = city.name;
+      worldAdenChip.textContent = `Аден: ${state.hero.adena}`;
+      worldSubtitle.textContent = `${city.name} • профиль героя и локации`;
+      profileHeroName.textContent = state.hero.nickname;
+      profileClassChip.textContent = `Класс ${getClassName(state.hero.classId)}`;
+      profileRaceChip.textContent = `Раса ${getRaceName(state.hero.race)}`;
+      profileFaceChip.textContent = `Лицо ${state.hero.face}`;
+      citySceneBadge.textContent = city.sceneTitle;
+      cityDangerBadge.textContent = city.dangerText;
+      cityStoryTitle.textContent = city.storyTitle;
+      cityStoryText.textContent = city.storyText;
+
+      worldProfileList.innerHTML = `
+        <div class="profile-row"><span>Ник</span><b>${state.hero.nickname}</b></div>
+        <div class="profile-row"><span>Раса</span><b>${getRaceName(state.hero.race)}</b></div>
+        <div class="profile-row"><span>Класс</span><b>${getClassName(state.hero.classId)}</b></div>
+        <div class="profile-row"><span>Пол</span><b>${getGenderName(state.hero.gender)}</b></div>
+        <div class="profile-row"><span>Лицо</span><b>${state.hero.face}</b></div>
+        <div class="profile-row"><span>Город</span><b>${city.name}</b></div>`;
+      worldStatsGrid.innerHTML = `
+        <div class="stat-card"><div class="stat-label">HP</div><div class="stat-value">${state.hero.hp} / ${state.hero.maxHp}</div></div>
+        <div class="stat-card"><div class="stat-label">MP</div><div class="stat-value">${state.hero.mp} / ${state.hero.maxMp}</div></div>
+        <div class="stat-card"><div class="stat-label">Сила</div><div class="stat-value">${state.hero.str}</div></div>
+        <div class="stat-card"><div class="stat-label">Ловкость</div><div class="stat-value">${state.hero.dex}</div></div>
+        <div class="stat-card"><div class="stat-label">Интеллект</div><div class="stat-value">${state.hero.int}</div></div>
+        <div class="stat-card"><div class="stat-label">Защита</div><div class="stat-value">${state.hero.def}</div></div>`;
+
+      document.querySelectorAll('.city-menu-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.module === state.activeModule);
+      });
+      renderModule();
+    }
+
+    beginIntroBtn.addEventListener('click', () => {
+      if (state.hero) { renderWorld(); showScreen(screens.world); return; }
+      showScreen(screens.creator); renderCreator();
+    });
+    enterWorldBtn.addEventListener('click', () => { renderWorld(); showScreen(screens.world); });
+    backStepBtn.addEventListener('click', () => {
+      if (state.stepIndex > 0) { state.stepIndex -= 1; saveState(); renderCreator(); }
+    });
+    nextStepBtn.addEventListener('click', () => {
+      if (!canProceedCurrentStep()) { nicknameError.textContent = validateNickname(state.creator.nickname); return; }
+      if (state.stepIndex < steps.length - 1) {
+        state.stepIndex += 1; saveState(); renderCreator(); return;
+      }
+      const nickname = normalizeNickname(state.creator.nickname);
+      reserveNickname(nickname);
+      state.hero = buildHero();
+      state.activeModule = 'blacksmith';
+      state.activeRouteCityId = 'lyon';
+      saveState();
+      showScreen(screens.arrival);
+    });
+    document.querySelectorAll('.city-menu-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.activeModule = btn.dataset.module;
+        saveState();
+        renderWorld();
+      });
+    });
+
+    if (state.hero) {
+      renderWorld();
+      showScreen(screens.world);
+    } else {
+      showScreen(screens.intro);
+    }
+
+    renderCreator();
+    setInterval(() => {
+      if (screens.world.classList.contains('active') && state.activeModule === 'travel' && state.travel) {
+        renderModule();
+      }
+    }, 1000);
+  </script>
+</body>
+</html>
