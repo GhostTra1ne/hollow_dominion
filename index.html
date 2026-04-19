@@ -1,0 +1,837 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Hollow Dominion</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="stylesheet" href="common.css">
+  <style>
+    .city-screen {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      justify-items: center;
+      gap: 12px;
+      min-height: 0;
+    }
+
+    .city-titlebar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      position: relative;
+      width: min(100%, 680px);
+      min-height: 148px;
+      padding: 8px 10px 4px;
+    }
+
+    .city-titlebar .title {
+      margin: 0;
+    }
+
+    .city-title-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 128px;
+    }
+
+    .city-title-sprite {
+      display: block;
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter:
+        drop-shadow(0 0 24px rgba(102, 207, 255, .20))
+        drop-shadow(0 12px 20px rgba(0, 0, 0, .30));
+    }
+
+    .city-title-aura {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .city-title-aura::before,
+    .city-title-aura::after {
+      content: "";
+      position: absolute;
+      inset: 14% 18%;
+      border-radius: 50%;
+      filter: blur(26px);
+      opacity: .72;
+      animation: titlePulse 4.8s ease-in-out infinite;
+    }
+
+    .city-title-aura::before {
+      background: radial-gradient(circle, rgba(88, 205, 255, .28) 0%, rgba(88, 205, 255, .10) 34%, rgba(88, 205, 255, 0) 72%);
+    }
+
+    .city-title-aura::after {
+      background: radial-gradient(circle, rgba(204, 214, 224, .18) 0%, rgba(149, 170, 188, .08) 36%, rgba(149, 170, 188, 0) 74%);
+      animation-delay: -2.2s;
+    }
+
+    .city-spark {
+      position: absolute;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(185, 235, 255, .95) 0%, rgba(109, 205, 255, .65) 46%, rgba(109, 205, 255, 0) 100%);
+      box-shadow:
+        0 0 10px rgba(126, 220, 255, .45),
+        0 0 24px rgba(126, 220, 255, .24);
+      opacity: 0;
+      animation: ashSpark 5.6s linear infinite;
+    }
+
+    .city-spark.s1 { left: 20%; top: 58%; animation-delay: 0s; }
+    .city-spark.s2 { left: 28%; top: 34%; animation-delay: .8s; width: 5px; height: 5px; }
+    .city-spark.s3 { left: 40%; top: 68%; animation-delay: 1.6s; width: 6px; height: 6px; }
+    .city-spark.s4 { right: 27%; top: 30%; animation-delay: 2.4s; }
+    .city-spark.s5 { right: 18%; top: 60%; animation-delay: 3.2s; width: 5px; height: 5px; }
+    .city-spark.s6 { right: 36%; top: 74%; animation-delay: 4s; width: 6px; height: 6px; }
+
+    @keyframes ashSpark {
+      0% { transform: translate3d(0, 8px, 0) scale(.7); opacity: 0; }
+      10% { opacity: .75; }
+      55% { opacity: .52; }
+      100% { transform: translate3d(0, -22px, 0) scale(1.08); opacity: 0; }
+    }
+
+    @keyframes titlePulse {
+      0%, 100% { transform: scale(.96); opacity: .54; }
+      50% { transform: scale(1.04); opacity: .84; }
+    }
+
+    .city-home-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      grid-template-rows: auto auto;
+      justify-items: center;
+      align-content: start;
+      width: min(100%, 390px);
+      gap: 10px;
+      min-height: 0;
+    }
+
+    .city-portrait-card {
+      position: relative;
+      width: min(100%, 360px);
+      height: 392px;
+      min-height: 392px;
+      overflow: hidden;
+      background: #10131b;
+    }
+
+    .city-portrait-card .character-stage {
+      inset: 102px 0 4px 0;
+      padding: 8px 12px 0;
+    }
+
+    .city-portrait-card .shadow {
+      width: 150px;
+      bottom: 4px;
+    }
+
+    .city-portrait-card .character-box {
+      width: min(100%, 180px);
+    }
+
+    .portrait-overlay-ui {
+      position: absolute;
+      top: 7px;
+      left: 7px;
+      z-index: 4;
+      pointer-events: none;
+      width: 156px;
+      padding: 4px 4px 3px;
+      border-radius: 10px;
+      background:
+        linear-gradient(180deg, rgba(12, 15, 23, .48), rgba(9, 11, 18, .34)),
+        rgba(10, 12, 18, .26);
+      border: 1px solid rgba(219, 182, 111, .14);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, .03),
+        0 8px 18px rgba(0, 0, 0, .18);
+      backdrop-filter: blur(2px);
+    }
+
+    .portrait-overlay-head {
+      display: grid;
+      grid-template-columns: 28px minmax(0, 1fr);
+      align-items: center;
+      gap: 3px;
+      margin-bottom: 0;
+    }
+
+    .portrait-nickname {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-family: var(--font-main);
+      font-size: 10px;
+      line-height: 1;
+      color: #f4e3bf;
+      text-shadow:
+        0 1px 0 rgba(0, 0, 0, .82),
+        0 0 10px rgba(0, 0, 0, .34);
+    }
+
+    .portrait-bars {
+      width: 100%;
+      display: grid;
+      gap: 0;
+      filter: drop-shadow(0 5px 12px rgba(0, 0, 0, .22));
+    }
+
+    .hud-bar {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 6.66 / 1;
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-size: contain;
+      margin-top: -15px;
+    }
+
+    .hud-bar:first-child {
+      margin-top: 0;
+    }
+
+    .hud-bar.cp { background-image: url('./assets/ui/hud/cp.png'); }
+    .hud-bar.hp { background-image: url('./assets/ui/hud/hp.png'); }
+    .hud-bar.mp { background-image: url('./assets/ui/hud/mp.png'); }
+    .hud-bar.exp { background-image: url('./assets/ui/hud/exp.png'); }
+
+    .hud-bar-value {
+      position: absolute;
+      left: 23.5%;
+      right: 3.5%;
+      top: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-main);
+      font-weight: 700;
+      font-size: 8px;
+      letter-spacing: .03em;
+      text-shadow:
+        0 1px 0 rgba(0, 0, 0, .72),
+        0 0 12px rgba(0, 0, 0, .45);
+    }
+
+    .hud-bar-value.cp { color: #ffe16b; }
+    .hud-bar-value.hp { color: #ff6262; }
+    .hud-bar-value.mp { color: #4ea5ff; }
+    .hud-bar-value.exp { color: #d4d4d4; }
+
+    .hud-level-box {
+      position: relative;
+      width: 24px;
+      aspect-ratio: 1 / 1;
+      display: grid;
+      place-items: center;
+      background: url('./assets/ui/hud/frame.png') center center / contain no-repeat;
+      filter: drop-shadow(0 3px 8px rgba(0, 0, 0, .24));
+    }
+
+    .hud-level-box span {
+      display: block;
+      transform: translateY(-2%);
+      font-family: var(--font-main);
+      font-weight: 700;
+      font-size: 8px;
+      line-height: 1;
+      color: #f4d27a;
+      text-shadow:
+        0 1px 0 rgba(0, 0, 0, .8),
+        0 0 10px rgba(0, 0, 0, .44);
+    }
+
+    .portrait-overlay-ui > .hud-level-box {
+      display: none;
+    }
+
+    .portrait-footer,
+    .profile-name {
+      display: none;
+    }
+
+    .city-menu-panel {
+      width: 100%;
+      min-height: 0;
+      display: grid;
+    }
+
+    .city-menu-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      min-height: 0;
+      align-content: stretch;
+    }
+
+    .city-menu-grid .menu-card {
+      min-height: 62px;
+      padding: 10px 8px;
+      border-radius: 18px;
+    }
+
+    .city-menu-grid .menu-card strong {
+      font-size: 13px;
+    }
+
+    .city-menu-grid .menu-card span {
+      margin-top: 2px;
+      font-size: 11px;
+      line-height: 1.2;
+    }
+
+    .city-menu-grid .menu-card.journey-card {
+      grid-column: 1 / -1;
+      background: rgba(207, 163, 90, .12);
+      border-color: rgba(207, 163, 90, .42);
+    }
+
+    .arrival-screen {
+      position: relative;
+      min-height: 0;
+      overflow: hidden;
+      background: #080706;
+    }
+
+    .arrival-bg {
+      position: absolute;
+      inset: 0;
+      background: center center / cover no-repeat;
+      transform: scale(1.02);
+    }
+
+    .arrival-bg::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(0, 0, 0, .12), rgba(0, 0, 0, .56)),
+        linear-gradient(90deg, rgba(6, 4, 2, .78) 0%, rgba(10, 7, 5, .36) 52%, rgba(6, 4, 2, .56) 100%);
+    }
+
+    .arrival-content {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .arrival-card {
+      width: min(100%, 720px);
+      text-align: center;
+      padding: clamp(18px, 3vw, 28px);
+      border-radius: 24px;
+      background: rgba(12, 10, 9, .46);
+      border: 1px solid rgba(255, 255, 255, .08);
+      backdrop-filter: blur(5px);
+      box-shadow: 0 22px 40px rgba(0, 0, 0, .34);
+    }
+
+    .arrival-kicker {
+      margin: 0 0 10px;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      color: rgba(255, 228, 184, .76);
+      font-size: 11px;
+    }
+
+    .arrival-title {
+      margin: 0 0 12px;
+      color: #fff6e4;
+      font-family: var(--font-main);
+      font-size: clamp(30px, 5vw, 54px);
+      line-height: .96;
+    }
+
+    .arrival-copy {
+      margin: 0 0 20px;
+      color: rgba(255, 244, 220, .92);
+      line-height: 1.62;
+      font-size: clamp(14px, 2vw, 18px);
+    }
+
+    .arrival-actions {
+      display: flex;
+      justify-content: center;
+    }
+
+    @media (max-width: 900px) {
+      .city-home-layout {
+        grid-template-columns: 1fr;
+        grid-template-rows: minmax(0, 1fr) auto;
+      }
+
+      .city-titlebar {
+        min-height: 132px;
+        width: min(100%, 620px);
+      }
+
+      .city-title-wrap {
+        height: 114px;
+      }
+
+      .city-title-sprite {
+        width: 100%;
+        height: 100%;
+      }
+
+      .city-portrait-card {
+        width: min(100%, 336px);
+        height: 380px;
+        min-height: 380px;
+      }
+
+      .city-portrait-card .character-box {
+        width: min(100%, 176px);
+      }
+
+      .city-portrait-card .character-stage {
+        inset: 98px 0 4px 0;
+      }
+
+      .portrait-overlay-ui {
+        width: 150px;
+        padding: 4px 4px 3px;
+      }
+
+      .hud-bar-value {
+        font-size: 7px;
+      }
+
+      .hud-level-box {
+        width: 23px;
+      }
+
+      .hud-level-box span {
+        font-size: 8px;
+      }
+
+      .portrait-overlay-head {
+        grid-template-columns: 27px minmax(0, 1fr);
+      }
+
+      .portrait-nickname {
+        font-size: 10px;
+      }
+
+      .city-home-layout {
+        width: min(100%, 370px);
+      }
+    }
+
+    @media (max-width: 560px) {
+      .city-titlebar {
+        min-height: 116px;
+        padding: 6px 8px 2px;
+        width: 100%;
+      }
+
+      .city-title-wrap {
+        height: 96px;
+      }
+
+      .city-title-sprite {
+        width: 100%;
+        height: 100%;
+      }
+
+      .city-menu-grid .menu-card {
+        min-height: 60px;
+        padding: 10px 8px;
+      }
+
+      .city-menu-grid .menu-card strong {
+        font-size: 12px;
+      }
+
+      .city-portrait-card .character-stage {
+        inset: 92px 0 2px 0;
+      }
+
+      .portrait-overlay-ui {
+        width: 138px;
+        padding: 4px 4px 2px;
+      }
+
+      .hud-bar-value {
+        font-size: 6px;
+      }
+
+      .hud-level-box {
+        width: 21px;
+      }
+
+      .hud-level-box span {
+        font-size: 7px;
+      }
+
+      .portrait-overlay-head {
+        grid-template-columns: 24px minmax(0, 1fr);
+        gap: 3px;
+      }
+
+      .portrait-nickname {
+        font-size: 9px;
+      }
+
+      .city-home-layout {
+        width: min(100%, 344px);
+      }
+
+      .city-portrait-card {
+        width: min(100%, 320px);
+        height: 356px;
+        min-height: 356px;
+      }
+
+      .city-portrait-card .character-box {
+        width: min(100%, 168px);
+      }
+
+      .arrival-content {
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="screen-page">
+    <div class="app-shell" id="app"></div>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <script src="common.js"></script>
+  <script>
+    let state = loadState();
+    tryArriveFromTravel(state);
+
+    function renderChooser(value, helper) {
+      return `
+        <div class="chooser-row">
+          <button class="btn ghost" id="chooserPrevBtn">&lt;</button>
+          <div class="chooser-value">${value}</div>
+          <button class="btn ghost" id="chooserNextBtn">&gt;</button>
+        </div>
+        <div class="chooser-helper">${helper}</div>
+      `;
+    }
+
+    function renderCreatorScreen() {
+      q('app').innerHTML = `
+        <div class="creator-layout">
+          <div class="topbar">
+            <div class="topbar-left">
+              <h1 class="title">Создание героя</h1>
+              <p class="subtitle">Один экран. Один шаг за раз. Без скролла.</p>
+            </div>
+          </div>
+
+          <div class="panel creator-preview">
+            <div class="hero-portrait-bg" id="creatorBg"></div>
+            <div class="character-stage">
+              <div class="shadow"></div>
+              <div class="character-box creator-box" id="creatorPreviewRoot">
+                ${characterMarkup()}
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-inner">
+              <div class="chooser-label" id="stepLabel"></div>
+              <div id="stepArea"></div>
+              <div class="error-text" id="nicknameError"></div>
+              <div class="wizard-actions">
+                <button class="btn ghost" id="backStepBtn">Назад</button>
+                <button class="btn primary" id="nextStepBtn">Далее</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const previewRoot = q('creatorPreviewRoot');
+      const creatorBg = q('creatorBg');
+      const stepLabel = q('stepLabel');
+      const stepArea = q('stepArea');
+      const nicknameError = q('nicknameError');
+      const backStepBtn = q('backStepBtn');
+      const nextStepBtn = q('nextStepBtn');
+
+      function paintStep() {
+        const step = steps[state.stepIndex];
+        stepLabel.textContent = step.label;
+        nicknameError.textContent = '';
+
+        if (step.key === 'race') {
+          stepArea.innerHTML = renderChooser(getRaceName(state.creator.race), 'Смена расы кнопками < >.');
+        }
+
+        if (step.key === 'classId') {
+          stepArea.innerHTML = renderChooser(getClassName(state.creator.classId), 'Смена класса кнопками < >.');
+        }
+
+        if (step.key === 'gender') {
+          stepArea.innerHTML = renderChooser(getGenderName(state.creator.gender), 'Если ассетов нет, остаётся fallback на human male.');
+        }
+
+        if (step.key === 'face') {
+          stepArea.innerHTML = renderChooser(`Лицо ${state.creator.face}`, 'Лицо рендерится отдельным PNG-слоем.');
+        }
+
+        if (step.key === 'nickname') {
+          stepArea.innerHTML = `
+            <div class="nickname-wrap">
+              <input id="nickInput" maxlength="16" placeholder="Введите ник" value="${escapeHtml(state.creator.nickname || '')}">
+            </div>
+            <div class="chooser-helper">Последний шаг перед прибытием в стартовый город.</div>
+          `;
+
+          const input = q('nickInput');
+          input.focus();
+          input.oninput = () => {
+            state.creator.nickname = input.value;
+            saveState(state);
+            nicknameError.textContent = validateNickname(state, state.creator.nickname);
+          };
+          nicknameError.textContent = validateNickname(state, state.creator.nickname);
+        }
+
+        backStepBtn.disabled = state.stepIndex === 0;
+        nextStepBtn.textContent = state.stepIndex === steps.length - 1 ? 'Создать персонажа' : 'Далее';
+
+        if (q('chooserPrevBtn') && q('chooserNextBtn')) {
+          const prevBtn = q('chooserPrevBtn');
+          const nextBtn = q('chooserNextBtn');
+          const currentStep = steps[state.stepIndex];
+
+          if (currentStep.key === 'race') {
+            prevBtn.onclick = () => {
+              state.creator.race = cycleArray(races, state.creator.race, -1).id;
+              saveState(state);
+              render();
+            };
+            nextBtn.onclick = () => {
+              state.creator.race = cycleArray(races, state.creator.race, 1).id;
+              saveState(state);
+              render();
+            };
+          }
+
+          if (currentStep.key === 'classId') {
+            prevBtn.onclick = () => {
+              state.creator.classId = cycleArray(classes, state.creator.classId, -1).id;
+              saveState(state);
+              render();
+            };
+            nextBtn.onclick = () => {
+              state.creator.classId = cycleArray(classes, state.creator.classId, 1).id;
+              saveState(state);
+              render();
+            };
+          }
+
+          if (currentStep.key === 'gender') {
+            prevBtn.onclick = () => {
+              state.creator.gender = cycleArray(genders, state.creator.gender, -1).id;
+              saveState(state);
+              render();
+            };
+            nextBtn.onclick = () => {
+              state.creator.gender = cycleArray(genders, state.creator.gender, 1).id;
+              saveState(state);
+              render();
+            };
+          }
+
+          if (currentStep.key === 'face') {
+            prevBtn.onclick = () => {
+              state.creator.face = cycleArray(faces, state.creator.face, -1);
+              saveState(state);
+              render();
+            };
+            nextBtn.onclick = () => {
+              state.creator.face = cycleArray(faces, state.creator.face, 1);
+              saveState(state);
+              render();
+            };
+          }
+        }
+      }
+
+      setCreatorBg(creatorBg, state);
+      setPreview(previewRoot, state.creator);
+      paintStep();
+
+      backStepBtn.onclick = () => {
+        if (state.stepIndex > 0) {
+          state.stepIndex -= 1;
+          saveState(state);
+          render();
+        }
+      };
+
+      nextStepBtn.onclick = () => {
+        if (steps[state.stepIndex].key === 'nickname') {
+          const error = validateNickname(state, state.creator.nickname);
+          nicknameError.textContent = error;
+          if (error) {
+            return;
+          }
+        }
+
+        if (state.stepIndex < steps.length - 1) {
+          state.stepIndex += 1;
+          saveState(state);
+          render();
+          return;
+        }
+
+        reserveNickname(state.creator.nickname);
+        state.hero = buildHero(state);
+        state.arrivalPending = true;
+        state.stepIndex = 0;
+        saveState(state);
+        render();
+      };
+    }
+
+    function renderArrivalScreen() {
+      q('app').innerHTML = `
+        <div class="panel arrival-screen">
+          <div class="arrival-bg" id="arrivalBg"></div>
+          <div class="arrival-content">
+            <div class="arrival-card">
+              <p class="arrival-kicker">Hollow Dominion</p>
+              <h1 class="arrival-title">Прибытие</h1>
+              <p class="arrival-copy">
+                Корабль мягко входит в гавань стартового города. Солёный ветер несёт запах дерева,
+                железа и далёких дорог. Новая история начинается с берега.
+              </p>
+              <div class="arrival-actions">
+                <button class="btn primary" id="enterCityBtn">Сойти на берег</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      safeSetBackground(
+        q('arrivalBg'),
+        ['./assets/backgrounds/arrival_ship.jpg'],
+        'linear-gradient(180deg, rgba(10,12,18,.08), rgba(10,12,18,.26))'
+      );
+
+      q('enterCityBtn').onclick = () => {
+        state.arrivalPending = false;
+        saveState(state);
+        render();
+      };
+    }
+
+    function hudNumber(value) {
+      return Number.isFinite(Number(value)) ? Number(value) : 0;
+    }
+
+    function renderProfileHud(hero) {
+      const cp = `${hudNumber(hero.cp)} / ${hudNumber(hero.maxCp)}`;
+      const hp = `${hudNumber(hero.hp)} / ${hudNumber(hero.maxHp)}`;
+      const mp = `${hudNumber(hero.mp)} / ${hudNumber(hero.maxMp)}`;
+      const exp = `${hero.xpPercent || '0.00'}%`;
+
+      return `
+        <div class="portrait-overlay-ui" aria-label="Панель характеристик">
+          <div class="portrait-overlay-head">
+            <div class="hud-level-box" aria-label="Уровень персонажа"><span>${hudNumber(hero.level)}</span></div>
+            <div class="portrait-nickname">${escapeHtml(hero.nickname)}</div>
+          </div>
+          <div class="portrait-bars">
+            <div class="hud-bar cp"><div class="hud-bar-value cp">${cp}</div></div>
+            <div class="hud-bar hp"><div class="hud-bar-value hp">${hp}</div></div>
+            <div class="hud-bar mp"><div class="hud-bar-value mp">${mp}</div></div>
+            <div class="hud-bar exp"><div class="hud-bar-value exp">${exp}</div></div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderCityScreen() {
+      const city = getCurrentCity(state);
+      const cityTitle = city.id === 'start_village'
+        ? `<div class="city-title-wrap"><div class="city-title-aura"></div><span class="city-spark s1"></span><span class="city-spark s2"></span><span class="city-spark s3"></span><span class="city-spark s4"></span><span class="city-spark s5"></span><span class="city-spark s6"></span><img class="city-title-sprite" src="./assets/ui/city_title_gludio.png" alt="Gludio"></div>`
+        : `<h1 class="title">${city.name}</h1>`;
+
+      q('app').innerHTML = `
+        <div class="city-screen">
+          <div class="panel city-titlebar">
+            ${cityTitle}
+          </div>
+
+          <div class="city-home-layout">
+            <div class="panel city-portrait-card">
+              <div class="hero-portrait-bg" id="portraitBg"></div>
+              ${renderProfileHud(state.hero)}
+              <div class="character-stage">
+                <div class="shadow"></div>
+                <div class="character-box" id="profilePreviewRoot">
+                  ${characterMarkup()}
+                </div>
+              </div>
+              <div class="portrait-footer">
+                <div class="profile-name">${escapeHtml(state.hero.nickname)}</div>
+              </div>
+            </div>
+
+            <div class="panel city-menu-panel">
+              <div class="panel-inner city-menu-grid">
+                <a class="menu-card" href="inventory.html"><strong>Инвентарь</strong><span>Сумка и экипировка</span></a>
+                <a class="menu-card" href="index.html"><strong>Профиль</strong><span>Главный экран героя</span></a>
+                <a class="menu-card" href="status.html"><strong>Статус</strong><span>Характеристики</span></a>
+                <a class="menu-card" href="clan.html"><strong>Клан</strong><span>Клановый раздел</span></a>
+                <a class="menu-card" href="map.html"><strong>Карта</strong><span>Точки города</span></a>
+                <a class="menu-card" href="chat.html"><strong>Чат</strong><span>Общий канал</span></a>
+                <a class="menu-card journey-card" href="journey.html"><strong>Отправиться в путешествие</strong><span>Телепорты и пешие маршруты</span></a>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      applyPortrait(state);
+    }
+
+    function render() {
+      if (state.hero) {
+        if (state.arrivalPending) {
+          renderArrivalScreen();
+        } else {
+          renderCityScreen();
+        }
+        return;
+      }
+
+      renderCreatorScreen();
+    }
+
+    render();
+  </script>
+</body>
+</html>
