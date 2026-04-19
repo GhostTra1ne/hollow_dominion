@@ -1,7 +1,0 @@
-<!doctype html><html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"><title>Профиль</title><script src="https://telegram.org/js/telegram-web-app.js"></script><link rel="stylesheet" href="common.css"></head><body><div class="screen-page"><div class="app-shell" id="app"></div></div><div class="toast" id="toast"></div><script src="common.js"></script><script>
-let state=loadState(); if(!ensureHero(state)){}; const city=getCurrentCity(state);
-q('app').innerHTML=`${renderHeader(state,'Профиль героя.')}
-<div class="page-body"><div>${renderPortraitPanel(state)}</div><div class="panel"><div class="panel-inner content-scroll"><div class="profile-rows"><div class="profile-row"><span>Ник</span><b>${state.hero.nickname}</b></div><div class="profile-row"><span>Раса</span><b>${getRaceName(state.hero.race)}</b></div><div class="profile-row"><span>Класс</span><b>${getClassName(state.hero.classId)}</b></div><div class="profile-row"><span>Пол</span><b>${getGenderName(state.hero.gender)}</b></div><div class="profile-row"><span>Лицо</span><b>${state.hero.face}</b></div><div class="profile-row"><span>Город</span><b>${city.name}</b></div><div class="profile-row"><span>Клан</span><b>${state.hero.clanName}</b></div><div class="profile-row"><span>Аден</span><b>${state.hero.adena}</b></div></div></div></div></div>
-${renderSideMenu('profile')}`;
-applyPortrait(state);
-</script></body></html>
