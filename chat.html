@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Чат</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="stylesheet" href="common.css">
+</head>
+<body>
+  <div class="screen-page">
+    <div class="app-shell" id="app"></div>
+  </div>
+
+  <script src="common.js"></script>
+  <script>
+    let state = loadState();
+    if (!ensureHero(state)) {
+      throw new Error('Hero not found');
+    }
+
+    const messages = (state.chatMessages || []).map((m) => `
+      <div class="chat-card">
+        <b>${escapeHtml(m.from)}</b>
+        <div>${escapeHtml(m.text)}</div>
+      </div>
+    `).join('');
+
+    q('app').innerHTML = `
+      ${renderHeader(state, 'Общий городской канал и быстрый обмен сообщениями.')}
+      <div class="single-page-layout">
+        <div class="panel page-main-panel">
+          <div class="panel-inner chat-layout">
+            <div class="chat-messages" id="msgWrap">${messages}</div>
+            <div class="chat-input-row">
+              <input class="text-input" id="chatInput" placeholder="Сообщение в общий чат">
+              <button class="btn primary" id="sendBtn">Отправить</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      ${renderBottomNav('chat')}
+    `;
+
+    q('sendBtn').onclick = () => {
+      const input = q('chatInput');
+      const text = (input.value || '').trim();
+      if (!text) return;
+      state.chatMessages.push({from: state.hero.nickname, text});
+      saveState(state);
+      location.reload();
+    };
+  </script>
+</body>
+</html>
