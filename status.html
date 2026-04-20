@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
@@ -8,7 +8,7 @@
   <meta http-equiv=""Expires"" content=""0"">
   <script>
     (function () {
-      const APP_VERSION = '20260420-telegram-1';
+      const APP_VERSION = '20260421-telegram-2';
       const url = new URL(window.location.href);
       if (url.searchParams.get('appv') !== APP_VERSION) {
         url.searchParams.set('appv', APP_VERSION);
@@ -16,9 +16,9 @@
       }
       window.__HD_APP_VERSION__ = APP_VERSION;
     })();
-  </script>  <title>РЎС‚Р°С‚СѓСЃ</title>
+  </script>  <title>Статус</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="common.css?v=20260420-telegram-1">
+  <link rel="stylesheet" href="common.css?v=20260421-telegram-2">
   <style>
     .legacy-block {
       display: grid;
@@ -137,16 +137,16 @@
   <div class="toast" id="toast"></div>
   <div class="modal-backdrop" id="confirmModal">
     <div class="modal-card">
-      <h3>РЈРґР°Р»РёС‚СЊ РїРµСЂСЃРѕРЅР°Р¶Р°?</h3>
-      <p>Р­С‚Рѕ РґРµР№СЃС‚РІРёРµ РІРµСЂРЅС‘С‚ С‚РµР±СЏ Рє СЃРѕР·РґР°РЅРёСЋ РїРµСЂСЃРѕРЅР°Р¶Р°.</p>
+      <h3>Удалить персонажа?</h3>
+      <p>Это действие вернёт тебя к созданию персонажа.</p>
       <div class="modal-actions">
-        <button class="btn ghost" id="cancelDeleteBtn">РћС‚РјРµРЅР°</button>
-        <button class="btn danger" id="confirmDeleteBtn">РЈРґР°Р»РёС‚СЊ</button>
+        <button class="btn ghost" id="cancelDeleteBtn">Отмена</button>
+        <button class="btn danger" id="confirmDeleteBtn">Удалить</button>
       </div>
     </div>
   </div>
 
-  <script src="common.js?v=20260420-telegram-1"></script>
+  <script src="common.js?v=20260421-telegram-2"></script>
   <script>
     let state = loadState();
     if (!ensureHero(state)) {
@@ -161,33 +161,33 @@
 
     const legacyProfiles = {
       warrior: {
-        title: 'Р‘РѕРµРІРѕР№ Р°СЂС…РµС‚РёРї РІРѕРёРЅР°',
-        lead: 'Р’РѕРёРЅ РїСЂРѕРґР°РІР»РёРІР°РµС‚ Р±РѕР№ С‡РµСЂРµР· P. Atk., РєСЂРёС‚С‹ Рё РїР»РѕС‚РЅС‹Р№ СЂР°Р·РјРµРЅ РїРѕ Р·РѕРЅР°Рј. Р­С‚Рѕ С…РѕСЂРѕС€Р°СЏ РѕСЃРЅРѕРІР° РґР»СЏ С‚СЏР¶С‘Р»РѕРіРѕ front-line РІ Hollow Dominion.',
+        title: 'Боевой архетип воина',
+        lead: 'Воин продавливает бой через P. Atk., криты и плотный размен по зонам. Это хорошая основа для тяжёлого front-line в Hollow Dominion.',
         rules: [
-          {label: 'РСЃС‚РѕС‡РЅРёРє СѓСЂРѕРЅР°', value: 'P. Atk. + С€Р°РЅСЃ РєСЂРёС‚Р°'},
-          {label: 'Р—РѕРЅС‹ СѓРґР°СЂР°', value: 'Р“РѕР»РѕРІР° / РєРѕСЂРїСѓСЃ / РЅРѕРіРё'},
-          {label: 'Р—Р°С‰РёС‚Р°', value: 'Р‘Р»РѕРє РїРѕ РѕРґРЅРѕР№ Р·РѕРЅРµ РЅР° СЂР°Р·РјРµРЅ'},
-          {label: 'РўРµРјРї Р±РѕСЏ', value: 'Р’С‹СЃРѕРєРёР№ СѓСЂРѕРЅ, РЅРёР¶Рµ РєР°СЃС‚, РІС‹С€Рµ РґР°РІР»РµРЅРёРµ'}
+          {label: 'Источник урона', value: 'P. Atk. + шанс крита'},
+          {label: 'Зоны удара', value: 'Голова / корпус / ноги'},
+          {label: 'Защита', value: 'Блок по одной зоне на размен'},
+          {label: 'Темп боя', value: 'Высокий урон, ниже каст, выше давление'}
         ],
         skills: [
-          {name: 'Force Blaster', icon: './assets/skills/legacy/force_blaster.jpg', cost: 'MP 22', type: 'РРјРїСѓР»СЊСЃ', text: 'РњРѕС‰РЅС‹Р№ Р·Р°РІРµСЂС€Р°СЋС‰РёР№ СѓРґР°СЂ РґР»СЏ РєРѕСЂРѕС‚РєРѕР№ PvE РёР»Рё PvP СЃС‚С‹С‡РєРё.'},
-          {name: 'Self Heal', icon: './assets/skills/legacy/self_heal.jpg', cost: 'MP 12', type: 'Р’С‹Р¶РёРІР°РЅРёРµ', text: 'Р›РѕРєР°Р»СЊРЅРѕРµ РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёРµ, С‡С‚РѕР±С‹ РґРѕР¶РёС‚СЊ РґРѕ СЃР»РµРґСѓСЋС‰РµРіРѕ СЂР°Р·РјРµРЅР°.'},
-          {name: 'Battle Heal', icon: './assets/skills/legacy/battle_heal.jpg', cost: 'MP 18', type: 'РџРѕРґРґРµСЂР¶РєР°', text: 'Р‘С‹СЃС‚СЂС‹Р№ РѕС‚С…РёР» Р±РµР· РІС‹С…РѕРґР° РёР· С‚РµРјРїР° Р±РѕСЏ.'}
+          {name: 'Force Blaster', icon: './assets/skills/legacy/force_blaster.jpg', cost: 'MP 22', type: 'Импульс', text: 'Мощный завершающий удар для короткой PvE или PvP стычки.'},
+          {name: 'Self Heal', icon: './assets/skills/legacy/self_heal.jpg', cost: 'MP 12', type: 'Выживание', text: 'Локальное восстановление, чтобы дожить до следующего размена.'},
+          {name: 'Battle Heal', icon: './assets/skills/legacy/battle_heal.jpg', cost: 'MP 18', type: 'Поддержка', text: 'Быстрый отхил без выхода из темпа боя.'}
         ]
       },
       mage: {
-        title: 'Р‘РѕРµРІРѕР№ Р°СЂС…РµС‚РёРї РјР°РіР°',
-        lead: 'РњР°Рі СЃС‚СЂРѕРёС‚ Р±РѕР№ С‡РµСЂРµР· M. Atk., СЂР°СЃС…РѕРґ РјР°РЅС‹ Рё С‚РµРјРї РєР°СЃС‚Р°. Р­С‚Рѕ Р±Р°Р·Р° РґР»СЏ РґРёСЃС‚Р°РЅС†РёРё, burst-СѓСЂРѕРЅР° Рё РєРѕРЅС‚СЂРѕР»СЏ СЂРµСЃСѓСЂСЃР°.',
+        title: 'Боевой архетип мага',
+        lead: 'Маг строит бой через M. Atk., расход маны и темп каста. Это база для дистанции, burst-урона и контроля ресурса.',
         rules: [
-          {label: 'РСЃС‚РѕС‡РЅРёРє СѓСЂРѕРЅР°', value: 'M. Atk. + СЃРєРѕСЂРѕСЃС‚СЊ РєР°СЃС‚Р°'},
-          {label: 'Р—РѕРЅС‹ СѓРґР°СЂР°', value: 'Р“РѕР»РѕРІР° / РєРѕСЂРїСѓСЃ / РЅРѕРіРё'},
-          {label: 'Р¦РµРЅР° СЃРєРёР»Р»Р°', value: 'MP, РёРЅРѕРіРґР° СЃ СЂРёСЃРєРѕРј РїРѕ HP'},
-          {label: 'РўРµРјРї Р±РѕСЏ', value: 'РњРµРЅСЊС€Рµ HP, Р±РѕР»СЊС€Рµ burst Рё utility'}
+          {label: 'Источник урона', value: 'M. Atk. + скорость каста'},
+          {label: 'Зоны удара', value: 'Голова / корпус / ноги'},
+          {label: 'Цена скилла', value: 'MP, иногда с риском по HP'},
+          {label: 'Темп боя', value: 'Меньше HP, больше burst и utility'}
         ],
         skills: [
-          {name: 'Magic Attack', icon: './assets/skills/legacy/magic_attack.jpg', cost: 'MP 20', type: 'Burst', text: 'Р‘Р°Р·РѕРІС‹Р№ РјР°РіРёС‡РµСЃРєРёР№ РІС‹СЃС‚СЂРµР» РґР»СЏ РѕС‚РєСЂС‹С‚РёСЏ РёР»Рё РґРѕР±РёРІР°РЅРёСЏ.'},
-          {name: 'Greater Battle Heal', icon: './assets/skills/legacy/greater_battle_heal.jpg', cost: 'MP 34', type: 'РСЃС†РµР»РµРЅРёРµ', text: 'РЎРёР»СЊРЅРѕРµ РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёРµ РїРѕСЃР»Рµ С‚СЏР¶С‘Р»РѕРіРѕ СЂР°Р·РјРµРЅР°.'},
-          {name: 'Battle Heal', icon: './assets/skills/legacy/battle_heal.jpg', cost: 'MP 18', type: 'РџРѕРґРґРµСЂР¶РєР°', text: 'Р‘С‹СЃС‚СЂС‹Р№ heal РґР»СЏ СѓРґРµСЂР¶Р°РЅРёСЏ РґРёСЃС‚Р°РЅС†РёРё Рё С‚РµРјРїР°.'}
+          {name: 'Magic Attack', icon: './assets/skills/legacy/magic_attack.jpg', cost: 'MP 20', type: 'Burst', text: 'Базовый магический выстрел для открытия или добивания.'},
+          {name: 'Greater Battle Heal', icon: './assets/skills/legacy/greater_battle_heal.jpg', cost: 'MP 34', type: 'Исцеление', text: 'Сильное восстановление после тяжёлого размена.'},
+          {name: 'Battle Heal', icon: './assets/skills/legacy/battle_heal.jpg', cost: 'MP 18', type: 'Поддержка', text: 'Быстрый heal для удержания дистанции и темпа.'}
         ]
       }
     };
@@ -212,7 +212,7 @@
     `).join('');
 
     q('app').innerHTML = `
-      ${renderHeader(state, 'РџРѕР»РЅС‹Р№ MMORPG-style СЃС‚Р°С‚СѓСЃ РіРµСЂРѕСЏ, Р±РѕРµРІС‹Рµ РїР°СЂР°РјРµС‚СЂС‹ Рё legacy-Р±Р°Р·Р° РїРѕРґ Р±СѓРґСѓС‰РёРµ РјРµС…Р°РЅРёРєРё.')}
+      ${renderHeader(state, 'Полный MMORPG-style статус героя, боевые параметры и legacy-база под будущие механики.')}
       <div class="single-page-layout">
         <div class="panel page-main-panel">
           <div class="panel-inner content-scroll">
@@ -275,18 +275,18 @@
 
               <div class="feature-card">
                 <h3 class="status-section-title">Legacy skills</h3>
-                <p class="legacy-lead">РРєРѕРЅРєРё Рё РЅР°Р·РІР°РЅРёСЏ РІР·СЏС‚С‹ РёР· СЃС‚Р°СЂРѕРіРѕ L2-Р°СЂС…РёРІР°. Р­С‚Рѕ СѓР¶Рµ РјРѕР¶РЅРѕ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ РєР°Рє С„СѓРЅРґР°РјРµРЅС‚ РґР»СЏ Р±СѓРґСѓС‰РµР№ Р±РѕРµРІРѕР№ РїР°РЅРµР»Рё, РєРЅРёРіРё СѓРјРµРЅРёР№ Рё PvE-Р±РѕС‘РІ.</p>
+                <p class="legacy-lead">Иконки и названия взяты из старого L2-архива. Это уже можно использовать как фундамент для будущей боевой панели, книги умений и PvE-боёв.</p>
                 <div class="skills-grid">${skillsMarkup}</div>
               </div>
 
               <div class="feature-card">
-                <h3 class="status-section-title">Р§С‚Рѕ РїРµСЂРµРЅРѕСЃРёРј РґР°Р»СЊС€Рµ</h3>
-                <p class="legacy-lead">Р”Р°Р»СЊС€Рµ СЃСЋРґР° Р»РѕРіРёС‡РЅРѕ РїРµСЂРµРЅРµСЃС‚Рё СѓР¶Рµ СЂРµР°Р»СЊРЅСѓСЋ СЃРёСЃС‚РµРјСѓ СЃС‚Р°С‚РѕРІ, РїР°СЃСЃРёРІРѕРє, Р°РєС‚РёРІРЅС‹С… СЃРєРёР»Р»РѕРІ, СЌРєРёРїРёСЂРѕРІРєРё, РєР»Р°РЅРѕРІС‹С… Р±РѕРЅСѓСЃРѕРІ Рё PvP/PvE РёСЃС‚РѕСЂРёРё.</p>
+                <h3 class="status-section-title">Что переносим дальше</h3>
+                <p class="legacy-lead">Дальше сюда логично перенести уже реальную систему статов, пассивок, активных скиллов, экипировки, клановых бонусов и PvP/PvE истории.</p>
               </div>
 
               <div class="feature-card">
-                <h3 class="status-section-title">РЎР±СЂРѕСЃ РіРµСЂРѕСЏ</h3>
-                <button class="btn danger" id="deleteBtn">РЈРґР°Р»РёС‚СЊ РїРµСЂСЃРѕРЅР°Р¶Р° Рё РЅР°С‡Р°С‚СЊ Р·Р°РЅРѕРІРѕ</button>
+                <h3 class="status-section-title">Сброс героя</h3>
+                <button class="btn danger" id="deleteBtn">Удалить персонажа и начать заново</button>
               </div>
             </div>
           </div>

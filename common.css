@@ -38,14 +38,21 @@ body.env-telegram.device-mobile.platform-android{
   --hd-menu-top-mobile:86px;--hd-menu-top-mobile-short:70px;
   --hd-hud-top-mobile:35px;--hd-hud-left-mobile:23px;--hd-hud-top-mobile-short:29px;--hd-hud-left-mobile-short:19px;
 }
-body.env-telegram.device-desktop{
-  --pad:10px;
-  --bottom-nav-width:var(--hd-frame-width-base);--bottom-nav-bottom:14px;--bottom-nav-reserve:112px;
-  --hd-frame-width-base:min(100%,430px);--hd-frame-width-tablet:min(100%,398px);
-  --hd-profile-top-base:28px;--hd-profile-top-tablet:24px;
-  --hd-menu-top-base:82px;--hd-menu-top-tablet:72px;
-  --hd-hud-top-base:48px;--hd-hud-left-base:40px;--hd-hud-top-tablet:44px;--hd-hud-left-tablet:36px;
-}
+  body.env-telegram.device-desktop{
+    --pad:10px;
+    --bottom-nav-width:var(--hd-frame-width-base);--bottom-nav-bottom:14px;--bottom-nav-reserve:112px;
+    --hd-frame-width-base:min(100%,430px);--hd-frame-width-tablet:min(100%,398px);
+    --hd-profile-top-base:28px;--hd-profile-top-tablet:24px;
+    --hd-menu-top-base:82px;--hd-menu-top-tablet:72px;
+    --hd-hud-top-base:48px;--hd-hud-left-base:40px;--hd-hud-top-tablet:44px;--hd-hud-left-tablet:36px;
+  }
+  body.env-telegram.platform-desktop-runtime.viewport-compact-desktop{
+    --hd-frame-width-base:calc(100vw - var(--safe-left) - var(--safe-right) - 16px);
+    --hd-frame-width-tablet:var(--hd-frame-width-base);
+    --bottom-nav-width:var(--hd-frame-width-base);
+    --bottom-nav-bottom:14px;
+    --bottom-nav-reserve:112px;
+  }
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:linear-gradient(180deg,var(--bg1),var(--bg2));color:var(--text);font-family:var(--font-ui);touch-action:manipulation;overscroll-behavior:none}
 body{position:relative}
 body::before,body::after{content:"";position:fixed;inset:0;pointer-events:none}

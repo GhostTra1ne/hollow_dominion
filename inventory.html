@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
@@ -8,7 +8,7 @@
   <meta http-equiv=""Expires"" content=""0"">
   <script>
     (function () {
-      const APP_VERSION = '20260420-telegram-1';
+      const APP_VERSION = '20260421-telegram-2';
       const url = new URL(window.location.href);
       if (url.searchParams.get('appv') !== APP_VERSION) {
         url.searchParams.set('appv', APP_VERSION);
@@ -16,9 +16,9 @@
       }
       window.__HD_APP_VERSION__ = APP_VERSION;
     })();
-  </script>  <title>РРЅРІРµРЅС‚Р°СЂСЊ</title>
+  </script>  <title>Инвентарь</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="common.css?v=20260420-telegram-1">
+  <link rel="stylesheet" href="common.css?v=20260421-telegram-2">
   <style>
     .inventory-screen {
       display: grid;
@@ -332,7 +332,7 @@
   </div>
   <div class="toast" id="toast"></div>
 
-  <script src="common.js?v=20260420-telegram-1"></script>
+  <script src="common.js?v=20260421-telegram-2"></script>
   <script>
     let state = loadState();
     if (!ensureHero(state)) {
@@ -340,69 +340,69 @@
     }
 
     const inventory = state.hero.inventory || [];
-    const equippedItems = inventory.filter((entry) => entry.type === 'РќР°РґРµС‚Рѕ');
-    const bagItems = inventory.filter((entry) => entry.type !== 'РќР°РґРµС‚Рѕ');
-    const emptyBagSlots = bagItems.filter((entry) => entry.item === 'РџСѓСЃС‚Рѕ').length;
+    const equippedItems = inventory.filter((entry) => entry.type === 'Надето');
+    const bagItems = inventory.filter((entry) => entry.type !== 'Надето');
+    const emptyBagSlots = bagItems.filter((entry) => entry.item === 'Пусто').length;
 
     const slotGlyphs = {
-      'РћСЂСѓР¶РёРµ': 'вљ”',
-      'Р‘СЂРѕРЅСЏ': 'рџ›Ў',
-      'Р—РµР»СЊСЏ': 'вњљ',
-      'РЎРІРёС‚РєРё': 'вњ¦',
-      'РњР°С‚РµСЂРёР°Р»С‹': 'в—€',
-      'РђРєСЃРµСЃСЃСѓР°СЂС‹': 'в—‰',
-      'РљРІРµСЃС‚': 'вњ§',
-      'РџСЂРѕС‡РµРµ': 'в¬Ў'
+      'Оружие': '⚔',
+      'Броня': '🛡',
+      'Зелья': '✚',
+      'Свитки': '✦',
+      'Материалы': '◈',
+      'Аксессуары': '◉',
+      'Квест': '✧',
+      'Прочее': '⬡'
     };
 
     const slotDescriptions = {
-      'РћСЂСѓР¶РёРµ': 'РћСЃРЅРѕРІРЅРѕР№ Р±РѕРµРІРѕР№ СЃР»РѕС‚ РіРµСЂРѕСЏ.',
-      'Р‘СЂРѕРЅСЏ': 'Р—Р°С‰РёС‚РЅС‹Р№ РєРѕРјРїР»РµРєС‚ РґР»СЏ С‚РµРєСѓС‰РµР№ СЌРєРёРїРёСЂРѕРІРєРё.'
+      'Оружие': 'Основной боевой слот героя.',
+      'Броня': 'Защитный комплект для текущей экипировки.'
     };
 
     const equippedMarkup = equippedItems.map((entry) => `
       <article class="gear-slot">
-        <div class="gear-icon">${slotGlyphs[entry.slot] || 'в—†'}</div>
+        <div class="gear-icon">${slotGlyphs[entry.slot] || '◆'}</div>
         <div class="gear-copy">
           <strong>${entry.item}</strong>
-          <span>${entry.slot}. ${slotDescriptions[entry.slot] || 'Р­РєРёРїРёСЂРѕРІР°РЅРЅС‹Р№ РїСЂРµРґРјРµС‚ РіРµСЂРѕСЏ.'}</span>
+          <span>${entry.slot}. ${slotDescriptions[entry.slot] || 'Экипированный предмет героя.'}</span>
         </div>
         <div class="gear-state">${entry.type}</div>
       </article>
     `).join('');
 
     const bagMarkup = bagItems.map((entry) => {
-      const isEmpty = entry.item === 'РџСѓСЃС‚Рѕ';
-      const status = isEmpty ? 'РЎРІРѕР±РѕРґРЅРѕ' : entry.type;
+      const isEmpty = entry.item === 'Пусто';
+      const status = isEmpty ? 'Свободно' : entry.type;
       return `
         <article class="bag-slot ${isEmpty ? 'top-empty' : ''}">
           <strong>${entry.slot}</strong>
           <p>${entry.item}</p>
           <div class="bag-meta">
             <span>${status}</span>
-            <span>${isEmpty ? 'РњРѕР¶РЅРѕ Р·Р°РїРѕР»РЅРёС‚СЊ' : 'Р“РѕС‚РѕРІРѕ Рє РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЋ'}</span>
+            <span>${isEmpty ? 'Можно заполнить' : 'Готово к использованию'}</span>
           </div>
         </article>
       `;
     }).join('');
 
     q('app').innerHTML = `
-      ${renderHeader(state, 'РЎРЅР°СЂСЏР¶РµРЅРёРµ, СЃСѓРјРєР° Рё РґРѕСЂРѕР¶РЅС‹Р№ Р·Р°РїР°СЃ РіРµСЂРѕСЏ РІ С„РѕСЂРјР°С‚Рµ СЃС‚Р°СЂРѕР№ MMORPG-РїР°РЅРµР»Рё.')}
+      ${renderHeader(state, 'Снаряжение, сумка и дорожный запас героя в формате старой MMORPG-панели.')}
       <div class="single-page-layout">
         <div class="panel page-main-panel">
           <div class="panel-inner content-scroll">
             <div class="inventory-screen">
               <div class="inventory-topline">
                 <div class="inventory-chip">
-                  <span>РђРґРµРЅР°</span>
+                  <span>Адена</span>
                   <strong>${state.hero.adena}</strong>
                 </div>
                 <div class="inventory-chip">
-                  <span>РќР°РґРµС‚Рѕ</span>
+                  <span>Надето</span>
                   <strong>${equippedItems.length}</strong>
                 </div>
                 <div class="inventory-chip">
-                  <span>РЎРІРѕР±РѕРґРЅРѕ</span>
+                  <span>Свободно</span>
                   <strong>${emptyBagSlots}</strong>
                 </div>
               </div>
@@ -410,12 +410,12 @@
               <div class="inventory-layout">
                 <div class="inventory-column">
                   <section class="inventory-card">
-                    <h3>Р­РєРёРїРёСЂРѕРІРєР°</h3>
-                    <p>РђРєС‚РёРІРЅС‹Рµ РїСЂРµРґРјРµС‚С‹, РєРѕС‚РѕСЂС‹Рµ С„РѕСЂРјРёСЂСѓСЋС‚ С‚РµРєСѓС‰РёР№ Р±РѕРµРІРѕР№ РїСЂРѕС„РёР»СЊ РіРµСЂРѕСЏ.</p>
+                    <h3>Экипировка</h3>
+                    <p>Активные предметы, которые формируют текущий боевой профиль героя.</p>
                     <div class="gear-stage">
                       <div class="gear-silhouette">
                         <div class="gear-figure"></div>
-                        <div class="gear-glow">Р’РѕРёРЅ РґРµСЂР¶РёС‚ РіРѕС‚РѕРІС‹Р№ РєРѕРјРїР»РµРєС‚.<br>РЎР»РµРґРѕРј РјРѕР¶РЅРѕ РґРѕР±Р°РІРёС‚СЊ РєРѕР»СЊС†Р°, Р°РјСѓР»РµС‚С‹ Рё РїР»Р°С‰.</div>
+                        <div class="gear-glow">Воин держит готовый комплект.<br>Следом можно добавить кольца, амулеты и плащ.</div>
                       </div>
                       <div class="gear-list">
                         ${equippedMarkup}
@@ -426,21 +426,21 @@
 
                 <div class="inventory-column">
                   <section class="inventory-card">
-                    <h3>РЎСѓРјРєР°</h3>
-                    <p>Р Р°СЃС…РѕРґРЅРёРєРё, СЃРІРёС‚РєРё Рё РІСЃС‘, С‡С‚Рѕ РіРµСЂРѕР№ РЅРµСЃС‘С‚ РІ РґРѕСЂРѕРіРµ РјРµР¶РґСѓ РіРѕСЂРѕРґР°РјРё.</p>
+                    <h3>Сумка</h3>
+                    <p>Расходники, свитки и всё, что герой несёт в дороге между городами.</p>
                     <div class="bag-grid">${bagMarkup}</div>
                   </section>
 
                   <section class="inventory-card">
-                    <h3>РџРѕР»РµРІР°СЏ Р·Р°РјРµС‚РєР°</h3>
+                    <h3>Полевая заметка</h3>
                     <div class="inventory-notes">
                       <div class="inventory-note">
-                        <strong>Р‘РѕРµРІРѕР№ Р·Р°РїР°СЃ</strong>
-                        Р—РµР»СЊСЏ Рё СЃРІРёС‚РєРё СѓР¶Рµ РіРѕС‚РѕРІС‹ РґР»СЏ Р±С‹СЃС‚СЂС‹С… РґРѕСЂРѕР¶РЅС‹С… СЃРѕР±С‹С‚РёР№ Рё Р±СѓРґСѓС‰РёС… РЅР°РїР°РґРµРЅРёР№ СЂР°Р·Р±РѕР№РЅРёРєРѕРІ.
+                        <strong>Боевой запас</strong>
+                        Зелья и свитки уже готовы для быстрых дорожных событий и будущих нападений разбойников.
                       </div>
                       <div class="inventory-note">
-                        <strong>РЎР»РµРґСѓСЋС‰РёР№ С€Р°Рі</strong>
-                        РЎСЋРґР° Р»РµРіРєРѕ РґРѕР±Р°РІРёС‚СЊ СЃР»РѕС‚С‹ Р±РёР¶СѓС‚РµСЂРёРё, РєРІРµСЃС‚РѕРІС‹Рµ РїСЂРµРґРјРµС‚С‹, РІРµСЃ, СЃРѕСЂС‚РёСЂРѕРІРєСѓ Рё Р±С‹СЃС‚СЂС‹Рµ РґРµР№СЃС‚РІРёСЏ В«РќР°РґРµС‚СЊ / РСЃРїРѕР»СЊР·РѕРІР°С‚СЊ / РџСЂРѕРґР°С‚СЊВ».
+                        <strong>Следующий шаг</strong>
+                        Сюда легко добавить слоты бижутерии, квестовые предметы, вес, сортировку и быстрые действия «Надеть / Использовать / Продать».
                       </div>
                     </div>
                   </section>

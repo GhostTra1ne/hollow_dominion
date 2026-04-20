@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
@@ -8,7 +8,7 @@
   <meta http-equiv=""Expires"" content=""0"">
   <script>
     (function () {
-      const APP_VERSION = '20260420-telegram-1';
+      const APP_VERSION = '20260421-telegram-2';
       const url = new URL(window.location.href);
       if (url.searchParams.get('appv') !== APP_VERSION) {
         url.searchParams.set('appv', APP_VERSION);
@@ -16,9 +16,9 @@
       }
       window.__HD_APP_VERSION__ = APP_VERSION;
     })();
-  </script>  <title>РџСѓС‚РµС€РµСЃС‚РІРёРµ</title>
+  </script>  <title>Путешествие</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="common.css?v=20260420-telegram-1">
+  <link rel="stylesheet" href="common.css?v=20260421-telegram-2">
 </head>
 <body>
   <div class="screen-page">
@@ -26,7 +26,7 @@
   </div>
   <div class="toast" id="toast"></div>
 
-  <script src="common.js?v=20260420-telegram-1"></script>
+  <script src="common.js?v=20260421-telegram-2"></script>
   <script>
     let state = loadState();
     if (!ensureHero(state)) {
@@ -38,7 +38,7 @@
 
     function teleportTo(cityId, cost) {
       if (state.hero.adena < cost) {
-        showToast('РќРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ РђРґРµРЅР° РґР»СЏ С‚РµР»РµРїРѕСЂС‚Р°.');
+        showToast('Недостаточно Адена для телепорта.');
         return;
       }
       state.hero.adena -= cost;
@@ -49,7 +49,7 @@
 
     function startWalking(route) {
       if (state.travel && state.travel.status === 'walking') {
-        showToast('РўС‹ СѓР¶Рµ РІ РїСѓС‚Рё.');
+        showToast('Ты уже в пути.');
         return;
       }
       const now = Date.now();
@@ -75,9 +75,9 @@
         <div>
           <div><strong>${cities[d.cityId].name}</strong></div>
           <div class="subtitle">${d.text}</div>
-          <div class="destination-meta"><div class="chip">${d.cost} РђРґРµРЅР°</div></div>
+          <div class="destination-meta"><div class="chip">${d.cost} Адена</div></div>
         </div>
-        <button class="btn primary" data-tp="${d.cityId}" data-cost="${d.cost}">РўРµР»РµРїРѕСЂС‚</button>
+        <button class="btn primary" data-tp="${d.cityId}" data-cost="${d.cost}">Телепорт</button>
       </div>
     `).join('');
 
@@ -86,8 +86,8 @@
         <strong>${cities[r.cityId].name}</strong>
         <p>${r.text}</p>
         <div class="route-meta">
-          <div class="chip">${r.durationMin} РјРёРЅ</div>
-          <div class="chip">Р РёСЃРє: ${Math.round(r.risk * 100)}%</div>
+          <div class="chip">${r.durationMin} мин</div>
+          <div class="chip">Риск: ${Math.round(r.risk * 100)}%</div>
         </div>
       </div>
     `).join('');
@@ -97,30 +97,30 @@
       const remaining = Math.max(0, state.travel.endsAt - Date.now());
       travelBox = `
         <div class="feature-card">
-          <h3 style="margin:0 0 8px;color:#f1d59a;font-family:var(--font-main)">РўРµРєСѓС‰РёР№ РїСѓС‚СЊ</h3>
-          <p class="subtitle">${cities[state.travel.fromCityId].name} в†’ ${cities[state.travel.toCityId].name}</p>
-          <div style="margin-top:10px">${state.travel.status === 'walking' ? `РћСЃС‚Р°Р»РѕСЃСЊ: ${formatDuration(remaining)}` : 'РџСѓС‚СЊ Р·Р°РІРµСЂС€С‘РЅ.'}</div>
-          ${state.travel.bandits ? '<div class="subtitle" style="margin-top:8px">РќР° РїСѓС‚Рё Р±С‹Р»Р° Р·Р°СЃР°РґР° СЂР°Р·Р±РѕР№РЅРёРєРѕРІ.</div>' : ''}
-          <div style="margin-top:12px">${state.travel.status === 'arrived' ? '<button class="btn primary" id="arriveBtn">РџСЂРёР±С‹С‚СЊ РІ РіРѕСЂРѕРґ</button>' : ''}</div>
+          <h3 style="margin:0 0 8px;color:#f1d59a;font-family:var(--font-main)">Текущий путь</h3>
+          <p class="subtitle">${cities[state.travel.fromCityId].name} → ${cities[state.travel.toCityId].name}</p>
+          <div style="margin-top:10px">${state.travel.status === 'walking' ? `Осталось: ${formatDuration(remaining)}` : 'Путь завершён.'}</div>
+          ${state.travel.bandits ? '<div class="subtitle" style="margin-top:8px">На пути была засада разбойников.</div>' : ''}
+          <div style="margin-top:12px">${state.travel.status === 'arrived' ? '<button class="btn primary" id="arriveBtn">Прибыть в город</button>' : ''}</div>
         </div>
       `;
     }
 
     q('app').innerHTML = `
-      ${renderHeader(state, 'РўРµР»РµРїРѕСЂС‚С‹ РІ РґСЂСѓРіРёРµ РіРѕСЂРѕРґР° Рё РїРµС€РёРµ РјР°СЂС€СЂСѓС‚С‹ СЃ СЂРёСЃРєРѕРј Р·Р°СЃР°РґС‹.')}
+      ${renderHeader(state, 'Телепорты в другие города и пешие маршруты с риском засады.')}
       <div class="single-page-layout">
         <div class="panel page-main-panel">
           <div class="panel-inner content-scroll">
             <div class="page-stack">
               <div class="feature-card">
-                <h3 style="margin:0 0 10px;color:#f1d59a;font-family:var(--font-main)">РњРµРЅРµРґР¶РµСЂ С‚РµР»РµРїРѕСЂС‚Р°С†РёР№</h3>
+                <h3 style="margin:0 0 10px;color:#f1d59a;font-family:var(--font-main)">Менеджер телепортаций</h3>
                 ${teleports}
               </div>
               <div class="feature-card">
-                <h3 style="margin:0 0 10px;color:#f1d59a;font-family:var(--font-main)">РџРµС€РёР№ РїСѓС‚СЊ</h3>
+                <h3 style="margin:0 0 10px;color:#f1d59a;font-family:var(--font-main)">Пеший путь</h3>
                 <div class="route-map">${routes}</div>
                 <div style="margin-top:12px">
-                  <button class="btn primary" id="walkBtn">РћС‚РїСЂР°РІРёС‚СЊСЃСЏ РїРµС€РєРѕРј</button>
+                  <button class="btn primary" id="walkBtn">Отправиться пешком</button>
                 </div>
               </div>
               ${travelBox}

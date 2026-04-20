@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
@@ -8,7 +8,7 @@
   <meta http-equiv=""Expires"" content=""0"">
   <script>
     (function () {
-      const APP_VERSION = '20260420-telegram-1';
+      const APP_VERSION = '20260421-telegram-2';
       const url = new URL(window.location.href);
       if (url.searchParams.get('appv') !== APP_VERSION) {
         url.searchParams.set('appv', APP_VERSION);
@@ -16,16 +16,16 @@
       }
       window.__HD_APP_VERSION__ = APP_VERSION;
     })();
-  </script>  <title>РљР»Р°РЅ</title>
+  </script>  <title>Клан</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="common.css?v=20260420-telegram-1">
+  <link rel="stylesheet" href="common.css?v=20260421-telegram-2">
 </head>
 <body>
   <div class="screen-page">
     <div class="app-shell" id="app"></div>
   </div>
 
-  <script src="common.js?v=20260420-telegram-1"></script>
+  <script src="common.js?v=20260421-telegram-2"></script>
   <script>
     let state = loadState();
     if (!ensureHero(state)) {
@@ -33,26 +33,26 @@
     }
 
     q('app').innerHTML = `
-      ${renderHeader(state, 'РљР»Р°РЅРѕРІС‹Р№ СЂР°Р·РґРµР» РіРµСЂРѕСЏ Рё Р±СѓРґСѓС‰РёРµ Р°Р»СЊСЏРЅСЃС‹ Hollow Dominion.')}
+      ${renderHeader(state, 'Клановый раздел героя и будущие альянсы Hollow Dominion.')}
       <div class="single-page-layout">
         <div class="panel page-main-panel">
           <div class="panel-inner content-scroll">
             <div class="page-stack">
               <div class="page-intro">
                 <strong>${state.hero.clanName}</strong>
-                <p class="subtitle">РџРѕРєР° РіРµСЂРѕР№ РЅРµ СЃРѕСЃС‚РѕРёС‚ РІ Р°РєС‚РёРІРЅРѕРј РєР»Р°РЅРµ, РЅРѕ Р·РґРµСЃСЊ РїРѕР·Р¶Рµ РїРѕСЏРІСЏС‚СЃСЏ СЌРјР±Р»РµРјР°, СЃРїРёСЃРѕРє СѓС‡Р°СЃС‚РЅРёРєРѕРІ, РїСЂРёРіР»Р°С€РµРЅРёСЏ Рё РІРєР»Р°Рґ РєР»Р°РЅР°.</p>
+                <p class="subtitle">Пока герой не состоит в активном клане, но здесь позже появятся эмблема, список участников, приглашения и вклад клана.</p>
               </div>
               <div class="feature-card">
-                <h3 style="margin:0 0 10px;color:#f1d59a;font-family:var(--font-main)">РљР»Р°РЅРѕРІС‹Рµ РґРµР№СЃС‚РІРёСЏ</h3>
+                <h3 style="margin:0 0 10px;color:#f1d59a;font-family:var(--font-main)">Клановые действия</h3>
                 <div style="display:flex;gap:10px;flex-wrap:wrap">
-                  <button class="btn ghost" disabled>РЎРѕР·РґР°С‚СЊ РєР»Р°РЅ</button>
-                  <button class="btn ghost" disabled>Р’СЃС‚СѓРїРёС‚СЊ РІ РєР»Р°РЅ</button>
-                  <button class="btn ghost" disabled>РћС‚РєСЂС‹С‚СЊ РІРѕР№РЅСѓ РєР»Р°РЅРѕРІ</button>
+                  <button class="btn ghost" disabled>Создать клан</button>
+                  <button class="btn ghost" disabled>Вступить в клан</button>
+                  <button class="btn ghost" disabled>Открыть войну кланов</button>
                 </div>
               </div>
               <div class="feature-card">
-                <h3 style="margin:0 0 10px;color:#f1d59a;font-family:var(--font-main)">Р§С‚Рѕ Р±СѓРґРµС‚ РґР°Р»СЊС€Рµ</h3>
-                <p class="subtitle">Р­С‚Сѓ РІРєР»Р°РґРєСѓ РјРѕР¶РЅРѕ СЂР°Р·РІРёС‚СЊ РІ РїРѕР»РЅРѕС†РµРЅРЅСѓСЋ РєР»Р°РЅРѕРІСѓСЋ СЃС‚СЂР°РЅРёС†Сѓ: СЌРјР±Р»РµРјР°, СЂР°РЅРі, СЃРєР»Р°Рґ, РІРѕР№РЅС‹, СЃРѕСЋР·РЅРёРєРё Рё Р¶СѓСЂРЅР°Р» РІРєР»Р°РґР° СѓС‡Р°СЃС‚РЅРёРєРѕРІ.</p>
+                <h3 style="margin:0 0 10px;color:#f1d59a;font-family:var(--font-main)">Что будет дальше</h3>
+                <p class="subtitle">Эту вкладку можно развить в полноценную клановую страницу: эмблема, ранг, склад, войны, союзники и журнал вклада участников.</p>
               </div>
             </div>
           </div>

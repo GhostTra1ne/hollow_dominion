@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-      const APP_VERSION = '20260420-telegram-1';
+      const APP_VERSION = '20260421-telegram-2';
       const url = new URL(window.location.href);
       window.__HD_DEBUG_GRID__ = url.searchParams.get('grid') === '1';
       if (url.searchParams.get('appv') !== APP_VERSION) {
@@ -19,7 +19,7 @@
     })();
   </script>  <title>Hollow Dominion</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="common.css?v=20260420-telegram-1">
+  <link rel="stylesheet" href="common.css?v=20260421-telegram-2">
   <style>
     .screen-page {
       position: relative;
@@ -431,7 +431,7 @@
 
     .city-title-text::before,
     .city-title-text::after {
-      content: "вњ¦";
+      content: "✦";
       display: inline-block;
       margin: 0 .38em;
       font-size: .28em;
@@ -1993,13 +1993,22 @@
       aspect-ratio: 1 / 1.02;
     }
 
+    body.env-telegram.platform-desktop-runtime.viewport-compact-desktop .profile-fixed-block,
+    body.env-telegram.platform-desktop-runtime.viewport-compact-desktop .city-screen.bannerless,
+    body.env-telegram.platform-desktop-runtime.viewport-compact-desktop .city-screen.bannerless .city-home-layout,
+    body.env-telegram.platform-desktop-runtime.viewport-compact-desktop .city-screen.bannerless .city-portrait-card {
+      width: 100%;
+      max-width: 100%;
+      margin-inline: 0;
+    }
+
     body.env-telegram.platform-desktop-runtime.viewport-compact-desktop .profile-hud-panel {
       --hud-icon-size: 17px;
       --hud-track-height: 10px;
       --hud-value-size: 6px;
       width: var(--bottom-nav-width);
       max-width: var(--bottom-nav-width);
-      padding: 6px 4px 7px;
+      padding: 6px 2px 7px;
     }
 
     body.env-telegram.platform-desktop-runtime.viewport-compact-desktop .profile-hud-panel .portrait-overlay-ui,
@@ -2053,7 +2062,7 @@
   </div>
   <div class="toast" id="toast"></div>
 
-    <script src="common.js?v=20260420-telegram-1"></script>
+    <script src="common.js?v=20260421-telegram-2"></script>
     <script>
       const screenPage = document.querySelector('.screen-page');
       const gridToggleBtn = document.getElementById('gridToggleBtn');
@@ -2115,8 +2124,8 @@
         <div class="creator-layout">
           <div class="topbar">
             <div class="topbar-left">
-              <h1 class="title">РЎРѕР·РґР°РЅРёРµ РіРµСЂРѕСЏ</h1>
-              <p class="subtitle">РћРґРёРЅ СЌРєСЂР°РЅ. РћРґРёРЅ С€Р°Рі Р·Р° СЂР°Р·. Р‘РµР· СЃРєСЂРѕР»Р»Р°.</p>
+              <h1 class="title">Создание героя</h1>
+              <p class="subtitle">Один экран. Один шаг за раз. Без скролла.</p>
             </div>
           </div>
 
@@ -2136,8 +2145,8 @@
               <div id="stepArea"></div>
               <div class="error-text" id="nicknameError"></div>
               <div class="wizard-actions">
-                <button class="btn ghost" id="backStepBtn">РќР°Р·Р°Рґ</button>
-                <button class="btn primary" id="nextStepBtn">Р”Р°Р»РµРµ</button>
+                <button class="btn ghost" id="backStepBtn">Назад</button>
+                <button class="btn primary" id="nextStepBtn">Далее</button>
               </div>
             </div>
           </div>
@@ -2158,27 +2167,27 @@
         nicknameError.textContent = '';
 
         if (step.key === 'race') {
-          stepArea.innerHTML = renderChooser(getRaceName(state.creator.race), 'РЎРјРµРЅР° СЂР°СЃС‹ РєРЅРѕРїРєР°РјРё < >.');
+          stepArea.innerHTML = renderChooser(getRaceName(state.creator.race), 'Смена расы кнопками < >.');
         }
 
         if (step.key === 'classId') {
-          stepArea.innerHTML = renderChooser(getClassName(state.creator.classId), 'РЎРјРµРЅР° РєР»Р°СЃСЃР° РєРЅРѕРїРєР°РјРё < >.');
+          stepArea.innerHTML = renderChooser(getClassName(state.creator.classId), 'Смена класса кнопками < >.');
         }
 
         if (step.key === 'gender') {
-          stepArea.innerHTML = renderChooser(getGenderName(state.creator.gender), 'Р•СЃР»Рё Р°СЃСЃРµС‚РѕРІ РЅРµС‚, РѕСЃС‚Р°С‘С‚СЃСЏ fallback РЅР° human male.');
+          stepArea.innerHTML = renderChooser(getGenderName(state.creator.gender), 'Если ассетов нет, остаётся fallback на human male.');
         }
 
         if (step.key === 'face') {
-          stepArea.innerHTML = renderChooser(`Р›РёС†Рѕ ${state.creator.face}`, 'Р›РёС†Рѕ СЂРµРЅРґРµСЂРёС‚СЃСЏ РѕС‚РґРµР»СЊРЅС‹Рј PNG-СЃР»РѕРµРј.');
+          stepArea.innerHTML = renderChooser(`Лицо ${state.creator.face}`, 'Лицо рендерится отдельным PNG-слоем.');
         }
 
         if (step.key === 'nickname') {
           stepArea.innerHTML = `
             <div class="nickname-wrap">
-              <input id="nickInput" maxlength="16" placeholder="Р’РІРµРґРёС‚Рµ РЅРёРє" value="${escapeHtml(state.creator.nickname || '')}">
+              <input id="nickInput" maxlength="16" placeholder="Введите ник" value="${escapeHtml(state.creator.nickname || '')}">
             </div>
-            <div class="chooser-helper">РџРѕСЃР»РµРґРЅРёР№ С€Р°Рі РїРµСЂРµРґ РїСЂРёР±С‹С‚РёРµРј РІ СЃС‚Р°СЂС‚РѕРІС‹Р№ РіРѕСЂРѕРґ.</div>
+            <div class="chooser-helper">Последний шаг перед прибытием в стартовый город.</div>
           `;
 
           const input = q('nickInput');
@@ -2192,7 +2201,7 @@
         }
 
         backStepBtn.disabled = state.stepIndex === 0;
-        nextStepBtn.textContent = state.stepIndex === steps.length - 1 ? 'РЎРѕР·РґР°С‚СЊ РїРµСЂСЃРѕРЅР°Р¶Р°' : 'Р”Р°Р»РµРµ';
+        nextStepBtn.textContent = state.stepIndex === steps.length - 1 ? 'Создать персонажа' : 'Далее';
 
         if (q('chooserPrevBtn') && q('chooserNextBtn')) {
           const prevBtn = q('chooserPrevBtn');
@@ -2297,13 +2306,13 @@
           <div class="arrival-content">
             <div class="arrival-card">
               <p class="arrival-kicker">Hollow Dominion</p>
-              <h1 class="arrival-title">РџСЂРёР±С‹С‚РёРµ</h1>
+              <h1 class="arrival-title">Прибытие</h1>
               <p class="arrival-copy">
-                РљРѕСЂР°Р±Р»СЊ РјСЏРіРєРѕ РІС…РѕРґРёС‚ РІ РіР°РІР°РЅСЊ СЃС‚Р°СЂС‚РѕРІРѕРіРѕ РіРѕСЂРѕРґР°. РЎРѕР»С‘РЅС‹Р№ РІРµС‚РµСЂ РЅРµСЃС‘С‚ Р·Р°РїР°С… РґРµСЂРµРІР°,
-                Р¶РµР»РµР·Р° Рё РґР°Р»С‘РєРёС… РґРѕСЂРѕРі. РќРѕРІР°СЏ РёСЃС‚РѕСЂРёСЏ РЅР°С‡РёРЅР°РµС‚СЃСЏ СЃ Р±РµСЂРµРіР°.
+                Корабль мягко входит в гавань стартового города. Солёный ветер несёт запах дерева,
+                железа и далёких дорог. Новая история начинается с берега.
               </p>
               <div class="arrival-actions">
-                <button class="btn primary" id="enterCityBtn">РЎРѕР№С‚Рё РЅР° Р±РµСЂРµРі</button>
+                <button class="btn primary" id="enterCityBtn">Сойти на берег</button>
               </div>
             </div>
           </div>
@@ -2334,9 +2343,9 @@
       const exp = `${hero.xpPercent || '0.00'}%`;
 
       return `
-        <div class="portrait-overlay-ui" aria-label="РџР°РЅРµР»СЊ С…Р°СЂР°РєС‚РµСЂРёСЃС‚РёРє">
+        <div class="portrait-overlay-ui" aria-label="Панель характеристик">
           <div class="portrait-overlay-head">
-            <div class="hud-level-box" aria-label="РЈСЂРѕРІРµРЅСЊ РїРµСЂСЃРѕРЅР°Р¶Р°"><span>${hudNumber(hero.level)}</span></div>
+            <div class="hud-level-box" aria-label="Уровень персонажа"><span>${hudNumber(hero.level)}</span></div>
             <div class="portrait-nickname">${escapeHtml(hero.nickname)}</div>
           </div>
           <div class="portrait-bars">
@@ -2374,9 +2383,9 @@
       ];
 
       return `
-        <div class="portrait-overlay-ui" aria-label="РџР°РЅРµР»СЊ С…Р°СЂР°РєС‚РµСЂРёСЃС‚РёРє">
+        <div class="portrait-overlay-ui" aria-label="Панель характеристик">
           <div class="portrait-overlay-head">
-            <div class="hud-level-box" aria-label="РЈСЂРѕРІРµРЅСЊ РїРµСЂСЃРѕРЅР°Р¶Р°"><span>${hudNumber(hero.level)}</span></div>
+            <div class="hud-level-box" aria-label="Уровень персонажа"><span>${hudNumber(hero.level)}</span></div>
             <div class="portrait-nickname">${escapeHtml(hero.nickname)}</div>
           </div>
           <div class="portrait-bars">
