@@ -82,7 +82,7 @@ function applyAdaptiveViewportMetrics() {
   if (isTelegramCompactDesktop) {
     const compactReferenceHeight = 592;
     const compactScale = clamp(vh / compactReferenceHeight, 0.92, 1.08);
-    hudBottom = Math.round(92 * compactScale);
+    hudBottom = Math.round(95 * compactScale);
     profileBottom = Math.round(146 * compactScale);
   } else if (env.isMobile) {
     if (env.isTelegram && env.isIOS) {
