@@ -47,7 +47,7 @@ body.env-telegram.device-mobile.platform-android{
     --hd-hud-top-base:48px;--hd-hud-left-base:40px;--hd-hud-top-tablet:44px;--hd-hud-left-tablet:36px;
   }
   body.env-telegram.platform-desktop-runtime.viewport-compact-desktop{
-    --hd-frame-width-base:calc(100vw - var(--safe-left) - var(--safe-right) - 16px);
+    --hd-frame-width-base:min(calc(100vw - var(--safe-left) - var(--safe-right) - 16px),369px);
     --hd-frame-width-tablet:var(--hd-frame-width-base);
     --bottom-nav-width:var(--hd-frame-width-base);
     --bottom-nav-bottom:14px;

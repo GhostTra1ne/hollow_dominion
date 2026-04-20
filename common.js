@@ -80,12 +80,10 @@ function applyAdaptiveViewportMetrics() {
   let profileBottom = null;
 
   if (isTelegramCompactDesktop) {
-    hudBottom = isShort
-      ? clamp(Math.round(vh * 0.13), 84, 98)
-      : clamp(Math.round(vh * 0.145), 94, 114);
-    profileBottom = isShort
-      ? clamp(Math.round(vh * 0.19), 108, 130)
-      : clamp(Math.round(vh * 0.21), 120, 148);
+    const compactReferenceHeight = 592;
+    const compactScale = clamp(vh / compactReferenceHeight, 0.92, 1.08);
+    hudBottom = Math.round(92 * compactScale);
+    profileBottom = Math.round(146 * compactScale);
   } else if (env.isMobile) {
     if (env.isTelegram && env.isIOS) {
       hudBottom = isShort ? clamp(Math.round(vh * 0.165), 116, 142) : clamp(Math.round(vh * 0.18), 132, 168);
