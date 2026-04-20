@@ -50,7 +50,7 @@ body.env-telegram.platform-desktop-runtime.viewport-compact-desktop{
   --hd-frame-width-base:min(calc(100vw - var(--safe-left) - var(--safe-right) - 16px),369px);
   --hd-frame-width-tablet:var(--hd-frame-width-base);
   --bottom-nav-width:var(--hd-frame-width-base);
-  --bottom-nav-bottom:14px;
+  --bottom-nav-bottom:11px;
   --bottom-nav-reserve:112px;
 }
 body.env-telegram.platform-desktop-runtime.viewport-compact-desktop .bottom-nav-panel{
