@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-    const APP_VERSION = '20260421-telegram-25';
+    const APP_VERSION = '20260421-telegram-27';
       const url = new URL(window.location.href);
       if (url.searchParams.get('appv') !== APP_VERSION) {
         url.searchParams.set('appv', APP_VERSION);
@@ -19,7 +19,7 @@
   </script>
   <title>Инвентарь</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="common.css?v=20260421-telegram-25">
+  <link rel="stylesheet" href="common.css?v=20260421-telegram-27">
   <style>
     .inventory-shell {
       min-height: 0;
@@ -75,6 +75,8 @@
 
     .inventory-panel {
       min-height: 0;
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) auto;
       border-radius: 12px;
       background:
         linear-gradient(180deg, rgba(57, 41, 23, .76), rgba(23, 18, 12, .9)),
@@ -92,13 +94,49 @@
     }
 
     .inventory-panel-inner {
-      height: 100%;
       min-height: 0;
       overflow: auto;
       padding: 10px;
       display: grid;
       align-content: start;
       gap: 10px;
+    }
+
+    .inventory-panel-footer {
+      display: flex;
+      justify-content: flex-end;
+      padding: 6px 10px 8px;
+      border-top: 1px solid rgba(143, 105, 52, .34);
+      background:
+        linear-gradient(180deg, rgba(62, 45, 25, .72), rgba(24, 18, 12, .9)),
+        linear-gradient(180deg, rgba(255, 244, 214, .02), rgba(255, 244, 214, 0));
+    }
+
+    .adena-tracker {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 26px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(174, 132, 71, .62);
+      background:
+        linear-gradient(180deg, rgba(103, 77, 40, .76), rgba(45, 32, 18, .92)),
+        linear-gradient(180deg, rgba(255, 234, 188, .05), rgba(255, 234, 188, 0));
+      color: #ffe6aa;
+      font-size: 12px;
+      font-weight: 700;
+      text-shadow: 0 1px 0 rgba(0, 0, 0, .72);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 246, 214, .08),
+        inset 0 0 0 1px rgba(34, 24, 13, .42);
+    }
+
+    .adena-tracker img {
+      width: 18px;
+      height: 18px;
+      object-fit: contain;
+      flex: 0 0 auto;
     }
 
     .tab-panel {
@@ -402,8 +440,8 @@
   </div>
   <div class="toast" id="toast"></div>
 
-  <script src="item-catalog.js?v=20260421-telegram-25"></script>
-  <script src="common.js?v=20260421-telegram-25"></script>
+  <script src="item-catalog.js?v=20260421-telegram-27"></script>
+  <script src="common.js?v=20260421-telegram-27"></script>
   <script>
     let state = loadState();
     if (!ensureHero(state)) {
@@ -445,7 +483,7 @@
     };
 
     function isEquipped(entry) {
-      return normalizeText(entry.type).includes('над');
+      return Boolean(entry.equipSlot) || normalizeText(entry.type).includes('над');
     }
 
     function isEmptyItem(entry) {
@@ -785,6 +823,7 @@
     function getGroupKey(entry, tab) {
       const slot = normalizeText(entry.slot);
       if (tab === 'general') {
+        if (isWearable(entry) && !isAccessory(entry)) return 'gear';
         if (isPotion(entry)) return 'potions';
         if (isScroll(entry)) return 'scrolls';
         if (isAccessory(entry)) return 'accessories';
@@ -903,7 +942,7 @@
           <div class="equip-slot-icon">
             ${iconPath ? `<img class="legacy-empty-icon" src="${iconPath}" alt="">` : glyphForSlot(slot?.label || entry.slot)}
           </div>
-          <div class="equip-slot-label">${slot?.label || entry.slot}</div>
+          <div class="equip-slot-label">${String(slot?.label || entry.slot || '').toUpperCase()}</div>
           <div class="equip-slot-name${isEmpty ? ' empty' : ''}">${isEmpty ? 'Пусто' : entry.item}</div>
           ${actionButton}
         </article>
@@ -945,6 +984,7 @@
     const groupSets = {
       general: [
         { key: 'all', label: 'Все' },
+        { key: 'gear', label: 'Оружие/Броня' },
         { key: 'potions', label: 'Зелья' },
         { key: 'scrolls', label: 'Свитки' },
         { key: 'accessories', label: 'Аксессуары' },
@@ -1076,6 +1116,39 @@
       `;
     }
 
+    function formatAdena(value) {
+      return Number(value || 0).toLocaleString('ru-RU');
+    }
+
+    function findNearestCityId(cityId) {
+      if (typeof cities === 'undefined') return cityId;
+      const currentCity = cities[cityId];
+      if (!currentCity) return cityId;
+
+      const routeCandidates = [];
+      (currentCity.teleportDestinations || []).forEach((route) => {
+        routeCandidates.push({ cityId: route.cityId, score: Number(route.cost || 0) });
+      });
+      (currentCity.walkingRoutes || []).forEach((route) => {
+        routeCandidates.push({ cityId: route.cityId, score: Number(route.durationMin || 0) });
+      });
+
+      routeCandidates.sort((a, b) => a.score - b.score);
+      return routeCandidates[0]?.cityId || cityId;
+    }
+
+    function consumeInventoryEntry(index, entry) {
+      const stack = parseStackedItem(entry);
+      if (stack && stack.count > 1) {
+        state.hero.inventory[index] = {
+          ...entry,
+          item: `${stack.count - 1} x ${stack.baseName}`
+        };
+      } else {
+        state.hero.inventory.splice(index, 1);
+      }
+    }
+
     q('app').innerHTML = `
       <div class="single-page-layout inventory-shell">
         <div class="inventory-tabs">
@@ -1118,6 +1191,12 @@
                   (entry) => getActionLabels(entry, 'quest'),
                   'Предметов с отметкой квест пока нет.'
                 )}
+              </div>
+            </div>
+            <div class="inventory-panel-footer">
+              <div class="adena-tracker">
+                <img src="./assets/ui/items/custom/adena.png" alt="Adena">
+                <span>${formatAdena(state.hero.adena)}</span>
               </div>
             </div>
           </section>
@@ -1246,19 +1325,27 @@
           }
 
           const bagEntry = state.hero.inventory[bagIndex];
-          const stack = parseStackedItem(bagEntry);
+          const blueprint = getItemBlueprint(bagEntry);
+          const healAmount = Number(blueprint?.give || 0);
 
-          if (stack && stack.count > 1) {
-            state.hero.inventory[bagIndex] = {
-              ...bagEntry,
-              item: `${stack.count - 1} x ${stack.baseName}`
-            };
-          } else {
-            state.hero.inventory.splice(bagIndex, 1);
+          if (blueprint?.effect === 'hp') {
+            state.hero.hp = Math.min(state.hero.maxHp || state.hero.hp, state.hero.hp + healAmount);
           }
 
+          if (blueprint?.effect === 'return_scroll') {
+            const nextCityId = findNearestCityId(state.hero.cityId);
+            state.hero.cityId = nextCityId;
+          }
+
+          consumeInventoryEntry(bagIndex, bagEntry);
           persistHeroState();
-          showToast(`Использовано: ${itemName}`);
+          if (blueprint?.effect === 'return_scroll' && typeof cities !== 'undefined' && cities[state.hero.cityId]) {
+            showToast(`Телепорт: ${cities[state.hero.cityId].name}`);
+          } else if (blueprint?.effect === 'hp') {
+            showToast(`Восстановлено HP: +${healAmount}`);
+          } else {
+            showToast(`Использовано: ${itemName}`);
+          }
           setTimeout(() => window.location.reload(), 120);
           return;
         }
@@ -1269,5 +1356,6 @@
   </script>
 </body>
 </html>
+
 
 

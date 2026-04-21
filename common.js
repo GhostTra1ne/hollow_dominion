@@ -784,7 +784,69 @@ function ensureHero(state) {
     location.href = withAppParams('index.html');
     return false;
   }
+
+  let changed = false;
+
+  if (!state.hero.inventorySeedVersion || state.hero.inventorySeedVersion < 2) {
+    const hasReturnScroll = (state.hero.inventory || []).some((entry) => {
+      const blueprint = resolveInventoryItemBlueprint(entry);
+      return blueprint?.effect === 'return_scroll';
+    });
+
+    if (!hasReturnScroll) {
+      state.hero.inventory = state.hero.inventory || [];
+      state.hero.inventory.push({
+        slot: '\u0421\u0432\u0438\u0442\u043a\u0438',
+        item: '1 x \u0421\u0432\u0438\u0442\u043e\u043a \u0432\u043e\u0437\u0432\u0440\u0430\u0442\u0430',
+        type: '\u0421\u0443\u043c\u043a\u0430',
+        category: 'consumable'
+      });
+      changed = true;
+    }
+
+    state.hero.inventorySeedVersion = 2;
+    changed = true;
+  }
+
+  if (state.hero.inventorySeedVersion < 3) {
+    const healingPotionKey = normalizeInventoryItemName('\u0417\u0435\u043b\u044c\u0435 \u043b\u0435\u0447\u0435\u043d\u0438\u044f');
+    state.hero.inventory = (state.hero.inventory || []).map((entry) => {
+      const baseName = normalizeInventoryItemName(getInventoryBaseItemName(entry));
+      if (baseName !== 'hp-50') return entry;
+      const stack = parseInventoryStackItem(entry.item);
+      const nextCount = stack?.count || 1;
+      return {
+        ...entry,
+        slot: '\u0417\u0435\u043b\u044c\u044f',
+        item: `${nextCount} x \u0417\u0435\u043b\u044c\u0435 \u043b\u0435\u0447\u0435\u043d\u0438\u044f`,
+        type: '\u0421\u0443\u043c\u043a\u0430',
+        category: 'consumable'
+      };
+    });
+
+    const hasHealingPotion = state.hero.inventory.some((entry) => (
+      normalizeInventoryItemName(getInventoryBaseItemName(entry)) === healingPotionKey
+    ));
+
+    if (!hasHealingPotion) {
+      state.hero.inventory.push({
+        slot: '\u0417\u0435\u043b\u044c\u044f',
+        item: '3 x \u0417\u0435\u043b\u044c\u0435 \u043b\u0435\u0447\u0435\u043d\u0438\u044f',
+        type: '\u0421\u0443\u043c\u043a\u0430',
+        category: 'consumable'
+      });
+      changed = true;
+    }
+
+    state.hero.inventorySeedVersion = 3;
+    changed = true;
+  }
+
   if (recomputeHeroEquipmentStats(state)) {
+    changed = true;
+  }
+
+  if (changed) {
     saveState(state);
   }
   return true;

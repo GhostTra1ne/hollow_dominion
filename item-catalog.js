@@ -22,7 +22,8 @@
     'ожерелье ученика': 'necklace of magic',
     'кольцо ученика': 'magic ring',
     'серьга ученика': 'apprentices earring',
-    'щит новобранца': 'small shield'
+    'щит новобранца': 'small shield',
+    'hp-50': 'зелье лечения'
   };
 
   Object.entries(LOCAL_ALIASES).forEach(([alias, target]) => {
@@ -59,6 +60,111 @@
     price: 0,
     level: 0,
     stats: {}
+  };
+
+  CATALOG[normalizeItemName('Зелье лечения')] = {
+    name: 'Зелье лечения',
+    source: 'local',
+    category: 'consumable',
+    slotLabel: 'Зелья',
+    price: 150,
+    level: 0,
+    dropType: 'elexir',
+    effect: 'hp',
+    give: '50',
+    stats: {},
+    icon: './assets/ui/items/custom/healing_potion.png'
+  };
+
+  CATALOG[normalizeItemName('Свиток возврата')] = {
+    name: 'Свиток возврата',
+    source: 'local',
+    category: 'consumable',
+    slotLabel: 'Свитки',
+    price: 500,
+    level: 0,
+    dropType: 'scroll',
+    effect: 'return_scroll',
+    give: 'nearest_city',
+    stats: {},
+    icon: './assets/ui/items/custom/scroll_return.png'
+  };
+
+  const LOCAL_OVERRIDES = {
+    '\u0436\u0435\u043b\u0435\u0437\u043d\u044b\u0439 \u043c\u0435\u0447': 'short sword',
+    '\u0436\u0435\u043b\u0435\u0437\u043d\u044b\u0439 \u0448\u043b\u0435\u043c': 'leather helmet',
+    '\u043a\u043e\u0436\u0430\u043d\u044b\u0439 \u0434\u043e\u0441\u043f\u0435\u0445': 'cotton robe',
+    '\u043a\u043e\u0436\u0430\u043d\u044b\u0435 \u043f\u0435\u0440\u0447\u0430\u0442\u043a\u0438': 'leather gloves',
+    '\u043a\u043e\u0436\u0430\u043d\u044b\u0435 \u0431\u043e\u0442\u0438\u043d\u043a\u0438': 'leather sandals',
+    '\u043e\u0436\u0435\u0440\u0435\u043b\u044c\u0435 \u0443\u0447\u0435\u043d\u0438\u043a\u0430': 'necklace of magic',
+    '\u043a\u043e\u043b\u044c\u0446\u043e \u0443\u0447\u0435\u043d\u0438\u043a\u0430': 'magic ring',
+    '\u0441\u0435\u0440\u044c\u0433\u0430 \u0443\u0447\u0435\u043d\u0438\u043a\u0430': 'apprentices earring',
+    '\u0449\u0438\u0442 \u043d\u043e\u0432\u043e\u0431\u0440\u0430\u043d\u0446\u0430': 'small shield',
+    'hp-50': '\u0417\u0435\u043b\u044c\u0435 \u043b\u0435\u0447\u0435\u043d\u0438\u044f'
+  };
+
+  Object.entries(LOCAL_OVERRIDES).forEach(([alias, target]) => {
+    ALIASES[normalizeItemName(alias)] = normalizeItemName(target);
+  });
+
+  CATALOG[normalizeItemName('\u041a\u043e\u0436\u0430\u043d\u044b\u0439 \u043d\u0438\u0437')] = {
+    name: '\u041a\u043e\u0436\u0430\u043d\u044b\u0439 \u043d\u0438\u0437',
+    source: 'local',
+    family: 'legs',
+    category: 'wearable',
+    slotLabel: '\u041d\u0438\u0437',
+    price: 0,
+    level: 0,
+    stats: { pdef: 16 },
+    icon: './assets/ui/inventory/pusto/plash.gif'
+  };
+
+  CATALOG[normalizeItemName('\u041f\u0435\u0447\u0430\u0442\u044c \u0441\u0442\u0430\u0440\u043e\u0441\u0442\u044b')] = {
+    name: '\u041f\u0435\u0447\u0430\u0442\u044c \u0441\u0442\u0430\u0440\u043e\u0441\u0442\u044b',
+    source: 'local',
+    category: 'quest',
+    slotLabel: '\u041a\u0432\u0435\u0441\u0442',
+    price: 0,
+    level: 0,
+    stats: {}
+  };
+
+  CATALOG[normalizeItemName('\u0424\u0430\u043a\u0435\u043b \u043f\u0443\u0442\u043d\u0438\u043a\u0430')] = {
+    name: '\u0424\u0430\u043a\u0435\u043b \u043f\u0443\u0442\u043d\u0438\u043a\u0430',
+    source: 'local',
+    category: 'general',
+    slotLabel: '\u0421\u0443\u043c\u043a\u0430',
+    price: 0,
+    level: 0,
+    stats: {}
+  };
+
+  CATALOG[normalizeItemName('\u0417\u0435\u043b\u044c\u0435 \u043b\u0435\u0447\u0435\u043d\u0438\u044f')] = {
+    name: '\u0417\u0435\u043b\u044c\u0435 \u043b\u0435\u0447\u0435\u043d\u0438\u044f',
+    source: 'local',
+    category: 'consumable',
+    slotLabel: '\u0417\u0435\u043b\u044c\u044f',
+    price: 150,
+    level: 0,
+    dropType: 'elexir',
+    effect: 'hp',
+    give: '50',
+    stats: {},
+    icon: './assets/ui/items/custom/healing_potion.png'
+  };
+
+  CATALOG[normalizeItemName('\u0421\u0432\u0438\u0442\u043e\u043a \u0432\u043e\u0437\u0432\u0440\u0430\u0442\u0430')] = {
+    name: '\u0421\u0432\u0438\u0442\u043e\u043a \u0432\u043e\u0437\u0432\u0440\u0430\u0442\u0430',
+    source: 'local',
+    category: 'consumable',
+    slotLabel: '\u0421\u0432\u0438\u0442\u043a\u0438',
+    price: 500,
+    level: 0,
+    dropType: 'scroll',
+    effect: 'return_scroll',
+    give: 'nearest_city',
+    stats: {},
+    icon: './assets/ui/items/custom/scroll_return.png'
   };
 
   function canonicalItemKey(value) {
