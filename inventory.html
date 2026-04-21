@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-      const APP_VERSION = '20260421-telegram-14';
+      const APP_VERSION = '20260421-telegram-15';
       const url = new URL(window.location.href);
       if (url.searchParams.get('appv') !== APP_VERSION) {
         url.searchParams.set('appv', APP_VERSION);
@@ -19,7 +19,7 @@
   </script>
   <title>Инвентарь</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="common.css?v=20260421-telegram-14">
+  <link rel="stylesheet" href="common.css?v=20260421-telegram-15">
   <style>
     .inventory-shell {
       min-height: 0;
@@ -276,7 +276,7 @@
   </div>
   <div class="toast" id="toast"></div>
 
-  <script src="common.js?v=20260421-telegram-14"></script>
+  <script src="common.js?v=20260421-telegram-15"></script>
   <script>
     let state = loadState();
     if (!ensureHero(state)) {
@@ -348,7 +348,7 @@
     }
 
     const realInventory = inventory.filter((entry) => !isEmptyItem(entry));
-    const equippedItems = realInventory.filter(isEquipped);
+    const equippedItems = inventory.filter(isEquipped);
     const bagItems = realInventory.filter((entry) => !isEquipped(entry));
     const generalItems = bagItems.filter((entry) => !isResource(entry) && !isQuest(entry));
     const resourceItems = bagItems.filter(isResource);
@@ -391,6 +391,8 @@
       const itemName = entry.item;
       const slotName = entry.slot;
       const groupKey = tab === 'general' ? getGroupKey(entry, tab) : 'all';
+      const isEmpty = isEmptyItem(entry);
+      const safeActions = isEmpty ? [] : actionLabels;
       return `
         <article class="legacy-row" data-row-tab="${tab}" data-row-group="${groupKey}">
           <div class="legacy-icon">${glyphForSlot(slotName)}</div>
@@ -399,12 +401,14 @@
             <span>${slotName}</span>
           </div>
           <div class="legacy-actions">
-            ${actionLabels.map((action) => `
+            ${safeActions.map((action) => `
               <button
                 class="legacy-action${action.kind === 'drop' ? ' drop' : ''}"
                 type="button"
                 data-item-action="${action.label}"
                 data-item-name="${itemName}"
+                data-item-slot="${slotName}"
+                data-item-tab="${tab}"
               >${action.label}</button>
             `).join('')}
           </div>
@@ -518,6 +522,37 @@
       button.addEventListener('click', () => {
         const action = button.dataset.itemAction;
         const itemName = button.dataset.itemName;
+        const slotName = button.dataset.itemSlot;
+
+        if (action === 'Снять') {
+          const equippedIndex = state.hero.inventory.findIndex((entry) => (
+            isEquipped(entry) &&
+            entry.slot === slotName &&
+            entry.item === itemName
+          ));
+
+          if (equippedIndex === -1) {
+            showToast('Предмет уже снят.');
+            return;
+          }
+
+          const equippedEntry = state.hero.inventory[equippedIndex];
+          state.hero.inventory[equippedIndex] = {
+            slot: equippedEntry.slot,
+            item: 'Пусто',
+            type: 'Надето'
+          };
+          state.hero.inventory.push({
+            slot: equippedEntry.slot,
+            item: equippedEntry.item,
+            type: 'Сумка'
+          });
+          saveState(state);
+          showToast(`Снято: ${itemName}`);
+          setTimeout(() => window.location.reload(), 120);
+          return;
+        }
+
         showToast(`${action}: ${itemName}`);
       });
     });
