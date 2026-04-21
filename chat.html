@@ -1,14 +1,14 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-  <meta http-equiv=""Cache-Control"" content=""no-cache, no-store, must-revalidate"">
-  <meta http-equiv=""Pragma"" content=""no-cache"">
-  <meta http-equiv=""Expires"" content=""0"">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-      const APP_VERSION = '20260421-telegram-8';
+      const APP_VERSION = '20260421-telegram-25';
       const url = new URL(window.location.href);
       if (url.searchParams.get('appv') !== APP_VERSION) {
         url.searchParams.set('appv', APP_VERSION);
@@ -16,16 +16,18 @@
       }
       window.__HD_APP_VERSION__ = APP_VERSION;
     })();
-  </script>  <title>Чат</title>
+  </script>
+  <title>Р§Р°С‚</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="common.css?v=20260421-telegram-8">
+  <link rel="stylesheet" href="common.css?v=20260421-telegram-25">
 </head>
 <body>
   <div class="screen-page">
     <div class="app-shell" id="app"></div>
   </div>
 
-  <script src="common.js?v=20260421-telegram-8"></script>
+  <script src="item-catalog.js?v=20260421-telegram-25"></script>
+  <script src="common.js?v=20260421-telegram-25"></script>
   <script>
     let state = loadState();
     if (!ensureHero(state)) {
@@ -40,14 +42,14 @@
     `).join('');
 
     q('app').innerHTML = `
-      ${renderHeader(state, 'Общий городской канал и быстрый обмен сообщениями.')}
+      ${renderHeader(state, 'РћР±С‰РёР№ РіРѕСЂРѕРґСЃРєРѕР№ РєР°РЅР°Р» Рё Р±С‹СЃС‚СЂС‹Р№ РѕР±РјРµРЅ СЃРѕРѕР±С‰РµРЅРёСЏРјРё.')}
       <div class="single-page-layout">
         <div class="panel page-main-panel">
           <div class="panel-inner chat-layout">
             <div class="chat-messages" id="msgWrap">${messages}</div>
             <div class="chat-input-row">
-              <input class="text-input" id="chatInput" placeholder="Сообщение в общий чат">
-              <button class="btn primary" id="sendBtn">Отправить</button>
+              <input class="text-input" id="chatInput" placeholder="РЎРѕРѕР±С‰РµРЅРёРµ РІ РѕР±С‰РёР№ С‡Р°С‚">
+              <button class="btn primary" id="sendBtn">РћС‚РїСЂР°РІРёС‚СЊ</button>
             </div>
           </div>
         </div>
@@ -66,4 +68,6 @@
   </script>
 </body>
 </html>
+
+
 

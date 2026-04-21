@@ -1,14 +1,14 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-  <meta http-equiv=""Cache-Control"" content=""no-cache, no-store, must-revalidate"">
-  <meta http-equiv=""Pragma"" content=""no-cache"">
-  <meta http-equiv=""Expires"" content=""0"">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-      const APP_VERSION = '20260421-telegram-8';
+      const APP_VERSION = '20260421-telegram-25';
       const url = new URL(window.location.href);
       if (url.searchParams.get('appv') !== APP_VERSION) {
         url.searchParams.set('appv', APP_VERSION);
@@ -16,16 +16,18 @@
       }
       window.__HD_APP_VERSION__ = APP_VERSION;
     })();
-  </script>  <title>Карта</title>
+  </script>
+  <title>РљР°СЂС‚Р°</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="common.css?v=20260421-telegram-8">
+  <link rel="stylesheet" href="common.css?v=20260421-telegram-25">
 </head>
 <body>
   <div class="screen-page">
     <div class="app-shell" id="app"></div>
   </div>
 
-  <script src="common.js?v=20260421-telegram-8"></script>
+  <script src="item-catalog.js?v=20260421-telegram-25"></script>
+  <script src="common.js?v=20260421-telegram-25"></script>
   <script>
     let state = loadState();
     if (!ensureHero(state)) {
@@ -41,23 +43,23 @@
     `).join('');
 
     q('app').innerHTML = `
-      ${renderHeader(state, 'Полноценная карта города с точками интереса.')}
+      ${renderHeader(state, 'РџРѕР»РЅРѕС†РµРЅРЅР°СЏ РєР°СЂС‚Р° РіРѕСЂРѕРґР° СЃ С‚РѕС‡РєР°РјРё РёРЅС‚РµСЂРµСЃР°.')}
       <div class="single-page-layout">
         <div class="panel page-main-panel">
           <div class="panel-inner content-scroll">
             <div class="page-stack">
               <div class="page-intro">
                 <strong>${city.name}</strong>
-                <p class="subtitle">Пользователь позже сможет подложить сюда свою реальную карту города через <code>./assets/maps/cities/&lt;city&gt;/map.jpg</code>.</p>
+                <p class="subtitle">РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ РїРѕР·Р¶Рµ СЃРјРѕР¶РµС‚ РїРѕРґР»РѕР¶РёС‚СЊ СЃСЋРґР° СЃРІРѕСЋ СЂРµР°Р»СЊРЅСѓСЋ РєР°СЂС‚Сѓ РіРѕСЂРѕРґР° С‡РµСЂРµР· <code>./assets/maps/cities/&lt;city&gt;/map.jpg</code>.</p>
               </div>
               <div class="map-card" style="min-height:360px">
                 <div class="map-layer" id="mapBg"></div>
                 <div class="map-points">${points}</div>
-                <div class="map-copy">Оружейник, доспешник, рынок, телепорт и другие точки уже готовы к размещению на пользовательской карте.</div>
+                <div class="map-copy">РћСЂСѓР¶РµР№РЅРёРє, РґРѕСЃРїРµС€РЅРёРє, СЂС‹РЅРѕРє, С‚РµР»РµРїРѕСЂС‚ Рё РґСЂСѓРіРёРµ С‚РѕС‡РєРё СѓР¶Рµ РіРѕС‚РѕРІС‹ Рє СЂР°Р·РјРµС‰РµРЅРёСЋ РЅР° РїРѕР»СЊР·РѕРІР°С‚РµР»СЊСЃРєРѕР№ РєР°СЂС‚Рµ.</div>
               </div>
               <div class="feature-card">
-                <h3 style="margin:0 0 8px;color:#f1d59a;font-family:var(--font-main)">Локация</h3>
-                <div id="pointInfo">Выбери точку на карте.</div>
+                <h3 style="margin:0 0 8px;color:#f1d59a;font-family:var(--font-main)">Р›РѕРєР°С†РёСЏ</h3>
+                <div id="pointInfo">Р’С‹Р±РµСЂРё С‚РѕС‡РєСѓ РЅР° РєР°СЂС‚Рµ.</div>
               </div>
             </div>
           </div>
@@ -85,4 +87,6 @@
   </script>
 </body>
 </html>
+
+
 

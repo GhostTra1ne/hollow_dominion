@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-    const APP_VERSION = '20260421-telegram-24';
+    const APP_VERSION = '20260421-telegram-25';
       const url = new URL(window.location.href);
       if (url.searchParams.get('appv') !== APP_VERSION) {
         url.searchParams.set('appv', APP_VERSION);
@@ -19,7 +19,7 @@
   </script>
   <title>Инвентарь</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="common.css?v=20260421-telegram-24">
+  <link rel="stylesheet" href="common.css?v=20260421-telegram-25">
   <style>
     .inventory-shell {
       min-height: 0;
@@ -402,7 +402,8 @@
   </div>
   <div class="toast" id="toast"></div>
 
-  <script src="common.js?v=20260421-telegram-24"></script>
+  <script src="item-catalog.js?v=20260421-telegram-25"></script>
+  <script src="common.js?v=20260421-telegram-25"></script>
   <script>
     let state = loadState();
     if (!ensureHero(state)) {
@@ -432,94 +433,15 @@
 
     const SLOT_MAP = Object.fromEntries(EQUIP_SLOTS.map((slot) => [slot.id, slot]));
 
-    const ITEM_LIBRARY = {
-      'железный меч': {
-        family: 'weapon',
-        stats: { patt: 8, matt: 6 }
-      },
-      'club': {
-        family: 'weapon',
-        stats: { patt: 8, matt: 6 }
-      },
-      'кожаный доспех': {
-        family: 'body',
-        setKey: 'leather-init',
-        setPart: 'body',
-        stats: { pdef: 35, mdef: 0 }
-      },
-      'cotton robe': {
-        family: 'body',
-        setKey: 'starter-magic',
-        setPart: 'body',
-        stats: { pdef: 35, mdef: 0 }
-      },
-      'кожаный низ': {
-        family: 'legs',
-        setKey: 'leather-init',
-        setPart: 'legs',
-        stats: { pdef: 16, mdef: 0 }
-      },
-      'кожаные перчатки': {
-        family: 'gloves',
-        setKey: 'leather-init',
-        setPart: 'gloves',
-        stats: { pdef: 8, mdef: 0 }
-      },
-      'кожаные ботинки': {
-        family: 'boots',
-        setKey: 'leather-init',
-        setPart: 'boots',
-        stats: { pdef: 8, mdef: 0 }
-      },
-      'железный шлем': {
-        family: 'head',
-        stats: { pdef: 14, mdef: 0 }
-      },
-      'necklace of magic': {
-        family: 'necklace',
-        stats: { pdef: 0, mdef: 15 }
-      },
-      'ожерелье ученика': {
-        family: 'necklace',
-        stats: { pdef: 0, mdef: 8 }
-      },
-      'щит новобранца': {
-        family: 'shield',
-        stats: { pdef: 18, mdef: 4 }
-      },
-      'серьга ученика': {
-        family: 'earring',
-        stats: { pdef: 0, mdef: 4 }
-      },
-      'кольцо ученика': {
-        family: 'ring',
-        stats: { pdef: 0, mdef: 4 }
-      }
-    };
-
-    const SET_LIBRARY = {
-      'leather-init': {
-        name: 'Кожаный комплект новобранца',
-        thresholds: {
-          2: { pdef: 6 },
-          3: { pdef: 12 },
-          4: { pdef: 18, mdef: 6 }
-        }
-      },
-      'starter-magic': {
-        name: 'Комплект ученика мага',
-        thresholds: {
-          2: { mdef: 8 },
-          3: { mdef: 12, matt: 4 }
-        }
-      }
-    };
+    const ITEM_LIBRARY = window.HD_ITEM_CATALOG || {};
+    const SET_LIBRARY = window.HD_SET_LIBRARY || {};
 
     const STAT_LABELS = {
       patt: 'P.Atk',
       matt: 'M.Atk',
       pdef: 'P.Def',
-      mdef: 'M.Def'
+      mdef: 'M.Def',
+      critical: 'Crit'
     };
 
     function isEquipped(entry) {
@@ -544,6 +466,11 @@
       return String(stack ? stack.baseName : entry.item || '').trim();
     }
 
+    function rebuildStackedItemName(entry, nextBaseName) {
+      const stack = parseStackedItem(entry);
+      return stack ? `${stack.count} x ${nextBaseName}` : nextBaseName;
+    }
+
     function inferFamilyFromEntry(entry) {
       const text = normalizeText(`${entry.slot || ''} ${getBaseItemName(entry)}`);
       if (text.includes('оруж') || text.includes('меч') || text.includes('club') || text.includes('weapon')) return 'weapon';
@@ -560,7 +487,11 @@
     }
 
     function getItemBlueprint(entry) {
-      return ITEM_LIBRARY[normalizeText(getBaseItemName(entry))] || null;
+      const baseName = getBaseItemName(entry);
+      if (typeof window.HD_RESOLVE_ITEM_BLUEPRINT === 'function') {
+        return window.HD_RESOLVE_ITEM_BLUEPRINT(baseName);
+      }
+      return ITEM_LIBRARY[normalizeText(baseName)] || null;
     }
 
     function getPrimaryEquipSlotId(family) {
@@ -612,22 +543,38 @@
 
       const normalized = entries.map((raw, index) => {
         const entry = { ...raw };
-        const family = getEntryMeta(entry).family;
+        const originalBaseName = getBaseItemName(entry);
 
         if (!entry.uid) {
           entry.uid = `inv-${seed}-${index}`;
           changed = true;
         }
 
+        const blueprint = getItemBlueprint(entry);
+        const canonicalName = blueprint?.name || originalBaseName;
+        if (canonicalName && canonicalName !== originalBaseName) {
+          entry.item = rebuildStackedItemName(entry, canonicalName);
+          changed = true;
+        }
+
+        const family = entry.equipFamily || blueprint?.family || inferFamilyFromEntry(entry);
+
         if (family && entry.equipFamily !== family) {
           entry.equipFamily = family;
           changed = true;
         }
 
+        if (blueprint?.category && entry.category !== blueprint.category) {
+          entry.category = blueprint.category;
+          changed = true;
+        }
+
         if (!entry.category) {
           const slotText = normalizeText(entry.slot);
-          const itemText = normalizeText(getBaseItemName(entry));
-          if (slotText.includes('матер')) {
+          const itemText = normalizeText(canonicalName);
+          if (blueprint?.category) {
+            entry.category = blueprint.category;
+          } else if (slotText.includes('матер')) {
             entry.category = 'resource';
           } else if (slotText.includes('квест')) {
             entry.category = 'quest';
@@ -641,7 +588,6 @@
           changed = true;
         }
 
-        const blueprint = getItemBlueprint(entry);
         if ((!entry.stats || typeof entry.stats !== 'object') && blueprint?.stats) {
           entry.stats = blueprint.stats;
           changed = true;
@@ -675,12 +621,30 @@
 
         if (!isEquipped(entry) && family) {
           const bagLabel = getBagSlotLabel(family);
-          if (entry.slot !== bagLabel && entry.category !== 'resource' && entry.category !== 'quest' && entry.category !== 'consumable') {
+          if (entry.slot !== bagLabel && entry.category === 'wearable') {
             entry.slot = bagLabel;
             changed = true;
           }
           if (entry.equipSlot) {
             entry.equipSlot = '';
+            changed = true;
+          }
+        }
+
+        if (!isEquipped(entry)) {
+          let normalizedSlotLabel = '';
+          if (entry.category === 'resource') {
+            normalizedSlotLabel = 'Ресурсы';
+          } else if (entry.category === 'quest') {
+            normalizedSlotLabel = 'Квест';
+          } else if (entry.category === 'consumable') {
+            normalizedSlotLabel = isScroll(entry) ? 'Свитки' : 'Зелья';
+          } else if (entry.category === 'general' && !family) {
+            normalizedSlotLabel = 'Сумка';
+          }
+
+          if (normalizedSlotLabel && entry.slot !== normalizedSlotLabel) {
+            entry.slot = normalizedSlotLabel;
             changed = true;
           }
         }
@@ -694,7 +658,18 @@
     const normalizedInventory = normalizeInventorySchema(inventory);
     inventory = normalizedInventory.inventory;
     state.hero.inventory = inventory;
-    if (normalizedInventory.changed) {
+
+    function persistHeroState() {
+      if (typeof window.HD_RECOMPUTE_HERO_STATS === 'function') {
+        window.HD_RECOMPUTE_HERO_STATS(state);
+      }
+      saveState(state);
+    }
+
+    if (
+      normalizedInventory.changed ||
+      (typeof window.HD_RECOMPUTE_HERO_STATS === 'function' && window.HD_RECOMPUTE_HERO_STATS(state))
+    ) {
       saveState(state);
     }
 
@@ -707,11 +682,23 @@
     }
 
     function isPotion(entry) {
-      return entry.category === 'consumable' && normalizeText(entry.slot).includes('зель');
+      const blueprint = getItemBlueprint(entry);
+      const name = normalizeText(getBaseItemName(entry));
+      return entry.category === 'consumable' && (
+        blueprint?.dropType === 'elexir' ||
+        name.startsWith('hp-') ||
+        name.startsWith('mp-')
+      );
     }
 
     function isScroll(entry) {
-      return entry.category === 'consumable' && normalizeText(entry.slot).includes('свит');
+      const blueprint = getItemBlueprint(entry);
+      const name = normalizeText(getBaseItemName(entry));
+      return entry.category === 'consumable' && (
+        blueprint?.dropType === 'scroll' ||
+        name.includes('scroll') ||
+        name.includes('свит')
+      );
     }
 
     function isAccessory(entry) {
@@ -895,7 +882,10 @@
     function renderEquipmentSlot(entry) {
       const slot = SLOT_MAP[entry.equipSlot];
       const isEmpty = isEmptyItem(entry);
-      const iconPath = emptyIconPathForEquipSlot(entry.equipSlot);
+      const blueprint = getItemBlueprint(entry);
+      const iconPath = isEmpty
+        ? emptyIconPathForEquipSlot(entry.equipSlot)
+        : blueprint?.icon || emptyIconPathForEquipSlot(entry.equipSlot);
       const actionButton = isEmpty ? '' : `
         <button
           class="equip-slot-action"
@@ -911,7 +901,7 @@
       return `
         <article class="equip-slot-card${isEmpty ? '' : ' has-item'}">
           <div class="equip-slot-icon">
-            ${iconPath ? `<img src="${iconPath}" alt="">` : glyphForSlot(slot?.label || entry.slot)}
+            ${iconPath ? `<img class="legacy-empty-icon" src="${iconPath}" alt="">` : glyphForSlot(slot?.label || entry.slot)}
           </div>
           <div class="equip-slot-label">${slot?.label || entry.slot}</div>
           <div class="equip-slot-name${isEmpty ? ' empty' : ''}">${isEmpty ? 'Пусто' : entry.item}</div>
@@ -1032,6 +1022,10 @@
     }
 
     function renderIcon(entry, tab) {
+      const blueprint = getItemBlueprint(entry);
+      if (blueprint?.icon) {
+        return `<img class="legacy-empty-icon" src="${blueprint.icon}" alt="">`;
+      }
       if (tab === 'equipment' && isEmptyItem(entry)) {
         const iconPath = emptyIconPathForSlot(entry.equipSlot || entry.slot);
         if (iconPath) {
@@ -1180,7 +1174,7 @@
             type: 'Сумка',
             equipSlot: ''
           };
-          saveState(state);
+          persistHeroState();
           showToast(`Снято: ${itemName}`);
           setTimeout(() => window.location.reload(), 120);
           return;
@@ -1234,7 +1228,7 @@
             equipSlot: targetSlotId
           };
 
-          saveState(state);
+          persistHeroState();
           showToast(`Надето: ${itemName}`);
           setTimeout(() => window.location.reload(), 120);
           return;
@@ -1263,7 +1257,7 @@
             state.hero.inventory.splice(bagIndex, 1);
           }
 
-          saveState(state);
+          persistHeroState();
           showToast(`Использовано: ${itemName}`);
           setTimeout(() => window.location.reload(), 120);
           return;
@@ -1275,4 +1269,5 @@
   </script>
 </body>
 </html>
+
 

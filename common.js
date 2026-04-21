@@ -432,9 +432,118 @@ function setCreatorBg(el, state) {
   );
 }
 
+function normalizeInventoryItemName(value) {
+  if (typeof window.HD_NORMALIZE_ITEM_NAME === 'function') {
+    return window.HD_NORMALIZE_ITEM_NAME(value);
+  }
+  return String(value || '')
+    .replace(/^\s*\d+\s*x\s*/i, '')
+    .trim()
+    .replaceAll('Ё', 'Е')
+    .replaceAll('ё', 'е')
+    .toLowerCase()
+    .replace(/\s+/g, ' ');
+}
+
+function parseInventoryStackItem(value) {
+  const match = String(value || '').match(/^\s*(\d+)\s*x\s*(.+?)\s*$/i);
+  if (!match) return null;
+  return {
+    count: Number(match[1]),
+    baseName: match[2]
+  };
+}
+
+function getInventoryBaseItemName(entry) {
+  const stack = parseInventoryStackItem(entry?.item);
+  return String(stack ? stack.baseName : entry?.item || '').trim();
+}
+
+function isInventoryEntryEquipped(entry) {
+  return String(entry?.type || '').toLowerCase().includes('над');
+}
+
+function resolveInventoryItemBlueprint(entryOrName) {
+  const name = typeof entryOrName === 'string'
+    ? entryOrName
+    : getInventoryBaseItemName(entryOrName);
+  if (typeof window.HD_RESOLVE_ITEM_BLUEPRINT === 'function') {
+    return window.HD_RESOLVE_ITEM_BLUEPRINT(name);
+  }
+  return window.HD_ITEM_CATALOG?.[normalizeInventoryItemName(name)] || null;
+}
+
+function recomputeHeroEquipmentStats(state) {
+  if (!state?.hero) return false;
+
+  const hero = state.hero;
+  const baseCombat = hero.baseCombat || {
+    pAtk: hero.pAtk || 0,
+    pDef: hero.pDef || 0,
+    mAtk: hero.mAtk || 0,
+    mDef: hero.mDef || 0,
+    critical: hero.critical || 0,
+    mCritical: hero.mCritical || 0
+  };
+
+  let changed = false;
+  if (!hero.baseCombat) {
+    hero.baseCombat = { ...baseCombat };
+    changed = true;
+  }
+
+  const bonus = {
+    patt: 0,
+    pdef: 0,
+    matt: 0,
+    mdef: 0,
+    critical: 0
+  };
+
+  (hero.inventory || [])
+    .filter(isInventoryEntryEquipped)
+    .forEach((entry) => {
+      const blueprint = resolveInventoryItemBlueprint(entry);
+      const stats = blueprint?.stats || entry?.stats || {};
+      bonus.patt += Number(stats.patt || 0);
+      bonus.pdef += Number(stats.pdef || 0);
+      bonus.matt += Number(stats.matt || 0);
+      bonus.mdef += Number(stats.mdef || 0);
+      bonus.critical += Number(stats.critical || stats.crit || 0);
+    });
+
+  const nextValues = {
+    pAtk: baseCombat.pAtk + bonus.patt,
+    pDef: baseCombat.pDef + bonus.pdef,
+    mAtk: baseCombat.mAtk + bonus.matt,
+    mDef: baseCombat.mDef + bonus.mdef,
+    critical: baseCombat.critical + bonus.critical
+  };
+
+  Object.entries(nextValues).forEach(([key, value]) => {
+    if (hero[key] !== value) {
+      hero[key] = value;
+      changed = true;
+    }
+  });
+
+  return changed;
+}
+
+window.HD_RECOMPUTE_HERO_STATS = recomputeHeroEquipmentStats;
+
 function buildHero(state) {
   const stats = classStats[state.creator.classId];
-  return {
+  const baseCombat = {
+    pAtk: state.creator.classId === 'warrior' ? 299 : 154,
+    pDef: state.creator.classId === 'warrior' ? 353 : 220,
+    mAtk: state.creator.classId === 'mage' ? 404 : 121,
+    mDef: 287,
+    critical: 66,
+    mCritical: 58
+  };
+
+  const hero = {
     nickname: normalizeNickname(state.creator.nickname),
     race: state.creator.race,
     classId: state.creator.classId,
@@ -447,16 +556,17 @@ function buildHero(state) {
     xpPercent: '0.00',
     cp: Math.round(stats.maxHp * 0.26),
     maxCp: Math.round(stats.maxHp * 0.26),
-    pAtk: state.creator.classId === 'warrior' ? 299 : 154,
-    pDef: state.creator.classId === 'warrior' ? 353 : 220,
-    mAtk: state.creator.classId === 'mage' ? 404 : 121,
-    mDef: 287,
+    baseCombat,
+    pAtk: baseCombat.pAtk,
+    pDef: baseCombat.pDef,
+    mAtk: baseCombat.mAtk,
+    mDef: baseCombat.mDef,
     accuracy: 124,
     mAccuracy: 173,
     evasion: 121,
     mEvasion: 170,
-    critical: 66,
-    mCritical: 58,
+    critical: baseCombat.critical,
+    mCritical: baseCombat.mCritical,
     atkSpd: 356,
     castSpd: state.creator.classId === 'mage' ? 262 : 118,
     speed: 131,
@@ -467,25 +577,97 @@ function buildHero(state) {
     pvp: 0,
     raid: 0,
     inventory: [
-      {slot: 'Оружие', item: 'Железный меч', type: 'Надето'},
-      {slot: 'Шлем', item: 'Железный шлем', type: 'Надето'},
-      {slot: 'Тело', item: 'Кожаный доспех', type: 'Надето'},
-      {slot: 'Низ', item: 'Кожаный низ', type: 'Надето'},
-      {slot: 'Перчатки', item: 'Кожаные перчатки', type: 'Надето'},
-      {slot: 'Ботинки', item: 'Кожаные ботинки', type: 'Надето'},
-      {slot: 'Ожерелье', item: 'Ожерелье ученика', type: 'Надето'},
-      {slot: 'Аксессуары', item: 'Кольцо ученика', type: 'Сумка'},
-      {slot: 'Аксессуары', item: 'Кольцо ученика', type: 'Сумка'},
-      {slot: 'Аксессуары', item: 'Серьга ученика', type: 'Сумка'},
-      {slot: 'Аксессуары', item: 'Серьга ученика', type: 'Сумка'},
-      {slot: 'Зелья', item: '3 x Зелье лечения', type: 'Сумка'},
-      {slot: 'Свитки', item: '1 x Свиток возврата', type: 'Сумка'},
-      {slot: 'Материалы', item: '12 x Железная руда', type: 'Сумка'},
-      {slot: 'Материалы', item: '6 x Древесина', type: 'Сумка'},
-      {slot: 'Квест', item: 'Печать старосты', type: 'Сумка'},
-      {slot: 'Прочее', item: 'Факел путника', type: 'Сумка'}
+      {
+        slot: 'Оружие',
+        item: state.creator.classId === 'mage' ? 'Mage Staff' : 'Short Sword',
+        type: 'Надето',
+        category: 'wearable',
+        equipFamily: 'weapon',
+        equipSlot: 'weapon'
+      },
+      {
+        slot: 'Шлем',
+        item: 'Leather Helmet',
+        type: 'Надето',
+        category: 'wearable',
+        equipFamily: 'head',
+        equipSlot: 'head'
+      },
+      {
+        slot: 'Тело',
+        item: 'Cotton Robe',
+        type: 'Надето',
+        category: 'wearable',
+        equipFamily: 'body',
+        equipSlot: 'body'
+      },
+      {
+        slot: 'Низ',
+        item: 'Кожаный низ',
+        type: 'Надето',
+        category: 'wearable',
+        equipFamily: 'legs',
+        equipSlot: 'legs'
+      },
+      {
+        slot: 'Перчатки',
+        item: 'Leather Gloves',
+        type: 'Надето',
+        category: 'wearable',
+        equipFamily: 'gloves',
+        equipSlot: 'gloves'
+      },
+      {
+        slot: 'Ботинки',
+        item: 'Leather Sandals',
+        type: 'Надето',
+        category: 'wearable',
+        equipFamily: 'boots',
+        equipSlot: 'boots'
+      },
+      {
+        slot: 'Ожерелье',
+        item: 'Necklace of Magic',
+        type: 'Надето',
+        category: 'wearable',
+        equipFamily: 'necklace',
+        equipSlot: 'necklace'
+      },
+      {
+        slot: 'Кольцо I',
+        item: 'Magic Ring',
+        type: 'Надето',
+        category: 'wearable',
+        equipFamily: 'ring',
+        equipSlot: 'ring1'
+      },
+      {
+        slot: 'Серьга I',
+        item: 'Apprentices Earring',
+        type: 'Надето',
+        category: 'wearable',
+        equipFamily: 'earring',
+        equipSlot: 'earring1'
+      },
+      {
+        slot: 'Щит',
+        item: state.creator.classId === 'mage' ? 'Пусто' : 'Small Shield',
+        type: 'Надето',
+        category: 'wearable',
+        equipFamily: 'shield',
+        equipSlot: 'shield'
+      },
+      { slot: 'Зелье', item: '3 x HP-50', type: 'Сумка', category: 'consumable' },
+      { slot: 'Рецепт', item: '1 x Recipe: XXXX', type: 'Сумка', category: 'general' },
+      { slot: 'Ресурсы', item: '12 x Animal Skin', type: 'Сумка', category: 'resource' },
+      { slot: 'Ресурсы', item: '6 x Coal', type: 'Сумка', category: 'resource' },
+      { slot: 'Квест', item: 'Печать старосты', type: 'Сумка', category: 'quest' },
+      { slot: 'Сумка', item: 'Факел путника', type: 'Сумка', category: 'general' }
     ]
   };
+
+  recomputeHeroEquipmentStats({ hero });
+  return hero;
 }
 
 function showToast(text) {
@@ -601,6 +783,9 @@ function ensureHero(state) {
   if (!state.hero) {
     location.href = withAppParams('index.html');
     return false;
+  }
+  if (recomputeHeroEquipmentStats(state)) {
+    saveState(state);
   }
   return true;
 }
