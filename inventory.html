@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-    const APP_VERSION = '20260421-telegram-21';
+    const APP_VERSION = '20260421-telegram-22';
       const url = new URL(window.location.href);
       if (url.searchParams.get('appv') !== APP_VERSION) {
         url.searchParams.set('appv', APP_VERSION);
@@ -19,7 +19,7 @@
   </script>
   <title>Инвентарь</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="common.css?v=20260421-telegram-21">
+  <link rel="stylesheet" href="common.css?v=20260421-telegram-22">
   <style>
     .inventory-shell {
       min-height: 0;
@@ -144,66 +144,44 @@
       color: rgba(243, 237, 222, .64);
     }
 
-    .paperdoll-board {
+    .equip-flat-grid {
       display: grid;
-      gap: 12px;
-      padding: 10px;
-      border-radius: 22px;
-      background:
-        linear-gradient(180deg, rgba(255, 255, 255, .03), rgba(255, 255, 255, .012)),
-        radial-gradient(circle at 50% 0%, rgba(214, 178, 116, .07), rgba(214, 178, 116, 0) 64%);
-      border: 1px solid rgba(255, 255, 255, .06);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
     }
 
-    .paperdoll-grid {
-      display: grid;
-      grid-template-columns: 88px minmax(0, 1fr) 88px;
-      grid-template-areas:
-        "head center earring1"
-        "body center earring2"
-        "legs center necklace"
-        "gloves center ring1"
-        "boots center ring2"
-        "weapon weapon weapon";
-      gap: 10px 12px;
-      align-items: stretch;
-    }
-
-    .paper-slot {
-      min-height: 82px;
-      padding: 8px 6px 10px;
+    .equip-slot-card {
+      min-height: 84px;
+      padding: 10px 12px;
       border-radius: 18px;
       border: 1px solid rgba(214, 178, 116, .14);
       background:
         linear-gradient(180deg, rgba(68, 46, 19, .95), rgba(31, 20, 8, .98)),
         radial-gradient(circle at 50% 0%, rgba(255, 228, 170, .08), rgba(255, 228, 170, 0) 66%);
       display: grid;
-      align-content: start;
-      justify-items: center;
-      gap: 6px;
+      grid-template-columns: 44px minmax(0, 1fr);
+      grid-template-areas:
+        "icon label"
+        "icon name"
+        "action action";
+      align-items: center;
+      gap: 4px 10px;
       box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, .04),
         0 10px 18px rgba(0, 0, 0, .16);
     }
 
-    .paper-slot.weapon-slot {
-      grid-template-columns: 56px minmax(0, 1fr) auto;
-      align-items: center;
-      justify-items: start;
-      min-height: 72px;
-      padding: 10px 12px;
-    }
-
-    .paper-slot.has-item {
+    .equip-slot-card.has-item {
       border-color: rgba(214, 178, 116, .28);
       background:
         linear-gradient(180deg, rgba(92, 61, 24, .96), rgba(40, 26, 10, .98)),
         radial-gradient(circle at 50% 0%, rgba(255, 228, 170, .14), rgba(255, 228, 170, 0) 66%);
     }
 
-    .paper-slot-icon {
-      width: 46px;
-      height: 46px;
+    .equip-slot-icon {
+      grid-area: icon;
+      width: 44px;
+      height: 44px;
       border-radius: 14px;
       display: grid;
       place-items: center;
@@ -214,35 +192,39 @@
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05);
     }
 
-    .paper-slot-icon img {
+    .equip-slot-icon img {
       width: 100%;
       height: 100%;
       object-fit: contain;
       border-radius: 12px;
     }
 
-    .paper-slot-label {
+    .equip-slot-label {
+      grid-area: label;
       color: rgba(243, 237, 222, .72);
       font-size: 10px;
       font-weight: 700;
       letter-spacing: .04em;
       text-transform: uppercase;
-      text-align: center;
+      text-align: left;
     }
 
-    .paper-slot-name {
+    .equip-slot-name {
+      grid-area: name;
       color: #fff0cb;
       font-size: 12px;
+      font-weight: 700;
       line-height: 1.25;
-      text-align: center;
+      text-align: left;
       word-break: break-word;
     }
 
-    .paper-slot-name.empty {
+    .equip-slot-name.empty {
       color: rgba(243, 237, 222, .48);
     }
 
-    .paper-slot-action {
+    .equip-slot-action {
+      grid-area: action;
       padding: 6px 10px;
       border-radius: 999px;
       border: 1px solid rgba(214, 178, 116, .18);
@@ -254,106 +236,11 @@
       transition: border-color .18s ease, background .18s ease, transform .18s ease;
     }
 
-    .paper-slot-action:hover,
-    .paper-slot-action:focus-visible {
+    .equip-slot-action:hover,
+    .equip-slot-action:focus-visible {
       border-color: rgba(214, 178, 116, .30);
       background: rgba(214, 178, 116, .10);
       transform: translateY(-1px);
-    }
-
-    .paperdoll-center {
-      grid-area: center;
-      min-height: 454px;
-      border-radius: 24px;
-      position: relative;
-      overflow: hidden;
-      background:
-        linear-gradient(180deg, rgba(10, 10, 14, .14), rgba(10, 10, 14, .28)),
-        radial-gradient(circle at 50% 20%, rgba(255, 224, 167, .08), rgba(255, 224, 167, 0) 36%),
-        linear-gradient(180deg, rgba(57, 36, 15, .95), rgba(24, 16, 8, .98));
-      border: 1px solid rgba(214, 178, 116, .16);
-      box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, .05),
-        0 18px 30px rgba(0, 0, 0, .20);
-    }
-
-    .paperdoll-center::before {
-      content: "";
-      position: absolute;
-      inset: 12px;
-      border-radius: 18px;
-      border: 1px solid rgba(214, 178, 116, .14);
-      pointer-events: none;
-    }
-
-    .paperdoll-stage {
-      position: absolute;
-      inset: 0;
-      background-position: center;
-      background-size: cover;
-      opacity: .82;
-      filter: saturate(.92);
-    }
-
-    .paperdoll-stage::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background:
-        linear-gradient(180deg, rgba(8, 9, 13, .10), rgba(8, 9, 13, .28)),
-        radial-gradient(circle at 50% 76%, rgba(255, 230, 184, .18), rgba(255, 230, 184, 0) 28%);
-    }
-
-    .paperdoll-preview {
-      position: absolute;
-      inset: 30px 18px 18px;
-      display: grid;
-      place-items: end center;
-      pointer-events: none;
-    }
-
-    .paperdoll-preview .character-box {
-      width: min(100%, 170px);
-      transform-origin: bottom center;
-      filter: drop-shadow(0 16px 18px rgba(0, 0, 0, .34));
-    }
-
-    .paperdoll-column-left {
-      display: grid;
-      gap: 10px;
-    }
-
-    .paperdoll-column-right {
-      display: grid;
-      gap: 10px;
-    }
-
-    .paperdoll-slot-head { grid-area: head; }
-    .paperdoll-slot-body { grid-area: body; }
-    .paperdoll-slot-legs { grid-area: legs; }
-    .paperdoll-slot-gloves { grid-area: gloves; }
-    .paperdoll-slot-boots { grid-area: boots; }
-    .paperdoll-slot-necklace { grid-area: necklace; }
-    .paperdoll-slot-earring1 { grid-area: earring1; }
-    .paperdoll-slot-earring2 { grid-area: earring2; }
-    .paperdoll-slot-ring1 { grid-area: ring1; }
-    .paperdoll-slot-ring2 { grid-area: ring2; }
-    .paperdoll-slot-weapon { grid-area: weapon; }
-
-    .paperdoll-footer {
-      display: grid;
-      gap: 6px;
-      justify-items: center;
-      text-align: center;
-      color: rgba(243, 237, 222, .66);
-      font-size: 12px;
-      line-height: 1.45;
-    }
-
-    .paperdoll-footer strong {
-      color: #fff0cb;
-      font-size: 14px;
-      font-weight: 800;
     }
 
     .legacy-list {
@@ -488,39 +375,24 @@
         justify-content: flex-start;
       }
 
-      .paperdoll-grid {
-        grid-template-columns: 74px minmax(0, 1fr) 74px;
+      .equip-flat-grid {
         gap: 8px;
       }
 
-      .paper-slot {
-        min-height: 74px;
-        padding: 8px 4px;
+      .equip-slot-card {
+        min-height: 72px;
+        padding: 8px 9px;
+        grid-template-columns: 38px minmax(0, 1fr);
+        gap: 3px 8px;
       }
 
-      .paper-slot.weapon-slot {
-        grid-template-columns: 42px minmax(0, 1fr);
+      .equip-slot-icon {
+        width: 38px;
+        height: 38px;
       }
 
-      .paper-slot-icon {
-        width: 40px;
-        height: 40px;
-      }
-
-      .paper-slot-name {
-        font-size: 11px;
-      }
-
-      .paperdoll-center {
-        min-height: 360px;
-      }
-
-      .paperdoll-preview {
-        inset: 24px 14px 14px;
-      }
-
-      .paperdoll-preview .character-box {
-        width: min(100%, 132px);
+      .equip-slot-action {
+        font-size: 10px;
       }
     }
   </style>
@@ -531,7 +403,7 @@
   </div>
   <div class="toast" id="toast"></div>
 
-  <script src="common.js?v=20260421-telegram-21"></script>
+  <script src="common.js?v=20260421-telegram-22"></script>
   <script>
     let state = loadState();
     if (!ensureHero(state)) {
@@ -545,17 +417,18 @@
     }
 
     const EQUIP_SLOTS = [
-      { id: 'weapon', family: 'weapon', label: 'Меч', emptyIcon: 'weapon' },
       { id: 'head', family: 'head', label: 'Шлем', emptyIcon: 'golova' },
-      { id: 'body', family: 'body', label: 'Тело', emptyIcon: 'body' },
-      { id: 'legs', family: 'legs', label: 'Низ', emptyIcon: 'plash' },
-      { id: 'gloves', family: 'gloves', label: 'Перчатки', emptyIcon: 'ruki' },
-      { id: 'boots', family: 'boots', label: 'Ботинки', emptyIcon: 'nogi' },
       { id: 'necklace', family: 'necklace', label: 'Ожерелье', emptyIcon: 'amulet' },
+      { id: 'body', family: 'body', label: 'Тело', emptyIcon: 'body' },
       { id: 'earring1', family: 'earring', label: 'Серьга I', emptyIcon: 'ykr' },
+      { id: 'legs', family: 'legs', label: 'Низ', emptyIcon: 'plash' },
       { id: 'earring2', family: 'earring', label: 'Серьга II', emptyIcon: 'ykr' },
+      { id: 'gloves', family: 'gloves', label: 'Перчатки', emptyIcon: 'ruki' },
       { id: 'ring1', family: 'ring', label: 'Кольцо I', emptyIcon: 'kolco' },
-      { id: 'ring2', family: 'ring', label: 'Кольцо II', emptyIcon: 'kolco2' }
+      { id: 'boots', family: 'boots', label: 'Ботинки', emptyIcon: 'nogi' },
+      { id: 'ring2', family: 'ring', label: 'Кольцо II', emptyIcon: 'kolco2' },
+      { id: 'weapon', family: 'weapon', label: 'Меч', emptyIcon: 'weapon' },
+      { id: 'shield', family: 'shield', label: 'Щит', emptyIcon: 'shit' }
     ];
 
     const SLOT_MAP = Object.fromEntries(EQUIP_SLOTS.map((slot) => [slot.id, slot]));
@@ -610,6 +483,10 @@
       'ожерелье ученика': {
         family: 'necklace',
         stats: { pdef: 0, mdef: 8 }
+      },
+      'щит новобранца': {
+        family: 'shield',
+        stats: { pdef: 18, mdef: 4 }
       },
       'серьга ученика': {
         family: 'earring',
@@ -676,6 +553,7 @@
       if (text.includes('низ') || text.includes('понож') || text.includes('штаны') || text.includes('legs')) return 'legs';
       if (text.includes('перчат') || text.includes('gloves') || text.includes('рук')) return 'gloves';
       if (text.includes('ботин') || text.includes('сап') || text.includes('boots') || text.includes('ноги')) return 'boots';
+      if (text.includes('щит') || text.includes('shield') || text.includes('shit')) return 'shield';
       if (text.includes('ожер') || text.includes('амул') || text.includes('necklace')) return 'necklace';
       if (text.includes('серьг') || text.includes('earring')) return 'earring';
       if (text.includes('коль') || text.includes('ring')) return 'ring';
@@ -694,6 +572,7 @@
         legs: 'legs',
         gloves: 'gloves',
         boots: 'boots',
+        shield: 'shield',
         necklace: 'necklace',
         ring: 'ring1',
         earring: 'earring1'
@@ -708,6 +587,7 @@
         legs: 'Низ',
         gloves: 'Перчатки',
         boots: 'Ботинки',
+        shield: 'Щит',
         necklace: 'Ожерелье',
         ring: 'Кольцо',
         earring: 'Серьга'
@@ -895,6 +775,7 @@
       if (name.includes('сап') || name.includes('ботин')) return EMPTY_SLOT_ICONS.nogi;
       if (name.includes('legs') || name.includes('низ') || name.includes('pants')) return EMPTY_SLOT_ICONS.plash;
       if (name.includes('boots') || name.includes('ботинки')) return EMPTY_SLOT_ICONS.nogi;
+      if (name.includes('щит') || name.includes('shield') || name.includes('shit')) return EMPTY_SLOT_ICONS.shit;
       if (name.includes('рук')) return EMPTY_SLOT_ICONS.ruki;
       if (name.includes('gloves') || name.includes('перчат')) return EMPTY_SLOT_ICONS.ruki;
       if (name.includes('коль')) return EMPTY_SLOT_ICONS.kolco;
@@ -1010,44 +891,13 @@
       };
     }
 
-    function renderEquipmentSummary(entries) {
-      const bonuses = computeEquipmentBonuses(entries);
-      const totalStats = bonuses.total;
-      return `
-        <section class="equip-summary">
-          <div>
-            <strong>Бонусы экипировки</strong>
-            <p>Старая логика сохранена по смыслу: вещь даёт свои статы, а собранные части комплекта добавляют бонус сверху.</p>
-          </div>
-          <div class="equip-stat-grid">
-            ${Object.entries(STAT_LABELS).map(([key, label]) => `
-              <div class="equip-stat-chip">
-                <span>${label}</span>
-                <b>+${Number(totalStats[key] || 0)}</b>
-              </div>
-            `).join('')}
-          </div>
-          ${bonuses.setSummaries.length ? `
-            <div class="equip-sets">
-              ${bonuses.setSummaries.map((set) => `
-                <div class="equip-set-chip">
-                  <span>${set.name} • частей: ${set.parts}</span>
-                  <b>${set.bonusText}</b>
-                </div>
-              `).join('')}
-            </div>
-          ` : ''}
-        </section>
-      `;
-    }
-
     function renderEquipmentSlot(entry) {
       const slot = SLOT_MAP[entry.equipSlot];
       const isEmpty = isEmptyItem(entry);
       const iconPath = emptyIconPathForEquipSlot(entry.equipSlot);
       const actionButton = isEmpty ? '' : `
         <button
-          class="paper-slot-action"
+          class="equip-slot-action"
           type="button"
           data-item-action="Снять"
           data-item-uid="${entry.uid || ''}"
@@ -1058,12 +908,12 @@
       `;
 
       return `
-        <article class="paper-slot paperdoll-slot-${entry.equipSlot}${entry.equipSlot === 'weapon' ? ' weapon-slot' : ''}${isEmpty ? '' : ' has-item'}">
-          <div class="paper-slot-icon">
+        <article class="equip-slot-card${isEmpty ? '' : ' has-item'}">
+          <div class="equip-slot-icon">
             ${iconPath ? `<img src="${iconPath}" alt="">` : glyphForSlot(slot?.label || entry.slot)}
           </div>
-          <div class="paper-slot-label">${slot?.label || entry.slot}</div>
-          <div class="paper-slot-name${isEmpty ? ' empty' : ''}">${isEmpty ? 'Пусто' : entry.item}</div>
+          <div class="equip-slot-label">${slot?.label || entry.slot}</div>
+          <div class="equip-slot-name${isEmpty ? ' empty' : ''}">${isEmpty ? 'Пусто' : entry.item}</div>
           ${actionButton}
         </article>
       `;
@@ -1071,22 +921,8 @@
 
     function renderEquipmentPaperdoll(entries) {
       return `
-        <section class="paperdoll-board">
-          <div class="paperdoll-grid">
+        <section class="equip-flat-grid">
             ${entries.map((entry) => renderEquipmentSlot(entry)).join('')}
-            <div class="paperdoll-center">
-              <div class="paperdoll-stage" id="inventoryPaperdollStage"></div>
-              <div class="paperdoll-preview">
-                <div class="character-box" id="inventoryPaperdollPreviewRoot">
-                  ${characterMarkup()}
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="paperdoll-footer">
-            <strong>${state.hero.nickname}</strong>
-            <span>Экипировка персонажа вынесена в полный paperdoll-формат. Бонусы комплекта добавим отдельно в пассивные навыки.</span>
-          </div>
         </section>
       `;
     }
@@ -1294,21 +1130,6 @@
       </div>
       ${renderBottomNav('inventory')}
     `;
-
-    const inventoryPreviewRoot = q('inventoryPaperdollPreviewRoot');
-    if (inventoryPreviewRoot) {
-      setPreview(inventoryPreviewRoot, state.hero);
-    }
-
-    const inventoryStage = q('inventoryPaperdollStage');
-    if (inventoryStage) {
-      const city = getCurrentCity(state);
-      safeSetBackground(
-        inventoryStage,
-        [city.portraitBg],
-        'linear-gradient(180deg, rgba(10,12,18,.12), rgba(10,12,18,.30))'
-      );
-    }
 
     const tabs = [...document.querySelectorAll('[data-tab]')];
     const panels = [...document.querySelectorAll('[data-panel]')];
