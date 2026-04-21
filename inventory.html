@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-      const APP_VERSION = '20260421-telegram-11';
+      const APP_VERSION = '20260421-telegram-12';
       const url = new URL(window.location.href);
       if (url.searchParams.get('appv') !== APP_VERSION) {
         url.searchParams.set('appv', APP_VERSION);
@@ -19,7 +19,7 @@
   </script>
   <title>Инвентарь</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="common.css?v=20260421-telegram-11">
+  <link rel="stylesheet" href="common.css?v=20260421-telegram-12">
   <style>
     .inventory-shell {
       min-height: 0;
@@ -276,7 +276,7 @@
   </div>
   <div class="toast" id="toast"></div>
 
-  <script src="common.js?v=20260421-telegram-11"></script>
+  <script src="common.js?v=20260421-telegram-12"></script>
   <script>
     let state = loadState();
     if (!ensureHero(state)) {
@@ -334,86 +334,48 @@
 
     function getGroupKey(entry, tab) {
       const slot = normalizeText(entry.slot);
-      if (tab === 'equipment') {
-        if (slot.includes('оруж')) return 'weapon';
-        if (slot.includes('брон') || slot.includes('body')) return 'armor';
-        if (slot.includes('шлем') || slot.includes('голов')) return 'helm';
-        if (slot.includes('щит')) return 'shield';
-        if (slot.includes('рук')) return 'gloves';
-        if (slot.includes('сап') || slot.includes('ног')) return 'boots';
-        if (slot.includes('амул')) return 'amulet';
-        if (slot.includes('коль')) return 'rings';
-        return 'other';
-      }
       if (tab === 'general') {
         if (isPotion(entry)) return 'potions';
         if (isScroll(entry)) return 'scrolls';
         if (isAccessory(entry)) return 'accessories';
         return 'misc';
       }
-      if (tab === 'resources') {
-        if (isResource(entry)) return 'materials';
-        if (isPotion(entry)) return 'elixirs';
-        if (isScroll(entry)) return 'scrolls';
-        return 'materials';
-      }
-      return 'quest';
+      return 'all';
     }
 
     const equippedItems = inventory.filter(isEquipped);
     const bagItems = inventory.filter((entry) => !isEquipped(entry));
     const generalItems = bagItems.filter((entry) => !isResource(entry) && !isQuest(entry));
-    const resourceItems = bagItems.filter((entry) => isResource(entry) || isPotion(entry) || isScroll(entry));
+    const resourceItems = bagItems.filter(isResource);
     const questItems = bagItems.filter(isQuest);
 
     const groupSets = {
-      equipment: [
-        { key: 'all', label: 'Все' },
-        { key: 'weapon', label: 'Оружие' },
-        { key: 'armor', label: 'Доспехи' },
-        { key: 'helm', label: 'Шлемы' },
-        { key: 'shield', label: 'Щиты' },
-        { key: 'gloves', label: 'Перчатки' },
-        { key: 'boots', label: 'Сапоги' },
-        { key: 'amulet', label: 'Амулеты' },
-        { key: 'rings', label: 'Кольца' }
-      ],
       general: [
         { key: 'all', label: 'Все' },
         { key: 'potions', label: 'Зелья' },
         { key: 'scrolls', label: 'Свитки' },
         { key: 'accessories', label: 'Аксессуары' },
         { key: 'misc', label: 'Прочее' }
-      ],
-      resources: [
-        { key: 'all', label: 'Все' },
-        { key: 'materials', label: 'Материалы' },
-        { key: 'elixirs', label: 'Эликсиры' },
-        { key: 'scrolls', label: 'Свитки' }
-      ],
-      quest: [
-        { key: 'all', label: 'Все' },
-        { key: 'quest', label: 'Предметы' }
       ]
     };
 
-    function countInGroup(items, tab, key) {
+    function countInGroup(items, key) {
       if (key === 'all') return items.length;
-      return items.filter((entry) => getGroupKey(entry, tab) === key).length;
+      return items.filter((entry) => getGroupKey(entry, 'general') === key).length;
     }
 
-    function renderGroupBar(tab, items) {
+    function renderGroupBar(items) {
       return `
-        <div class="legacy-groups" data-filter-group="${tab}">
-          ${groupSets[tab].map((group, index) => `
+        <div class="legacy-groups" data-filter-group="general">
+          ${groupSets.general.map((group, index) => `
             <button
               class="legacy-group${index === 0 ? ' active' : ''}"
               type="button"
-              data-group-button="${tab}"
+              data-group-button="general"
               data-filter="${group.key}"
             >
               <strong>${group.label}</strong>
-              <span>${countInGroup(items, tab, group.key)} шт.</span>
+              <span>${countInGroup(items, group.key)} шт.</span>
             </button>
           `).join('')}
         </div>
@@ -423,7 +385,7 @@
     function renderRow(entry, tab, actionLabels) {
       const itemName = entry.item;
       const slotName = entry.slot;
-      const groupKey = getGroupKey(entry, tab);
+      const groupKey = tab === 'general' ? getGroupKey(entry, tab) : 'all';
       return `
         <article class="legacy-row" data-row-tab="${tab}" data-row-group="${groupKey}">
           <div class="legacy-icon">${glyphForSlot(slotName)}</div>
@@ -445,16 +407,11 @@
       `;
     }
 
-    function renderTabBlock(tab, items, actionLabels, emptyText) {
+    function renderSimpleList(tab, items, actionLabels, emptyText) {
       if (!items.length) {
-        return `
-          ${renderGroupBar(tab, items)}
-          <div class="legacy-empty">${emptyText}</div>
-        `;
+        return `<div class="legacy-empty">${emptyText}</div>`;
       }
-
       return `
-        ${renderGroupBar(tab, items)}
         <div class="legacy-list">
           ${items.map((entry) => renderRow(entry, tab, actionLabels)).join('')}
         </div>
@@ -474,20 +431,20 @@
           <section class="inventory-panel">
             <div class="inventory-panel-inner">
               <div class="tab-panel active" data-panel="equipment">
-                ${renderTabBlock(
+                ${renderSimpleList(
                   'equipment',
                   equippedItems,
                   [
                     { label: 'Инфо' },
-                    { label: 'Снять' },
-                    { label: 'Выкинуть', kind: 'drop' }
+                    { label: 'Снять' }
                   ],
-                  'Экипированных вещей пока нет.'
+                  'На персонаже сейчас ничего не надето.'
                 )}
               </div>
 
               <div class="tab-panel" data-panel="general">
-                ${renderTabBlock(
+                ${renderGroupBar(generalItems)}
+                ${renderSimpleList(
                   'general',
                   generalItems,
                   [
@@ -500,7 +457,7 @@
               </div>
 
               <div class="tab-panel" data-panel="resources">
-                ${renderTabBlock(
+                ${renderSimpleList(
                   'resources',
                   resourceItems,
                   [
@@ -508,18 +465,18 @@
                     { label: 'Передать' },
                     { label: 'Выкинуть', kind: 'drop' }
                   ],
-                  'Ресурсные карманы пока пусты.'
+                  'Предметов с отметкой ресурса пока нет.'
                 )}
               </div>
 
               <div class="tab-panel" data-panel="quest">
-                ${renderTabBlock(
+                ${renderSimpleList(
                   'quest',
                   questItems,
                   [
                     { label: 'Инфо' }
                   ],
-                  'Квестовых предметов пока нет.'
+                  'Предметов с отметкой квест пока нет.'
                 )}
               </div>
             </div>
@@ -540,14 +497,13 @@
       });
     });
 
-    document.querySelectorAll('[data-group-button]').forEach((button) => {
+    document.querySelectorAll('[data-group-button="general"]').forEach((button) => {
       button.addEventListener('click', () => {
-        const tab = button.dataset.groupButton;
         const filter = button.dataset.filter;
-        document.querySelectorAll(`[data-group-button="${tab}"]`).forEach((item) => {
+        document.querySelectorAll('[data-group-button="general"]').forEach((item) => {
           item.classList.toggle('active', item === button);
         });
-        document.querySelectorAll(`[data-row-tab="${tab}"]`).forEach((row) => {
+        document.querySelectorAll('[data-row-tab="general"]').forEach((row) => {
           row.classList.toggle('hidden', filter !== 'all' && row.dataset.rowGroup !== filter);
         });
       });
