@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-      const APP_VERSION = '20260421-telegram-15';
+      const APP_VERSION = '20260421-telegram-16';
       const url = new URL(window.location.href);
       if (url.searchParams.get('appv') !== APP_VERSION) {
         url.searchParams.set('appv', APP_VERSION);
@@ -19,7 +19,7 @@
   </script>
   <title>Инвентарь</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="common.css?v=20260421-telegram-15">
+  <link rel="stylesheet" href="common.css?v=20260421-telegram-16">
   <style>
     .inventory-shell {
       min-height: 0;
@@ -181,6 +181,14 @@
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05);
     }
 
+    .legacy-empty-icon {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      image-rendering: auto;
+      border-radius: 12px;
+    }
+
     .legacy-copy {
       min-width: 0;
       display: grid;
@@ -276,7 +284,7 @@
   </div>
   <div class="toast" id="toast"></div>
 
-  <script src="common.js?v=20260421-telegram-15"></script>
+  <script src="common.js?v=20260421-telegram-16"></script>
   <script>
     let state = loadState();
     if (!ensureHero(state)) {
@@ -314,8 +322,38 @@
       return slot.includes('аксесс') || slot.includes('амул') || slot.includes('коль');
     }
 
+    function isWearable(entry) {
+      const slot = normalizeText(entry.slot);
+      return (
+        slot.includes('оруж') ||
+        slot.includes('брон') ||
+        slot.includes('шлем') ||
+        slot.includes('голов') ||
+        slot.includes('щит') ||
+        slot.includes('сап') ||
+        slot.includes('ног') ||
+        slot.includes('рук') ||
+        slot.includes('амул') ||
+        slot.includes('коль') ||
+        slot.includes('аксесс') ||
+        slot.includes('украш') ||
+        slot.includes('пояс') ||
+        slot.includes('плащ')
+      );
+    }
+
     function isEmptyItem(entry) {
       return normalizeText(entry.item).trim() === 'пусто';
+    }
+
+    function isConsumable(entry) {
+      const item = normalizeText(entry.item);
+      return (
+        isPotion(entry) ||
+        isScroll(entry) ||
+        item.includes('эликсир') ||
+        item.includes('элексир')
+      );
     }
 
     function glyphForSlot(slot) {
@@ -334,6 +372,21 @@
       if (name.includes('квест')) return '✪';
       if (name.includes('аксесс')) return '◈';
       return '⬠';
+    }
+
+    function emptyIconPathForSlot(slot) {
+      const name = normalizeText(slot);
+      if (name.includes('оруж')) return './assets/ui/inventory/pusto/weapon.gif';
+      if (name.includes('брон')) return './assets/ui/inventory/pusto/body.gif';
+      if (name.includes('шлем') || name.includes('голов')) return './assets/ui/inventory/pusto/golova.gif';
+      if (name.includes('щит')) return './assets/ui/inventory/pusto/shit.gif';
+      if (name.includes('сап') || name.includes('ног')) return './assets/ui/inventory/pusto/nogi.gif';
+      if (name.includes('рук')) return './assets/ui/inventory/pusto/ruki.gif';
+      if (name.includes('коль')) return './assets/ui/inventory/pusto/kolco.gif';
+      if (name.includes('амул')) return './assets/ui/inventory/pusto/amulet.gif';
+      if (name.includes('аксесс') || name.includes('украш') || name.includes('пояс')) return './assets/ui/inventory/pusto/ykr.gif';
+      if (name.includes('плащ')) return './assets/ui/inventory/pusto/plash.gif';
+      return null;
     }
 
     function getGroupKey(entry, tab) {
@@ -387,6 +440,62 @@
       `;
     }
 
+    function getActionLabels(entry, tab) {
+      if (tab === 'equipment') {
+        return isEmptyItem(entry) ? [] : [
+          { label: 'Инфо' },
+          { label: 'Снять' }
+        ];
+      }
+
+      if (tab === 'general') {
+        if (isWearable(entry)) {
+          return [
+            { label: 'Инфо' },
+            { label: 'Надеть' },
+            { label: 'Выкинуть', kind: 'drop' }
+          ];
+        }
+
+        if (isConsumable(entry)) {
+          return [
+            { label: 'Инфо' },
+            { label: 'Использовать' },
+            { label: 'Выкинуть', kind: 'drop' }
+          ];
+        }
+
+        return [
+          { label: 'Инфо' },
+          { label: 'Выкинуть', kind: 'drop' }
+        ];
+      }
+
+      if (tab === 'resources') {
+        return [
+          { label: 'Инфо' },
+          { label: 'Передать' },
+          { label: 'Выкинуть', kind: 'drop' }
+        ];
+      }
+
+      if (tab === 'quest') {
+        return [{ label: 'Инфо' }];
+      }
+
+      return [];
+    }
+
+    function renderIcon(entry, tab) {
+      if (tab === 'equipment' && isEmptyItem(entry)) {
+        const iconPath = emptyIconPathForSlot(entry.slot);
+        if (iconPath) {
+          return `<img class="legacy-empty-icon" src="${iconPath}" alt="">`;
+        }
+      }
+      return glyphForSlot(entry.slot);
+    }
+
     function renderRow(entry, tab, actionLabels) {
       const itemName = entry.item;
       const slotName = entry.slot;
@@ -395,7 +504,7 @@
       const safeActions = isEmpty ? [] : actionLabels;
       return `
         <article class="legacy-row" data-row-tab="${tab}" data-row-group="${groupKey}">
-          <div class="legacy-icon">${glyphForSlot(slotName)}</div>
+          <div class="legacy-icon">${renderIcon(entry, tab)}</div>
           <div class="legacy-copy">
             <strong>${itemName}</strong>
             <span>${slotName}</span>
@@ -416,15 +525,24 @@
       `;
     }
 
-    function renderSimpleList(tab, items, actionLabels, emptyText) {
+    function renderSimpleList(tab, items, actionFactory, emptyText) {
       if (!items.length) {
         return `<div class="legacy-empty">${emptyText}</div>`;
       }
       return `
         <div class="legacy-list">
-          ${items.map((entry) => renderRow(entry, tab, actionLabels)).join('')}
+          ${items.map((entry) => renderRow(entry, tab, actionFactory(entry))).join('')}
         </div>
       `;
+    }
+
+    function parseStackedItem(entry) {
+      const match = String(entry.item || '').match(/^\s*(\d+)\s*x\s*(.+?)\s*$/i);
+      if (!match) return null;
+      return {
+        count: Number(match[1]),
+        baseName: match[2]
+      };
     }
 
     q('app').innerHTML = `
@@ -443,10 +561,7 @@
                 ${renderSimpleList(
                   'equipment',
                   equippedItems,
-                  [
-                    { label: 'Инфо' },
-                    { label: 'Снять' }
-                  ],
+                  (entry) => getActionLabels(entry, 'equipment'),
                   'На персонаже сейчас ничего не надето.'
                 )}
               </div>
@@ -456,11 +571,7 @@
                 ${renderSimpleList(
                   'general',
                   generalItems,
-                  [
-                    { label: 'Инфо' },
-                    { label: 'Использовать' },
-                    { label: 'Выкинуть', kind: 'drop' }
-                  ],
+                  (entry) => getActionLabels(entry, 'general'),
                   'В общем разделе пока пусто.'
                 )}
               </div>
@@ -469,11 +580,7 @@
                 ${renderSimpleList(
                   'resources',
                   resourceItems,
-                  [
-                    { label: 'Инфо' },
-                    { label: 'Передать' },
-                    { label: 'Выкинуть', kind: 'drop' }
-                  ],
+                  (entry) => getActionLabels(entry, 'resources'),
                   'Предметов с отметкой ресурса пока нет.'
                 )}
               </div>
@@ -482,9 +589,7 @@
                 ${renderSimpleList(
                   'quest',
                   questItems,
-                  [
-                    { label: 'Инфо' }
-                  ],
+                  (entry) => getActionLabels(entry, 'quest'),
                   'Предметов с отметкой квест пока нет.'
                 )}
               </div>
@@ -549,6 +654,82 @@
           });
           saveState(state);
           showToast(`Снято: ${itemName}`);
+          setTimeout(() => window.location.reload(), 120);
+          return;
+        }
+
+        if (action === 'Надеть') {
+          const bagIndex = state.hero.inventory.findIndex((entry) => (
+            !isEquipped(entry) &&
+            entry.slot === slotName &&
+            entry.item === itemName
+          ));
+
+          if (bagIndex === -1) {
+            showToast('Предмет не найден в сумке.');
+            return;
+          }
+
+          const equippedIndex = state.hero.inventory.findIndex((entry) => (
+            isEquipped(entry) &&
+            entry.slot === slotName
+          ));
+
+          if (equippedIndex !== -1) {
+            const equippedEntry = state.hero.inventory[equippedIndex];
+            if (!isEmptyItem(equippedEntry)) {
+              state.hero.inventory.push({
+                slot: equippedEntry.slot,
+                item: equippedEntry.item,
+                type: 'Сумка'
+              });
+            }
+            state.hero.inventory[equippedIndex] = {
+              slot: slotName,
+              item: itemName,
+              type: 'Надето'
+            };
+          } else {
+            state.hero.inventory.push({
+              slot: slotName,
+              item: itemName,
+              type: 'Надето'
+            });
+          }
+
+          state.hero.inventory.splice(bagIndex, 1);
+          saveState(state);
+          showToast(`Надето: ${itemName}`);
+          setTimeout(() => window.location.reload(), 120);
+          return;
+        }
+
+        if (action === 'Использовать') {
+          const bagIndex = state.hero.inventory.findIndex((entry) => (
+            !isEquipped(entry) &&
+            entry.slot === slotName &&
+            entry.item === itemName
+          ));
+
+          if (bagIndex === -1) {
+            showToast('Предмет не найден в сумке.');
+            return;
+          }
+
+          const bagEntry = state.hero.inventory[bagIndex];
+          const stack = parseStackedItem(bagEntry);
+
+          if (stack && stack.count > 1) {
+            state.hero.inventory[bagIndex] = {
+              ...bagEntry,
+              item: `${stack.count - 1} x ${stack.baseName}`
+            };
+          } else {
+            state.hero.inventory.splice(bagIndex, 1);
+          }
+
+          saveState(state);
+          showToast(`Использовано: ${itemName}`);
           setTimeout(() => window.location.reload(), 120);
           return;
         }
