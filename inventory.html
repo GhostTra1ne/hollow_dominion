@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-  <meta http-equiv=""Cache-Control"" content=""no-cache, no-store, must-revalidate"">
-  <meta http-equiv=""Pragma"" content=""no-cache"">
-  <meta http-equiv=""Expires"" content=""0"">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-      const APP_VERSION = '20260421-telegram-7';
+      const APP_VERSION = '20260421-telegram-8';
       const url = new URL(window.location.href);
       if (url.searchParams.get('appv') !== APP_VERSION) {
         url.searchParams.set('appv', APP_VERSION);
@@ -16,31 +16,35 @@
       }
       window.__HD_APP_VERSION__ = APP_VERSION;
     })();
-  </script>  <title>Инвентарь</title>
+  </script>
+  <title>Инвентарь</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="common.css?v=20260421-telegram-7">
+  <link rel="stylesheet" href="common.css?v=20260421-telegram-8">
   <style>
     .inventory-screen {
       display: grid;
-      gap: 14px;
+      gap: 16px;
       min-height: 0;
     }
 
     .inventory-topline {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 10px;
     }
 
     .inventory-chip {
-      padding: 12px 14px;
-      border-radius: 18px;
-      background:
-        linear-gradient(180deg, rgba(255, 255, 255, .05), rgba(255, 255, 255, .02)),
-        radial-gradient(circle at 50% 0%, rgba(214, 178, 116, .10), rgba(214, 178, 116, 0) 60%);
-      border: 1px solid rgba(255, 255, 255, .06);
+      padding: 14px 15px;
+      border-radius: 20px;
       display: grid;
       gap: 4px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, .05), rgba(255, 255, 255, .02)),
+        radial-gradient(circle at 50% 0%, rgba(214, 178, 116, .14), rgba(214, 178, 116, 0) 64%);
+      border: 1px solid rgba(214, 178, 116, .10);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, .04),
+        0 12px 24px rgba(0, 0, 0, .18);
     }
 
     .inventory-chip span {
@@ -57,9 +61,44 @@
       line-height: 1;
     }
 
+    .inventory-chip em {
+      font-style: normal;
+      color: rgba(255, 241, 205, .76);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .inventory-rail {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .rail-card {
+      padding: 12px 14px;
+      border-radius: 18px;
+      display: grid;
+      gap: 6px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, .035), rgba(255, 255, 255, .015)),
+        radial-gradient(circle at 50% 0%, rgba(123, 167, 230, .08), rgba(123, 167, 230, 0) 60%);
+      border: 1px solid rgba(255, 255, 255, .06);
+    }
+
+    .rail-card strong {
+      color: #f4ddb0;
+      font-size: 14px;
+    }
+
+    .rail-card span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
     .inventory-layout {
       display: grid;
-      grid-template-columns: minmax(0, 1.08fr) minmax(300px, .92fr);
+      grid-template-columns: minmax(0, 1.02fr) minmax(320px, .98fr);
       gap: 14px;
       min-height: 0;
     }
@@ -99,7 +138,7 @@
     .gear-stage {
       margin-top: 14px;
       display: grid;
-      grid-template-columns: 164px minmax(0, 1fr);
+      grid-template-columns: 170px minmax(0, 1fr);
       gap: 14px;
       align-items: stretch;
     }
@@ -136,6 +175,34 @@
         linear-gradient(90deg, transparent 0 40px, rgba(245, 228, 189, .16) 40px 72px, transparent 72px);
       filter: blur(.2px);
     }
+
+    .gear-slot-anchors {
+      position: absolute;
+      inset: 18px;
+      pointer-events: none;
+    }
+
+    .gear-anchor {
+      position: absolute;
+      min-width: 34px;
+      min-height: 34px;
+      padding: 4px 7px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: #f7e3b3;
+      background: rgba(24, 18, 11, .72);
+      border: 1px solid rgba(214, 178, 116, .16);
+      box-shadow: 0 6px 14px rgba(0, 0, 0, .18);
+    }
+
+    .gear-anchor.head { top: 18px; left: 50%; transform: translateX(-50%); }
+    .gear-anchor.weapon { left: 8px; top: 112px; }
+    .gear-anchor.armor { right: 8px; top: 112px; }
+    .gear-anchor.bag { left: 50%; bottom: 56px; transform: translateX(-50%); }
 
     .gear-glow {
       position: absolute;
@@ -230,6 +297,20 @@
       border: 1px solid rgba(255, 255, 255, .06);
     }
 
+    .bag-slot.rare {
+      border-color: rgba(123, 167, 230, .24);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, .04), rgba(255, 255, 255, .02)),
+        radial-gradient(circle at 50% 0%, rgba(123, 167, 230, .12), rgba(123, 167, 230, 0) 64%);
+    }
+
+    .bag-slot.utility {
+      border-color: rgba(214, 178, 116, .18);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, .03), rgba(255, 255, 255, .015)),
+        radial-gradient(circle at 50% 0%, rgba(214, 178, 116, .10), rgba(214, 178, 116, 0) 64%);
+    }
+
     .bag-slot.top-empty {
       background:
         linear-gradient(180deg, rgba(255, 255, 255, .02), rgba(255, 255, 255, .01)),
@@ -265,6 +346,36 @@
       border: 1px solid rgba(255, 255, 255, .06);
     }
 
+    .inventory-actions {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .inventory-action {
+      padding: 12px 14px;
+      border-radius: 18px;
+      display: grid;
+      gap: 4px;
+      background:
+        linear-gradient(180deg, rgba(66, 46, 18, .88), rgba(30, 21, 9, .94)),
+        radial-gradient(circle at 50% 0%, rgba(255, 229, 175, .10), rgba(255, 229, 175, 0) 64%);
+      border: 1px solid rgba(214, 178, 116, .14);
+      color: #f8e7bf;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .04);
+    }
+
+    .inventory-action strong {
+      font-size: 14px;
+    }
+
+    .inventory-action span {
+      color: rgba(243, 237, 222, .74);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
     .inventory-notes {
       display: grid;
       gap: 10px;
@@ -289,6 +400,7 @@
 
     @media (max-width: 900px) {
       .inventory-topline,
+      .inventory-rail,
       .inventory-layout,
       .gear-stage,
       .bag-grid {
@@ -305,8 +417,16 @@
         padding: 14px;
       }
 
+      .inventory-topline {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
       .inventory-card h3 {
         font-size: 24px;
+      }
+
+      .inventory-actions {
+        grid-template-columns: 1fr;
       }
 
       .gear-slot {
@@ -332,7 +452,7 @@
   </div>
   <div class="toast" id="toast"></div>
 
-  <script src="common.js?v=20260421-telegram-7"></script>
+  <script src="common.js?v=20260421-telegram-8"></script>
   <script>
     let state = loadState();
     if (!ensureHero(state)) {
@@ -343,22 +463,29 @@
     const equippedItems = inventory.filter((entry) => entry.type === 'Надето');
     const bagItems = inventory.filter((entry) => entry.type !== 'Надето');
     const emptyBagSlots = bagItems.filter((entry) => entry.item === 'Пусто').length;
+    const usedBagSlots = bagItems.length - emptyBagSlots;
 
     const slotGlyphs = {
       'Оружие': '⚔',
       'Броня': '🛡',
       'Зелья': '✚',
       'Свитки': '✦',
-      'Материалы': '◈',
-      'Аксессуары': '◉',
+      'Материалы': '◆',
+      'Аксессуары': '◈',
       'Квест': '✧',
       'Прочее': '⬡'
     };
 
     const slotDescriptions = {
       'Оружие': 'Основной боевой слот героя.',
-      'Броня': 'Защитный комплект для текущей экипировки.'
+      'Броня': 'Защитный комплект для текущей экипировки.',
+      'Зелья': 'Быстрый доступ к восстановлению в дороге.',
+      'Свитки': 'Резерв на телепорт и полевой отход.'
     };
+
+    const transportItem = bagItems.find((entry) => entry.slot === 'Свитки' && entry.item !== 'Пусто');
+    const potionItem = bagItems.find((entry) => entry.slot === 'Зелья' && entry.item !== 'Пусто');
+    const supportItem = bagItems.find((entry) => entry.slot === 'Материалы' && entry.item !== 'Пусто');
 
     const equippedMarkup = equippedItems.map((entry) => `
       <article class="gear-slot">
@@ -374,8 +501,9 @@
     const bagMarkup = bagItems.map((entry) => {
       const isEmpty = entry.item === 'Пусто';
       const status = isEmpty ? 'Свободно' : entry.type;
+      const typeClass = isEmpty ? 'top-empty' : entry.slot === 'Свитки' ? 'rare' : entry.slot === 'Зелья' ? 'utility' : '';
       return `
-        <article class="bag-slot ${isEmpty ? 'top-empty' : ''}">
+        <article class="bag-slot ${typeClass}">
           <strong>${entry.slot}</strong>
           <p>${entry.item}</p>
           <div class="bag-meta">
@@ -387,7 +515,7 @@
     }).join('');
 
     q('app').innerHTML = `
-      ${renderHeader(state, 'Снаряжение, сумка и дорожный запас героя в формате старой MMORPG-панели.')}
+      ${renderHeader(state, 'Снаряжение, сумка и походный запас героя в плотном MMORPG-формате.')}
       <div class="single-page-layout">
         <div class="panel page-main-panel">
           <div class="panel-inner content-scroll">
@@ -396,15 +524,38 @@
                 <div class="inventory-chip">
                   <span>Адена</span>
                   <strong>${state.hero.adena}</strong>
+                  <em>Узел походного запаса и торговли.</em>
                 </div>
                 <div class="inventory-chip">
                   <span>Надето</span>
                   <strong>${equippedItems.length}</strong>
+                  <em>Активные слоты боевой экипировки.</em>
+                </div>
+                <div class="inventory-chip">
+                  <span>Занято</span>
+                  <strong>${usedBagSlots}</strong>
+                  <em>Предметы, уже лежащие в сумке.</em>
                 </div>
                 <div class="inventory-chip">
                   <span>Свободно</span>
                   <strong>${emptyBagSlots}</strong>
+                  <em>Ячейки под лут, добычу и квестовые вещи.</em>
                 </div>
+              </div>
+
+              <div class="inventory-rail">
+                <article class="rail-card">
+                  <strong>Боевой пакет</strong>
+                  <span>${potionItem ? potionItem.item : 'Пока без зелий.'}</span>
+                </article>
+                <article class="rail-card">
+                  <strong>Дорожный эксит</strong>
+                  <span>${transportItem ? transportItem.item : 'Свиток возврата пока отсутствует.'}</span>
+                </article>
+                <article class="rail-card">
+                  <strong>Ресурсный узел</strong>
+                  <span>${supportItem ? supportItem.item : 'Ресурсный слот пока пуст.'}</span>
+                </article>
               </div>
 
               <div class="inventory-layout">
@@ -415,6 +566,12 @@
                     <div class="gear-stage">
                       <div class="gear-silhouette">
                         <div class="gear-figure"></div>
+                        <div class="gear-slot-anchors" aria-hidden="true">
+                          <span class="gear-anchor head">LVL</span>
+                          <span class="gear-anchor weapon">ATK</span>
+                          <span class="gear-anchor armor">DEF</span>
+                          <span class="gear-anchor bag">BAG</span>
+                        </div>
                         <div class="gear-glow">Воин держит готовый комплект.<br>Следом можно добавить кольца, амулеты и плащ.</div>
                       </div>
                       <div class="gear-list">
@@ -429,6 +586,20 @@
                     <h3>Сумка</h3>
                     <p>Расходники, свитки и всё, что герой несёт в дороге между городами.</p>
                     <div class="bag-grid">${bagMarkup}</div>
+                    <div class="inventory-actions">
+                      <div class="inventory-action">
+                        <strong>Надеть</strong>
+                        <span>Связать слоты экипировки с реальными предметами.</span>
+                      </div>
+                      <div class="inventory-action">
+                        <strong>Использовать</strong>
+                        <span>Зелья, свитки и быстрые дорожные действия.</span>
+                      </div>
+                      <div class="inventory-action">
+                        <strong>Продать</strong>
+                        <span>Подготовить интеграцию с рынком и торговцами.</span>
+                      </div>
+                    </div>
                   </section>
 
                   <section class="inventory-card">
@@ -455,4 +626,3 @@
   </script>
 </body>
 </html>
-

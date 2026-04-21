@@ -8,7 +8,7 @@
   <meta http-equiv=""Expires"" content=""0"">
   <script>
     (function () {
-      const APP_VERSION = '20260421-telegram-7';
+      const APP_VERSION = '20260421-telegram-8';
       const url = new URL(window.location.href);
       if (url.searchParams.get('appv') !== APP_VERSION) {
         url.searchParams.set('appv', APP_VERSION);
@@ -18,14 +18,14 @@
     })();
   </script>  <title>Чат</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="common.css?v=20260421-telegram-7">
+  <link rel="stylesheet" href="common.css?v=20260421-telegram-8">
 </head>
 <body>
   <div class="screen-page">
     <div class="app-shell" id="app"></div>
   </div>
 
-  <script src="common.js?v=20260421-telegram-7"></script>
+  <script src="common.js?v=20260421-telegram-8"></script>
   <script>
     let state = loadState();
     if (!ensureHero(state)) {
