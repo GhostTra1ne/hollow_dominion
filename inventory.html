@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-      const APP_VERSION = '20260421-telegram-8';
+      const APP_VERSION = '20260421-telegram-10';
       const url = new URL(window.location.href);
       if (url.searchParams.get('appv') !== APP_VERSION) {
         url.searchParams.set('appv', APP_VERSION);
@@ -19,133 +19,101 @@
   </script>
   <title>Инвентарь</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="common.css?v=20260421-telegram-8">
+  <link rel="stylesheet" href="common.css?v=20260421-telegram-10">
   <style>
-    .inventory-screen {
-      display: grid;
-      gap: 16px;
+    .inventory-shell {
       min-height: 0;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      gap: 12px;
+      padding-top: 4px;
     }
 
-    .inventory-topline {
+    .inventory-tabs {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 10px;
+      gap: 8px;
+      align-items: stretch;
     }
 
-    .inventory-chip {
-      padding: 14px 15px;
-      border-radius: 20px;
-      display: grid;
-      gap: 4px;
-      background:
-        linear-gradient(180deg, rgba(255, 255, 255, .05), rgba(255, 255, 255, .02)),
-        radial-gradient(circle at 50% 0%, rgba(214, 178, 116, .14), rgba(214, 178, 116, 0) 64%);
-      border: 1px solid rgba(214, 178, 116, .10);
-      box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, .04),
-        0 12px 24px rgba(0, 0, 0, .18);
-    }
-
-    .inventory-chip span {
-      color: var(--muted);
-      font-size: 12px;
-      letter-spacing: .04em;
-      text-transform: uppercase;
-    }
-
-    .inventory-chip strong {
-      color: #f6e5ba;
-      font-family: var(--font-main);
-      font-size: 24px;
-      line-height: 1;
-    }
-
-    .inventory-chip em {
-      font-style: normal;
-      color: rgba(255, 241, 205, .76);
-      font-size: 12px;
-      line-height: 1.4;
-    }
-
-    .inventory-rail {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 10px;
-    }
-
-    .rail-card {
-      padding: 12px 14px;
+    .inventory-tab {
+      min-height: 52px;
+      padding: 10px 8px;
+      border: 1px solid rgba(214, 178, 116, .12);
       border-radius: 18px;
-      display: grid;
-      gap: 6px;
       background:
-        linear-gradient(180deg, rgba(255, 255, 255, .035), rgba(255, 255, 255, .015)),
-        radial-gradient(circle at 50% 0%, rgba(123, 167, 230, .08), rgba(123, 167, 230, 0) 60%);
-      border: 1px solid rgba(255, 255, 255, .06);
-    }
-
-    .rail-card strong {
-      color: #f4ddb0;
-      font-size: 14px;
-    }
-
-    .rail-card span {
-      color: var(--muted);
+        linear-gradient(180deg, rgba(255, 255, 255, .035), rgba(255, 255, 255, .01)),
+        radial-gradient(circle at 50% 0%, rgba(214, 178, 116, .08), rgba(214, 178, 116, 0) 64%);
+      color: rgba(243, 237, 222, .82);
       font-size: 12px;
-      line-height: 1.45;
+      font-weight: 700;
+      line-height: 1.3;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .18s ease, transform .18s ease, color .18s ease, background .18s ease;
     }
 
-    .inventory-layout {
-      display: grid;
-      grid-template-columns: minmax(0, 1.02fr) minmax(320px, .98fr);
-      gap: 14px;
-      min-height: 0;
-    }
-
-    .inventory-column {
-      display: grid;
-      gap: 14px;
-      min-height: 0;
-    }
-
-    .inventory-card {
-      padding: 16px;
-      border-radius: 22px;
+    .inventory-tab.active {
+      color: #fff0cb;
+      border-color: rgba(214, 178, 116, .34);
       background:
-        linear-gradient(180deg, rgba(255, 255, 255, .04), rgba(255, 255, 255, .02)),
-        radial-gradient(circle at 50% 0%, rgba(214, 178, 116, .07), rgba(214, 178, 116, 0) 56%);
-      border: 1px solid rgba(255, 255, 255, .06);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .03);
+        linear-gradient(180deg, rgba(98, 67, 28, .92), rgba(42, 28, 11, .98)),
+        radial-gradient(circle at 50% 0%, rgba(255, 228, 170, .14), rgba(255, 228, 170, 0) 64%);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, .05),
+        0 8px 18px rgba(0, 0, 0, .18);
+      transform: translateY(-1px);
+    }
+
+    .inventory-body {
       min-height: 0;
+      display: grid;
     }
 
-    .inventory-card h3 {
-      margin: 0 0 6px;
-      color: #f2d9a0;
-      font-family: var(--font-main);
-      font-size: 28px;
-      line-height: 1;
+    .inventory-panel {
+      min-height: 0;
+      border-radius: 24px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, .04), rgba(255, 255, 255, .015)),
+        radial-gradient(circle at 50% 0%, rgba(214, 178, 116, .08), rgba(214, 178, 116, 0) 56%);
+      border: 1px solid rgba(255, 255, 255, .06);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, .03),
+        0 20px 36px rgba(0, 0, 0, .18);
+      overflow: hidden;
     }
 
-    .inventory-card p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.55;
+    .inventory-panel-inner {
+      height: 100%;
+      min-height: 0;
+      overflow: auto;
+      padding: 16px;
+      display: grid;
+      align-content: start;
+      gap: 12px;
     }
 
-    .gear-stage {
-      margin-top: 14px;
+    .tab-panel {
+      display: none;
+      min-height: 0;
+      align-content: start;
+      gap: 12px;
+    }
+
+    .tab-panel.active {
+      display: grid;
+    }
+
+    .equipment-stage {
       display: grid;
       grid-template-columns: 170px minmax(0, 1fr);
       gap: 14px;
       align-items: stretch;
     }
 
-    .gear-silhouette {
+    .equipment-figure {
       position: relative;
-      min-height: 284px;
+      min-height: 292px;
       border-radius: 22px;
       overflow: hidden;
       background:
@@ -154,7 +122,7 @@
       border: 1px solid rgba(214, 178, 116, .12);
     }
 
-    .gear-silhouette::before {
+    .equipment-figure::before {
       content: "";
       position: absolute;
       inset: 16px;
@@ -165,7 +133,7 @@
         linear-gradient(180deg, rgba(255, 255, 255, .02), rgba(255, 255, 255, 0));
     }
 
-    .gear-figure {
+    .equipment-body {
       position: absolute;
       inset: 18px 22px 54px;
       opacity: .72;
@@ -176,13 +144,13 @@
       filter: blur(.2px);
     }
 
-    .gear-slot-anchors {
+    .equipment-points {
       position: absolute;
       inset: 18px;
       pointer-events: none;
     }
 
-    .gear-anchor {
+    .equipment-point {
       position: absolute;
       min-width: 34px;
       min-height: 34px;
@@ -199,12 +167,12 @@
       box-shadow: 0 6px 14px rgba(0, 0, 0, .18);
     }
 
-    .gear-anchor.head { top: 18px; left: 50%; transform: translateX(-50%); }
-    .gear-anchor.weapon { left: 8px; top: 112px; }
-    .gear-anchor.armor { right: 8px; top: 112px; }
-    .gear-anchor.bag { left: 50%; bottom: 56px; transform: translateX(-50%); }
+    .equipment-point.head { top: 18px; left: 50%; transform: translateX(-50%); }
+    .equipment-point.weapon { left: 8px; top: 112px; }
+    .equipment-point.armor { right: 8px; top: 112px; }
+    .equipment-point.bag { left: 50%; bottom: 56px; transform: translateX(-50%); }
 
-    .gear-glow {
+    .equipment-note {
       position: absolute;
       inset: auto 24px 18px;
       padding: 10px 12px;
@@ -217,13 +185,13 @@
       line-height: 1.45;
     }
 
-    .gear-list {
+    .equipment-list {
       display: grid;
       gap: 10px;
       align-content: start;
     }
 
-    .gear-slot {
+    .equipment-slot {
       display: grid;
       grid-template-columns: 54px minmax(0, 1fr) auto;
       gap: 12px;
@@ -234,7 +202,7 @@
       border: 1px solid rgba(255, 255, 255, .06);
     }
 
-    .gear-icon {
+    .equipment-icon {
       width: 54px;
       height: 54px;
       border-radius: 16px;
@@ -250,24 +218,24 @@
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05);
     }
 
-    .gear-copy {
+    .equipment-copy {
       min-width: 0;
       display: grid;
       gap: 4px;
     }
 
-    .gear-copy strong {
+    .equipment-copy strong {
       color: #fff1cb;
       font-size: 15px;
     }
 
-    .gear-copy span {
+    .equipment-copy span {
       color: var(--muted);
       font-size: 12px;
       line-height: 1.45;
     }
 
-    .gear-state {
+    .equipment-state {
       white-space: nowrap;
       padding: 8px 10px;
       border-radius: 999px;
@@ -278,66 +246,65 @@
       font-weight: 700;
     }
 
-    .bag-grid {
-      margin-top: 14px;
+    .inventory-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
+      gap: 12px;
     }
 
-    .bag-slot {
-      display: grid;
-      gap: 8px;
+    .inventory-card {
       padding: 14px;
-      min-height: 108px;
-      border-radius: 18px;
+      border-radius: 20px;
       background:
         linear-gradient(180deg, rgba(255, 255, 255, .03), rgba(255, 255, 255, .015)),
         radial-gradient(circle at 50% 0%, rgba(123, 167, 230, .08), rgba(123, 167, 230, 0) 62%);
       border: 1px solid rgba(255, 255, 255, .06);
+      display: grid;
+      gap: 8px;
+      min-height: 110px;
     }
 
-    .bag-slot.rare {
-      border-color: rgba(123, 167, 230, .24);
+    .inventory-card.rare {
+      border-color: rgba(123, 167, 230, .22);
       background:
         linear-gradient(180deg, rgba(255, 255, 255, .04), rgba(255, 255, 255, .02)),
         radial-gradient(circle at 50% 0%, rgba(123, 167, 230, .12), rgba(123, 167, 230, 0) 64%);
     }
 
-    .bag-slot.utility {
+    .inventory-card.utility {
       border-color: rgba(214, 178, 116, .18);
       background:
         linear-gradient(180deg, rgba(255, 255, 255, .03), rgba(255, 255, 255, .015)),
         radial-gradient(circle at 50% 0%, rgba(214, 178, 116, .10), rgba(214, 178, 116, 0) 64%);
     }
 
-    .bag-slot.top-empty {
+    .inventory-card.empty {
+      border-style: dashed;
       background:
         linear-gradient(180deg, rgba(255, 255, 255, .02), rgba(255, 255, 255, .01)),
         radial-gradient(circle at 50% 0%, rgba(214, 178, 116, .04), rgba(214, 178, 116, 0) 62%);
-      border-style: dashed;
     }
 
-    .bag-slot strong {
+    .inventory-card strong {
       color: #f1d59a;
-      font-size: 14px;
+      font-size: 15px;
     }
 
-    .bag-slot p {
+    .inventory-card p {
       margin: 0;
       color: #f5efdf;
       font-size: 14px;
-      line-height: 1.45;
+      line-height: 1.5;
     }
 
-    .bag-meta {
+    .inventory-meta {
       margin-top: auto;
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
     }
 
-    .bag-meta span {
+    .inventory-meta span {
       padding: 6px 9px;
       border-radius: 999px;
       font-size: 11px;
@@ -346,99 +313,52 @@
       border: 1px solid rgba(255, 255, 255, .06);
     }
 
-    .inventory-actions {
+    .empty-panel {
+      min-height: 220px;
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 10px;
-      margin-top: 14px;
-    }
-
-    .inventory-action {
-      padding: 12px 14px;
-      border-radius: 18px;
-      display: grid;
-      gap: 4px;
+      place-items: center;
+      text-align: center;
+      padding: 20px;
+      border-radius: 22px;
       background:
-        linear-gradient(180deg, rgba(66, 46, 18, .88), rgba(30, 21, 9, .94)),
-        radial-gradient(circle at 50% 0%, rgba(255, 229, 175, .10), rgba(255, 229, 175, 0) 64%);
-      border: 1px solid rgba(214, 178, 116, .14);
-      color: #f8e7bf;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .04);
-    }
-
-    .inventory-action strong {
+        linear-gradient(180deg, rgba(255, 255, 255, .025), rgba(255, 255, 255, .01)),
+        radial-gradient(circle at 50% 0%, rgba(214, 178, 116, .05), rgba(214, 178, 116, 0) 60%);
+      border: 1px dashed rgba(214, 178, 116, .16);
+      color: rgba(243, 237, 222, .72);
       font-size: 14px;
-    }
-
-    .inventory-action span {
-      color: rgba(243, 237, 222, .74);
-      font-size: 12px;
-      line-height: 1.45;
-    }
-
-    .inventory-notes {
-      display: grid;
-      gap: 10px;
-    }
-
-    .inventory-note {
-      padding: 12px 14px;
-      border-radius: 18px;
-      background: rgba(255, 255, 255, .03);
-      border: 1px solid rgba(255, 255, 255, .06);
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.55;
-    }
-
-    .inventory-note strong {
-      display: block;
-      margin-bottom: 5px;
-      color: #f5dfaa;
-      font-size: 14px;
+      line-height: 1.6;
     }
 
     @media (max-width: 900px) {
-      .inventory-topline,
-      .inventory-rail,
-      .inventory-layout,
-      .gear-stage,
-      .bag-grid {
+      .inventory-grid,
+      .equipment-stage {
         grid-template-columns: 1fr;
       }
 
-      .gear-silhouette {
+      .equipment-figure {
         min-height: 220px;
       }
     }
 
     @media (max-width: 560px) {
-      .inventory-card {
-        padding: 14px;
-      }
-
-      .inventory-topline {
+      .inventory-tabs {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
-      .inventory-card h3 {
-        font-size: 24px;
+      .inventory-panel-inner {
+        padding: 14px;
       }
 
-      .inventory-actions {
-        grid-template-columns: 1fr;
-      }
-
-      .gear-slot {
+      .equipment-slot {
         grid-template-columns: 46px minmax(0, 1fr);
       }
 
-      .gear-state {
+      .equipment-state {
         grid-column: 1 / -1;
         justify-self: start;
       }
 
-      .gear-icon {
+      .equipment-icon {
         width: 46px;
         height: 46px;
         font-size: 18px;
@@ -452,177 +372,159 @@
   </div>
   <div class="toast" id="toast"></div>
 
-  <script src="common.js?v=20260421-telegram-8"></script>
+  <script src="common.js?v=20260421-telegram-10"></script>
   <script>
     let state = loadState();
     if (!ensureHero(state)) {
       throw new Error('Hero not found');
     }
 
-    const inventory = state.hero.inventory || [];
-    const equippedItems = inventory.filter((entry) => entry.type === 'Надето');
-    const bagItems = inventory.filter((entry) => entry.type !== 'Надето');
-    const emptyBagSlots = bagItems.filter((entry) => entry.item === 'Пусто').length;
-    const usedBagSlots = bagItems.length - emptyBagSlots;
+    const inventory = Array.isArray(state.hero.inventory) ? state.hero.inventory : [];
 
-    const slotGlyphs = {
-      'Оружие': '⚔',
-      'Броня': '🛡',
-      'Зелья': '✚',
-      'Свитки': '✦',
-      'Материалы': '◆',
-      'Аксессуары': '◈',
-      'Квест': '✧',
-      'Прочее': '⬡'
-    };
+    function normalizeText(value) {
+      return String(value || '').toLowerCase();
+    }
 
-    const slotDescriptions = {
-      'Оружие': 'Основной боевой слот героя.',
-      'Броня': 'Защитный комплект для текущей экипировки.',
-      'Зелья': 'Быстрый доступ к восстановлению в дороге.',
-      'Свитки': 'Резерв на телепорт и полевой отход.'
-    };
+    function isEquipped(entry) {
+      return normalizeText(entry.type).includes('над');
+    }
 
-    const transportItem = bagItems.find((entry) => entry.slot === 'Свитки' && entry.item !== 'Пусто');
-    const potionItem = bagItems.find((entry) => entry.slot === 'Зелья' && entry.item !== 'Пусто');
-    const supportItem = bagItems.find((entry) => entry.slot === 'Материалы' && entry.item !== 'Пусто');
+    function isResource(entry) {
+      const slot = normalizeText(entry.slot);
+      return slot.includes('матер') || slot.includes('ресурс');
+    }
 
-    const equippedMarkup = equippedItems.map((entry) => `
-      <article class="gear-slot">
-        <div class="gear-icon">${slotGlyphs[entry.slot] || '◆'}</div>
-        <div class="gear-copy">
-          <strong>${entry.item}</strong>
-          <span>${entry.slot}. ${slotDescriptions[entry.slot] || 'Экипированный предмет героя.'}</span>
-        </div>
-        <div class="gear-state">${entry.type}</div>
-      </article>
-    `).join('');
+    function isQuest(entry) {
+      return normalizeText(entry.slot).includes('квест');
+    }
 
-    const bagMarkup = bagItems.map((entry) => {
-      const isEmpty = entry.item === 'Пусто';
-      const status = isEmpty ? 'Свободно' : entry.type;
-      const typeClass = isEmpty ? 'top-empty' : entry.slot === 'Свитки' ? 'rare' : entry.slot === 'Зелья' ? 'utility' : '';
+    const equippedItems = inventory.filter(isEquipped);
+    const bagItems = inventory.filter((entry) => !isEquipped(entry));
+    const generalItems = bagItems.filter((entry) => !isResource(entry) && !isQuest(entry));
+    const resourceItems = bagItems.filter(isResource);
+    const questItems = bagItems.filter(isQuest);
+
+    function glyphForSlot(slot) {
+      const name = normalizeText(slot);
+      if (name.includes('оруж')) return '⚔';
+      if (name.includes('брон')) return '🛡';
+      if (name.includes('зель')) return '✚';
+      if (name.includes('свит')) return '✦';
+      if (name.includes('матер')) return '◆';
+      if (name.includes('аксесс')) return '◈';
+      if (name.includes('квест')) return '✧';
+      return '⬠';
+    }
+
+    function getItemDescription(entry) {
+      const slot = normalizeText(entry.slot);
+      if (slot.includes('оруж')) return 'Боевой слот героя.';
+      if (slot.includes('брон')) return 'Защитный комплект текущего билда.';
+      if (slot.includes('зель')) return 'Расходник для быстрых боёв и дороги.';
+      if (slot.includes('свит')) return 'Резерв на возврат и перемещение.';
+      if (slot.includes('матер')) return 'Ресурс для крафта и усиления.';
+      if (slot.includes('квест')) return 'Связано с сюжетными поручениями.';
+      return 'Служебный слот инвентаря героя.';
+    }
+
+    function renderBagCard(entry) {
+      const empty = String(entry.item || '').trim().toLowerCase() === 'пусто';
+      const slot = normalizeText(entry.slot);
+      const classes = [
+        'inventory-card',
+        empty ? 'empty' : '',
+        slot.includes('свит') ? 'rare' : '',
+        slot.includes('зель') ? 'utility' : ''
+      ].filter(Boolean).join(' ');
+
       return `
-        <article class="bag-slot ${typeClass}">
+        <article class="${classes}">
           <strong>${entry.slot}</strong>
           <p>${entry.item}</p>
-          <div class="bag-meta">
-            <span>${status}</span>
-            <span>${isEmpty ? 'Можно заполнить' : 'Готово к использованию'}</span>
+          <div class="inventory-meta">
+            <span>${empty ? 'Свободно' : entry.type}</span>
+            <span>${empty ? 'Готово под добычу' : 'В сумке героя'}</span>
           </div>
         </article>
       `;
-    }).join('');
+    }
+
+    function renderEquipmentSlot(entry) {
+      return `
+        <article class="equipment-slot">
+          <div class="equipment-icon">${glyphForSlot(entry.slot)}</div>
+          <div class="equipment-copy">
+            <strong>${entry.item}</strong>
+            <span>${entry.slot}. ${getItemDescription(entry)}</span>
+          </div>
+          <div class="equipment-state">${entry.type}</div>
+        </article>
+      `;
+    }
+
+    const equippedMarkup = equippedItems.map(renderEquipmentSlot).join('');
+    const generalMarkup = generalItems.map(renderBagCard).join('');
+    const resourceMarkup = resourceItems.map(renderBagCard).join('');
+    const questMarkup = questItems.map(renderBagCard).join('');
 
     q('app').innerHTML = `
-      ${renderHeader(state, 'Снаряжение, сумка и походный запас героя в плотном MMORPG-формате.')}
-      <div class="single-page-layout">
-        <div class="panel page-main-panel">
-          <div class="panel-inner content-scroll">
-            <div class="inventory-screen">
-              <div class="inventory-topline">
-                <div class="inventory-chip">
-                  <span>Адена</span>
-                  <strong>${state.hero.adena}</strong>
-                  <em>Узел походного запаса и торговли.</em>
-                </div>
-                <div class="inventory-chip">
-                  <span>Надето</span>
-                  <strong>${equippedItems.length}</strong>
-                  <em>Активные слоты боевой экипировки.</em>
-                </div>
-                <div class="inventory-chip">
-                  <span>Занято</span>
-                  <strong>${usedBagSlots}</strong>
-                  <em>Предметы, уже лежащие в сумке.</em>
-                </div>
-                <div class="inventory-chip">
-                  <span>Свободно</span>
-                  <strong>${emptyBagSlots}</strong>
-                  <em>Ячейки под лут, добычу и квестовые вещи.</em>
+      <div class="single-page-layout inventory-shell">
+        <div class="inventory-tabs">
+          <button class="inventory-tab active" type="button" data-tab="equipment">Экипировка</button>
+          <button class="inventory-tab" type="button" data-tab="general">Общее</button>
+          <button class="inventory-tab" type="button" data-tab="resources">Ресурсы</button>
+          <button class="inventory-tab" type="button" data-tab="quest">Квестовые предметы</button>
+        </div>
+
+        <div class="inventory-body">
+          <section class="inventory-panel">
+            <div class="inventory-panel-inner">
+              <div class="tab-panel active" data-panel="equipment">
+                <div class="equipment-stage">
+                  <div class="equipment-figure">
+                    <div class="equipment-body"></div>
+                    <div class="equipment-points" aria-hidden="true">
+                      <span class="equipment-point head">LVL</span>
+                      <span class="equipment-point weapon">ATK</span>
+                      <span class="equipment-point armor">DEF</span>
+                      <span class="equipment-point bag">BAG</span>
+                    </div>
+                    <div class="equipment-note">Текущий боевой комплект героя. Сюда же потом спокойно добавим кольца, амулеты и плащ.</div>
+                  </div>
+                  <div class="equipment-list">
+                    ${equippedMarkup || '<div class="empty-panel">На герое сейчас нет активной экипировки.</div>'}
+                  </div>
                 </div>
               </div>
 
-              <div class="inventory-rail">
-                <article class="rail-card">
-                  <strong>Боевой пакет</strong>
-                  <span>${potionItem ? potionItem.item : 'Пока без зелий.'}</span>
-                </article>
-                <article class="rail-card">
-                  <strong>Дорожный эксит</strong>
-                  <span>${transportItem ? transportItem.item : 'Свиток возврата пока отсутствует.'}</span>
-                </article>
-                <article class="rail-card">
-                  <strong>Ресурсный узел</strong>
-                  <span>${supportItem ? supportItem.item : 'Ресурсный слот пока пуст.'}</span>
-                </article>
+              <div class="tab-panel" data-panel="general">
+                ${generalMarkup ? `<div class="inventory-grid">${generalMarkup}</div>` : '<div class="empty-panel">В общем разделе пока пусто.</div>'}
               </div>
 
-              <div class="inventory-layout">
-                <div class="inventory-column">
-                  <section class="inventory-card">
-                    <h3>Экипировка</h3>
-                    <p>Активные предметы, которые формируют текущий боевой профиль героя.</p>
-                    <div class="gear-stage">
-                      <div class="gear-silhouette">
-                        <div class="gear-figure"></div>
-                        <div class="gear-slot-anchors" aria-hidden="true">
-                          <span class="gear-anchor head">LVL</span>
-                          <span class="gear-anchor weapon">ATK</span>
-                          <span class="gear-anchor armor">DEF</span>
-                          <span class="gear-anchor bag">BAG</span>
-                        </div>
-                        <div class="gear-glow">Воин держит готовый комплект.<br>Следом можно добавить кольца, амулеты и плащ.</div>
-                      </div>
-                      <div class="gear-list">
-                        ${equippedMarkup}
-                      </div>
-                    </div>
-                  </section>
-                </div>
+              <div class="tab-panel" data-panel="resources">
+                ${resourceMarkup ? `<div class="inventory-grid">${resourceMarkup}</div>` : '<div class="empty-panel">Ресурсы пока не собраны. Здесь будут материалы, руда и ремесленные заготовки.</div>'}
+              </div>
 
-                <div class="inventory-column">
-                  <section class="inventory-card">
-                    <h3>Сумка</h3>
-                    <p>Расходники, свитки и всё, что герой несёт в дороге между городами.</p>
-                    <div class="bag-grid">${bagMarkup}</div>
-                    <div class="inventory-actions">
-                      <div class="inventory-action">
-                        <strong>Надеть</strong>
-                        <span>Связать слоты экипировки с реальными предметами.</span>
-                      </div>
-                      <div class="inventory-action">
-                        <strong>Использовать</strong>
-                        <span>Зелья, свитки и быстрые дорожные действия.</span>
-                      </div>
-                      <div class="inventory-action">
-                        <strong>Продать</strong>
-                        <span>Подготовить интеграцию с рынком и торговцами.</span>
-                      </div>
-                    </div>
-                  </section>
-
-                  <section class="inventory-card">
-                    <h3>Полевая заметка</h3>
-                    <div class="inventory-notes">
-                      <div class="inventory-note">
-                        <strong>Боевой запас</strong>
-                        Зелья и свитки уже готовы для быстрых дорожных событий и будущих нападений разбойников.
-                      </div>
-                      <div class="inventory-note">
-                        <strong>Следующий шаг</strong>
-                        Сюда легко добавить слоты бижутерии, квестовые предметы, вес, сортировку и быстрые действия «Надеть / Использовать / Продать».
-                      </div>
-                    </div>
-                  </section>
-                </div>
+              <div class="tab-panel" data-panel="quest">
+                ${questMarkup ? `<div class="inventory-grid">${questMarkup}</div>` : '<div class="empty-panel">Квестовых предметов пока нет. Когда добавим задания и NPC, этот раздел начнёт заполняться автоматически.</div>'}
               </div>
             </div>
-          </div>
+          </section>
         </div>
       </div>
       ${renderBottomNav('inventory')}
     `;
+
+    const tabs = [...document.querySelectorAll('[data-tab]')];
+    const panels = [...document.querySelectorAll('[data-panel]')];
+
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        const target = tab.dataset.tab;
+        tabs.forEach((item) => item.classList.toggle('active', item === tab));
+        panels.forEach((panel) => panel.classList.toggle('active', panel.dataset.panel === target));
+      });
+    });
   </script>
 </body>
 </html>
