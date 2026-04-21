@@ -745,19 +745,26 @@
       return '⬠';
     }
 
-    const EMPTY_SLOT_ICONS = {{
+    const EMPTY_SLOT_ICONS = {
+      weapon: './assets/ui/inventory/pusto/weapon.gif',
+      body: './assets/ui/inventory/pusto/body.gif',
+      golova: './assets/ui/inventory/pusto/golova.gif',
+      shit: './assets/ui/inventory/pusto/shit.gif',
+      nogi: './assets/ui/inventory/pusto/nogi.gif',
+      ruki: './assets/ui/inventory/pusto/ruki.gif',
+      kolco: './assets/ui/inventory/pusto/kolco.gif',
+      kolco2: './assets/ui/inventory/pusto/kolco2.gif',
+      amulet: './assets/ui/inventory/pusto/amulet.gif',
+      ykr: './assets/ui/inventory/pusto/ykr.gif',
+      serga2: './assets/ui/inventory/pusto/serga2.gif',
+      plash: './assets/ui/inventory/pusto/plash.gif',
+      poyas: './assets/ui/inventory/pusto/poyas.gif'
     };
-
-    EMPTY_SLOT_ICONS.plash = './assets/ui/inventory/pusto/plash.gif';
-    EMPTY_SLOT_ICONS.amulet = './assets/ui/inventory/pusto/amulet.gif';
-    EMPTY_SLOT_ICONS.kolco = './assets/ui/inventory/pusto/kolco.gif';
-    EMPTY_SLOT_ICONS.poyas = './assets/ui/inventory/pusto/poyas.gif';
-    EMPTY_SLOT_ICONS.serga2 = './assets/ui/inventory/pusto/serga2.gif';
 
     function emptyIconPathForSlot(slot) {
       const name = normalizeText(slot);
       if (name.includes('ring2') || name.includes('кольцо ii')) return EMPTY_SLOT_ICONS.kolco2;
-      if (name.includes('earring') || name.includes('серьга')) return EMPTY_SLOT_ICONS.ykr;
+      if (name.includes('earring') || name.includes('серьга')) return EMPTY_SLOT_ICONS.poyas;
       if (name.includes('оруж')) return EMPTY_SLOT_ICONS.weapon;
       if (name.includes('weapon')) return EMPTY_SLOT_ICONS.weapon;
       if (name.includes('брон')) return EMPTY_SLOT_ICONS.body;
@@ -774,7 +781,7 @@
       if (name.includes('ring1')) return EMPTY_SLOT_ICONS.kolco;
       if (name.includes('амул')) return EMPTY_SLOT_ICONS.amulet;
       if (name.includes('necklace') || name.includes('ожер')) return EMPTY_SLOT_ICONS.amulet;
-      if (name.includes('аксесс') || name.includes('украш')) return EMPTY_SLOT_ICONS.ykr;
+      if (name.includes('аксесс') || name.includes('украш')) return EMPTY_SLOT_ICONS.poyas;
       if (name.includes('пояс')) return EMPTY_SLOT_ICONS.poyas;
       if (name.includes('плащ')) return EMPTY_SLOT_ICONS.plash;
       return null;
