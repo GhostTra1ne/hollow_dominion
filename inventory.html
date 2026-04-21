@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-    const APP_VERSION = '20260421-telegram-23';
+    const APP_VERSION = '20260421-telegram-24';
       const url = new URL(window.location.href);
       if (url.searchParams.get('appv') !== APP_VERSION) {
         url.searchParams.set('appv', APP_VERSION);
@@ -19,50 +19,53 @@
   </script>
   <title>Инвентарь</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="common.css?v=20260421-telegram-23">
+  <link rel="stylesheet" href="common.css?v=20260421-telegram-24">
   <style>
     .inventory-shell {
       min-height: 0;
       display: grid;
       grid-template-rows: auto minmax(0, 1fr);
-      gap: 12px;
-      padding-top: 4px;
+      gap: 10px;
+      padding-top: 2px;
     }
 
     .inventory-tabs {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 8px;
+      gap: 4px;
       align-items: stretch;
     }
 
     .inventory-tab {
-      min-height: 40px;
-      padding: 7px 4px;
-      border: 1px solid rgba(214, 178, 116, .12);
-      border-radius: 14px;
+      min-height: 32px;
+      padding: 5px 4px;
+      border: 1px solid rgba(138, 101, 52, .72);
+      border-radius: 7px;
       background:
-        linear-gradient(180deg, rgba(255, 255, 255, .035), rgba(255, 255, 255, .01)),
-        radial-gradient(circle at 50% 0%, rgba(214, 178, 116, .08), rgba(214, 178, 116, 0) 64%);
-      color: rgba(243, 237, 222, .82);
-      font-size: 11px;
+        linear-gradient(180deg, rgba(96, 72, 40, .46), rgba(38, 27, 16, .84)),
+        linear-gradient(180deg, rgba(255, 255, 255, .04), rgba(255, 255, 255, 0));
+      color: rgba(233, 223, 198, .82);
+      font-size: 10px;
       font-weight: 700;
       line-height: 1.15;
       text-align: center;
       cursor: pointer;
-      transition: border-color .18s ease, transform .18s ease, color .18s ease, background .18s ease;
+      text-shadow: 0 1px 0 rgba(0, 0, 0, .82);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 240, 205, .08),
+        inset 0 0 0 1px rgba(33, 23, 12, .46);
+      transition: border-color .18s ease, color .18s ease, background .18s ease;
     }
 
     .inventory-tab.active {
       color: #fff0cb;
-      border-color: rgba(214, 178, 116, .34);
+      border-color: rgba(194, 151, 87, .84);
       background:
-        linear-gradient(180deg, rgba(98, 67, 28, .92), rgba(42, 28, 11, .98)),
-        radial-gradient(circle at 50% 0%, rgba(255, 228, 170, .14), rgba(255, 228, 170, 0) 64%);
+        linear-gradient(180deg, rgba(124, 92, 50, .78), rgba(55, 39, 21, .94)),
+        linear-gradient(180deg, rgba(255, 232, 184, .06), rgba(255, 232, 184, 0));
       box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, .05),
-        0 8px 18px rgba(0, 0, 0, .18);
-      transform: translateY(-1px);
+        inset 0 1px 0 rgba(255, 246, 214, .14),
+        inset 0 0 0 1px rgba(46, 31, 14, .56);
     }
 
     .inventory-body {
@@ -72,14 +75,19 @@
 
     .inventory-panel {
       min-height: 0;
-      border-radius: 24px;
+      border-radius: 12px;
       background:
-        linear-gradient(180deg, rgba(255, 255, 255, .04), rgba(255, 255, 255, .015)),
-        radial-gradient(circle at 50% 0%, rgba(214, 178, 116, .08), rgba(214, 178, 116, 0) 56%);
-      border: 1px solid rgba(255, 255, 255, .06);
+        linear-gradient(180deg, rgba(57, 41, 23, .76), rgba(23, 18, 12, .9)),
+        radial-gradient(circle at 50% 0%, rgba(176, 129, 66, .16), rgba(176, 129, 66, 0) 44%),
+        linear-gradient(90deg, rgba(255, 255, 255, .03) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(255, 255, 255, .03) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(34, 39, 25, .42), rgba(18, 22, 15, .62));
+      background-size: auto, auto, 34px 34px, 34px 34px, auto;
+      border: 1px solid rgba(143, 105, 52, .82);
       box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, .03),
-        0 20px 36px rgba(0, 0, 0, .18);
+        inset 0 1px 0 rgba(255, 240, 205, .08),
+        inset 0 0 0 1px rgba(26, 18, 10, .62),
+        0 14px 28px rgba(0, 0, 0, .24);
       overflow: hidden;
     }
 
@@ -87,10 +95,10 @@
       height: 100%;
       min-height: 0;
       overflow: auto;
-      padding: 16px;
+      padding: 10px;
       display: grid;
       align-content: start;
-      gap: 14px;
+      gap: 10px;
     }
 
     .tab-panel {
@@ -112,26 +120,25 @@
 
     .legacy-group {
       padding: 10px 12px;
-      border-radius: 18px;
-      border: 1px solid rgba(214, 178, 116, .12);
+      border-radius: 10px;
+      border: 1px solid rgba(133, 97, 48, .58);
       background:
-        linear-gradient(180deg, rgba(255, 255, 255, .03), rgba(255, 255, 255, .01)),
-        radial-gradient(circle at 50% 0%, rgba(214, 178, 116, .06), rgba(214, 178, 116, 0) 62%);
-      color: rgba(243, 237, 222, .82);
+        linear-gradient(180deg, rgba(68, 49, 27, .64), rgba(31, 22, 13, .88)),
+        linear-gradient(180deg, rgba(255, 255, 255, .025), rgba(255, 255, 255, 0));
+      color: rgba(238, 230, 210, .8);
       display: grid;
       gap: 2px;
       text-align: left;
       cursor: pointer;
-      transition: border-color .18s ease, transform .18s ease, color .18s ease, background .18s ease;
+      transition: border-color .18s ease, color .18s ease, background .18s ease;
     }
 
     .legacy-group.active {
       color: #fff0cb;
-      border-color: rgba(214, 178, 116, .32);
+      border-color: rgba(194, 151, 87, .78);
       background:
-        linear-gradient(180deg, rgba(98, 67, 28, .92), rgba(42, 28, 11, .98)),
-        radial-gradient(circle at 50% 0%, rgba(255, 228, 170, .12), rgba(255, 228, 170, 0) 64%);
-      transform: translateY(-1px);
+        linear-gradient(180deg, rgba(107, 79, 43, .78), rgba(47, 33, 18, .92)),
+        linear-gradient(180deg, rgba(255, 236, 190, .05), rgba(255, 236, 190, 0));
     }
 
     .legacy-group strong {
@@ -147,17 +154,17 @@
     .equip-flat-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
+      gap: 8px;
     }
 
     .equip-slot-card {
-      min-height: 84px;
-      padding: 10px 12px;
-      border-radius: 18px;
-      border: 1px solid rgba(214, 178, 116, .14);
+      min-height: 78px;
+      padding: 8px 9px;
+      border-radius: 10px;
+      border: 1px solid rgba(141, 102, 49, .62);
       background:
-        linear-gradient(180deg, rgba(68, 46, 19, .95), rgba(31, 20, 8, .98)),
-        radial-gradient(circle at 50% 0%, rgba(255, 228, 170, .08), rgba(255, 228, 170, 0) 66%);
+        linear-gradient(180deg, rgba(62, 44, 24, .76), rgba(29, 21, 13, .9)),
+        linear-gradient(180deg, rgba(255, 244, 214, .03), rgba(255, 244, 214, 0));
       display: grid;
       grid-template-columns: 44px minmax(0, 1fr);
       grid-template-areas:
@@ -167,29 +174,27 @@
       align-items: center;
       gap: 4px 10px;
       box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, .04),
-        0 10px 18px rgba(0, 0, 0, .16);
+        inset 0 1px 0 rgba(255, 241, 212, .06),
+        inset 0 0 0 1px rgba(26, 18, 10, .38);
     }
 
     .equip-slot-card.has-item {
-      border-color: rgba(214, 178, 116, .28);
+      border-color: rgba(191, 148, 82, .82);
       background:
-        linear-gradient(180deg, rgba(92, 61, 24, .96), rgba(40, 26, 10, .98)),
-        radial-gradient(circle at 50% 0%, rgba(255, 228, 170, .14), rgba(255, 228, 170, 0) 66%);
+        linear-gradient(180deg, rgba(82, 58, 31, .82), rgba(37, 26, 15, .92)),
+        linear-gradient(180deg, rgba(255, 235, 187, .05), rgba(255, 235, 187, 0));
     }
 
     .equip-slot-icon {
       grid-area: icon;
       width: 44px;
       height: 44px;
-      border-radius: 14px;
+      border-radius: 8px;
       display: grid;
       place-items: center;
-      background:
-        radial-gradient(circle at 50% 30%, rgba(255, 234, 190, .14), rgba(255, 234, 190, 0) 46%),
-        linear-gradient(180deg, rgba(89, 59, 22, .95), rgba(38, 25, 10, .98));
-      border: 1px solid rgba(214, 178, 116, .16);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05);
+      background: linear-gradient(180deg, rgba(76, 55, 31, .88), rgba(31, 23, 14, .96));
+      border: 1px solid rgba(158, 114, 57, .58);
+      box-shadow: inset 0 1px 0 rgba(255, 247, 221, .05);
     }
 
     .equip-slot-icon img {
@@ -201,7 +206,7 @@
 
     .equip-slot-label {
       grid-area: label;
-      color: rgba(243, 237, 222, .72);
+      color: rgba(235, 227, 205, .66);
       font-size: 10px;
       font-weight: 700;
       letter-spacing: .04em;
@@ -220,15 +225,15 @@
     }
 
     .equip-slot-name.empty {
-      color: rgba(243, 237, 222, .48);
+      color: rgba(220, 210, 188, .42);
     }
 
     .equip-slot-action {
       grid-area: action;
       padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(214, 178, 116, .18);
-      background: rgba(255, 255, 255, .04);
+      border-radius: 7px;
+      border: 1px solid rgba(165, 120, 61, .58);
+      background: linear-gradient(180deg, rgba(96, 69, 37, .72), rgba(44, 31, 18, .9));
       color: #f6dfae;
       font-size: 11px;
       font-weight: 700;
@@ -238,8 +243,8 @@
 
     .equip-slot-action:hover,
     .equip-slot-action:focus-visible {
-      border-color: rgba(214, 178, 116, .30);
-      background: rgba(214, 178, 116, .10);
+      border-color: rgba(201, 156, 88, .82);
+      background: linear-gradient(180deg, rgba(118, 87, 48, .82), rgba(54, 38, 21, .94));
       transform: translateY(-1px);
     }
 
@@ -253,12 +258,12 @@
       grid-template-columns: 48px minmax(0, 1fr) auto;
       gap: 12px;
       align-items: center;
-      padding: 12px;
-      border-radius: 18px;
+      padding: 10px;
+      border-radius: 10px;
       background:
-        linear-gradient(180deg, rgba(255, 255, 255, .03), rgba(255, 255, 255, .015)),
-        radial-gradient(circle at 50% 0%, rgba(214, 178, 116, .06), rgba(214, 178, 116, 0) 62%);
-      border: 1px solid rgba(255, 255, 255, .06);
+        linear-gradient(180deg, rgba(62, 45, 25, .7), rgba(27, 20, 13, .88)),
+        linear-gradient(180deg, rgba(255, 248, 228, .025), rgba(255, 248, 228, 0));
+      border: 1px solid rgba(139, 102, 49, .5);
     }
 
     .legacy-row.hidden {
@@ -268,16 +273,14 @@
     .legacy-icon {
       width: 48px;
       height: 48px;
-      border-radius: 16px;
+      border-radius: 8px;
       display: grid;
       place-items: center;
       font-size: 18px;
       color: #f8e5bc;
-      background:
-        radial-gradient(circle at 50% 30%, rgba(255, 234, 190, .14), rgba(255, 234, 190, 0) 46%),
-        linear-gradient(180deg, rgba(89, 59, 22, .95), rgba(38, 25, 10, .98));
-      border: 1px solid rgba(214, 178, 116, .16);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05);
+      background: linear-gradient(180deg, rgba(74, 53, 31, .88), rgba(31, 23, 14, .96));
+      border: 1px solid rgba(154, 111, 55, .54);
+      box-shadow: inset 0 1px 0 rgba(255, 247, 221, .05);
     }
 
     .legacy-empty-icon {
@@ -315,8 +318,8 @@
     .legacy-action {
       padding: 7px 10px;
       border-radius: 999px;
-      border: 1px solid rgba(214, 178, 116, .14);
-      background: rgba(255, 255, 255, .04);
+      border: 1px solid rgba(139, 102, 49, .42);
+      background: linear-gradient(180deg, rgba(96, 69, 37, .64), rgba(44, 31, 18, .86));
       color: #f6dfae;
       font-size: 11px;
       font-weight: 700;
@@ -326,8 +329,8 @@
 
     .legacy-action:hover,
     .legacy-action:focus-visible {
-      border-color: rgba(214, 178, 116, .28);
-      background: rgba(214, 178, 116, .10);
+      border-color: rgba(201, 156, 88, .82);
+      background: linear-gradient(180deg, rgba(118, 87, 48, .82), rgba(54, 38, 21, .94));
       transform: translateY(-1px);
     }
 
@@ -342,11 +345,11 @@
       place-items: center;
       text-align: center;
       padding: 20px;
-      border-radius: 22px;
+      border-radius: 10px;
       background:
-        linear-gradient(180deg, rgba(255, 255, 255, .025), rgba(255, 255, 255, .01)),
-        radial-gradient(circle at 50% 0%, rgba(214, 178, 116, .05), rgba(214, 178, 116, 0) 60%);
-      border: 1px dashed rgba(214, 178, 116, .16);
+        linear-gradient(180deg, rgba(62, 45, 25, .64), rgba(27, 20, 13, .84)),
+        linear-gradient(180deg, rgba(255, 248, 228, .02), rgba(255, 248, 228, 0));
+      border: 1px dashed rgba(139, 102, 49, .46);
       color: rgba(243, 237, 222, .72);
       font-size: 14px;
       line-height: 1.6;
@@ -354,7 +357,7 @@
 
     @media (max-width: 560px) {
       .inventory-panel-inner {
-        padding: 14px;
+        padding: 8px;
       }
 
       .legacy-row {
@@ -372,12 +375,12 @@
       }
 
       .equip-flat-grid {
-        gap: 8px;
+        gap: 6px;
       }
 
       .equip-slot-card {
-        min-height: 72px;
-        padding: 8px 9px;
+        min-height: 68px;
+        padding: 7px 8px;
         grid-template-columns: 38px minmax(0, 1fr);
         gap: 3px 8px;
       }
@@ -399,7 +402,7 @@
   </div>
   <div class="toast" id="toast"></div>
 
-  <script src="common.js?v=20260421-telegram-22"></script>
+  <script src="common.js?v=20260421-telegram-24"></script>
   <script>
     let state = loadState();
     if (!ensureHero(state)) {
@@ -416,9 +419,9 @@
       { id: 'head', family: 'head', label: 'Шлем', emptyIcon: 'golova' },
       { id: 'necklace', family: 'necklace', label: 'Ожерелье', emptyIcon: 'amulet' },
       { id: 'body', family: 'body', label: 'Тело', emptyIcon: 'body' },
-      { id: 'earring1', family: 'earring', label: 'Серьга I', emptyIcon: 'ykr' },
+      { id: 'earring1', family: 'earring', label: 'Серьга I', emptyIcon: 'poyas' },
       { id: 'legs', family: 'legs', label: 'Низ', emptyIcon: 'plash' },
-      { id: 'earring2', family: 'earring', label: 'Серьга II', emptyIcon: 'ykr' },
+      { id: 'earring2', family: 'earring', label: 'Серьга II', emptyIcon: 'serga2' },
       { id: 'gloves', family: 'gloves', label: 'Перчатки', emptyIcon: 'ruki' },
       { id: 'ring1', family: 'ring', label: 'Кольцо I', emptyIcon: 'kolco' },
       { id: 'boots', family: 'boots', label: 'Ботинки', emptyIcon: 'nogi' },
@@ -742,21 +745,14 @@
       return '⬠';
     }
 
-    const EMPTY_SLOT_ICONS = {
-      weapon: 'data:image/gif;base64,R0lGODdhIgAiANUAAAQCBCQmJBQWFDw6NAwOBDQyLBweHAwKBBQODCwuLERCRCQeHAwGBCwmJBwWFDw2NBQSDCQiHDw+PDQ2NCwqJBwaFAQGBDw6PAwODDQyNAwKDBQOFERGRCQeJAwGDBQSFCQiJCwqLBwaHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACwAAAAAIgAiAAAG/0BJZCKZDCaTAnK5zGQmz8fkcZlcLo+MgsKhACyHL2BMLpvLFrLFghFcCuiz3GzZaAAHjQYBQJYPYGuBGgcHHhqHiHoMi4hsfRNzY4KCAAxfDBYeghsCYwgWR2lha3kEeoQYqKoIGqobCB8GIA4fHRhvk4IYFhpsBxjAhHqsvB+tGB+uEERovRqnwhisexgI1h8NEYwVAggQT2lj04AaEB+qGBDTBATqwQMVaxAI7riRYoAHIQK+EALBIORxIBBCgAi8gF2DwAxfGjYiJFAQAOwDBEIMwRiIEAEQA3UHEAC8IAENhBABEoQwwEtkGwIAEBzEE1LAOgI2BwyYNM6Awf8BGSq4wlBhjIGJX66pW+eyCs8xwAwUSJAgwgcwBxwcDBMNGMN1DeMASCZgQYgJBg4wMBCAortCGAhck3vtwQBxeKZlYjOEn4EKDghkYkDgwD9vwKb50RUsjYA1BhYAlcdmWrJpStfdQ1PuQ14NVG2iC3MAnWZ01jAcUQPAF7CxAEFUmDZ06Dp0165p0ElnDQABAhwY6AUQ7rdkpi1PW/0nz4EACwwYaH0A+AdAbcBitnxhpxpVAhqwZTmbzYcPAkanXo+O+ZfKBhIsCJAWIK+xEShMt3wtuQTv71m0gAAJGOCACAB0hYEIAQQgwinTMGQRBkWQkUcFbNFnAEB6sOGpywcBKJGeZtO0ByAbGILwF2oekYNBSgmkpxxqTo1xCoYGiFAcGAmlIgIIILiSGDB58DYOUTp6swYxlfG4TiF65AGGBk6t0Z9N7KQipS+B9GKPbrzwtoYq6/iiSpdTYteLh8oRUoUgoEwTiJSl8BLMMKXkmYcRXwATCG12nrkmL0uamYeQA4SAwReoPIPKo5A2+miJIXDghBVWVDEFElJs6mmnnmYawARBAAA7',
-      body: 'data:image/gif;base64,R0lGODdhIgAiAMQAAAQCBCQqJDw+PBQWFDQ2LBwiHAwODDQyLERGRCwqJAwKBBweHDw6NCQiHCwuJERCPBwaFBQSDExKRCQmJAQGBDQ2NDQyNCwqLAwKDDw6PCQiJCwuLERCRBwaHBQSFExKTCwAAAAAIgAiAAAF/yC3ZdmYVYJVWalQZUfFVHL9MhmeIBflAz8KYEgEDhVDoU+BMRgihsGsWBQaAFdMUlilKJgGTITFBVK0SiIl4gs7m02n3ENLEpuUqxBzPvowTGCBay9tPnlaWh4YAx4RYh4GCnJPUY0DBjRpf2ceHRMWGxNREwkDZ4+VkY50FUUGZxSLBQsbC5ENAgIQeY0RHr5PAytFGMadG1oaGBsbFjwXEJjSEREDjQZTRnwUCwYaC3EAAiMBppjX6QNQrVt8GBcTGxcbHBcDGRMMHQsQHQMT/nkY+CvCjDROPGioYKCDhQkVNExoIEqBhggQojlh18hFMQMLLmRgtExDgAwCHv8wABhSQwdH1yqRqKKQ3gkBGS4gsEBvwQAAHQoMaDCB3oQFv07YaeKzlgWUFjgIYGAhFLMEESDKYHAvmysA3Ch8snBGAYUNBXAMENAAABuLB5pVMNUOiIJfA5AumCAgAAQF9AYk2PBjwoAOIsmtUYrFACtrC6nSu0rhggUsHRMIWDghwgkhwKRBaAhhQ16FARQ0a1BhAoa4UiYg4OUhxRBrC/itAzl0gMkLHjQ3gxChw4YKFxJocFSn8QAIPoFF8NkAaYIwDSwwYAQ9wYW5jrWhAuYonAfMGgAM0JJgQZ4JCykYHs3YibQObTz4a9DgMJvOQP30102TZHDZGp8QBYXWWwaMIoRP0uQxyQI0ULWBI1SpQdEGYOVhxSIJVLZRHhtsZ0B23uQwBCZYXHBXE0isYUAAGFwHSB5ggeTFOhVw2BgEjkiIiQLQRXDPBqm8kVd7PhkAAxEnnmIGNhJ5MIGVG2kxVHEXaLCGNlfc9sMkDIqxBh6xUDCkApFk8EAZ7mARY1l2SSIhBRBw00EEmhCxIJlmSgILIG9cAYUVcWQIABJHOJEHLGYZ4gWOsBj6aAlhmgHWMcYYwwQgnoYKKiALOLDTcVW9QIOqJ5wwgw2vxkpDAASEAAA7',
-      golova: 'data:image/gif;base64,R0lGODdhIgAiANUAAAQCBCQqJBQWFDw+PDQ2NAwODCQiHCQeHAQKBDQuLBweHBwWFERGRDw2NBQOFEQ+PCwmJAwGBCwqJAwKBDQyLBwaFDw6NBQaFDQ6NAwSDCQmJBQSDERCPCwuLAQGBDxCPCQiJAQKDDQuNBwWHExKTDw2PCwmLAwGDCwqLAwKDDQyNBwaHDw6PBQaHDQ6PAwSFBQSFERCRAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACwAAAAAIgAiAAAG/8CHhhXrEFQEFqFEsCiTDQKhUXKxMCyWi+ByDVAflGcMAIzHCE8qlJqkTqmU5+RGnz2hi9RT7pv9ZnwRcSd8AHFsCCEFBQhJhgAIZWqIbikRMCsHKzAFfHdoCAMdfoZzHhOmmSAKIwIbKQUOL7S1HgMDn4GesXGxMBAmBgIOMJ1xGYwFIclZpYeWYykCCgcgnJkCKRkwAt4C3QIYBJOxeDAvBXEwGioVIBooIiooArIbAi8ZGS8CUpOH1MCIo26AigIrRGTR8IDAhxX5BFyAWOCFEz9pCgAQ4GFFgQErViRoAGFAAxIDSoDo1I9WiwxKAMpJAcAAQgUmCijIAmMAC/8SLDoMUFBAQAtGr6z08YBgUIEWIFKgKHAtAQsHMVRYcKFiAIgCMBRcSJfBArk/csDCAOGB6AABKEosyKpVBcR0RvNl8IkRTgZt2kDEaAGhHhIkGnRqEMDM6IYtAE8oSrECAEQQHTSB2CyiA4oVKFBoOLqN38VJIQalUOChwEEFYQ+wwGwigOAASO2FeIzBTwQEcjaUMdtBWwVqKgIsiFeBET5wMC1gjDABQYEMCg5WQEEB5wADhwgISCWL0YQNVzC2XuFGgwQzGxg1B1ChwwRiz8FtsCh96SAJCgjQjmcZOAAcXB+o4IEAyThQwARgoddbH9XFAoIBHUjQAQcqaDD/BQEcjreBgw+eUMB+FvQ3iRoIgCPBhR2wIAEDoyTAGonPxQeDhH5UWIFN3HUAAgEDaKCBWd4QEIEHEZiHwAT8lTJIWwhghoICFGhAAQcapKDBKAEy4uAGO8a0FCpqVGAkCAGoAAIuEWSQAAodDOMghGBF98x9bawggQoUGAEAIw9g0MEBHYR54nkbmFUKHgZs0JoCrIzHh3gcKHAkBPaQeB0LKgYyAUUPojIBAAHA4MEDB3XQYSdiyuLomRB248AZBYAHAQEawIDBARpc0EYsjOi5FAATdBMfhKl4QAAKAaBggALFeeKGc42etWIsZCrjILXgWdABKXI4BaEDME24PuKpRcESloatdmsghPEhA4MFKAhXxqmtxSfAARV0s6gZaSljcK5CHZaEEUhQgEEMAyQhMQVNIAHqxU7gS0AQADs=',
-      shit: 'data:image/gif;base64,R0lGODdhIgAiAMQAAAQCBCwqJBQWFDw+PDQ2NAwODCQiHDQyLAwKBBweHExKTCwuLBwaFERCPDw6NBQSDCQmJAQGBCwqLCQiJDQyNAwKDBwaHERCRDw6PBQSFAAAAAAAAAAAAAAAAAAAAAAAACwAAAAAIgAiAAAF/+AlYcOyEASGpgOmOgRMUMdwUE4LL4oUVRGAEBAJDo/DSKFgVC4fApXxWKkCEVZEEUnUEiuF2rRILloLAoZA8AAClkuEvPCYcX/LSqZQNVceGRkCREJ4fxQEQWY/VQV7cBkPD45pBgJ7koFoKIVERWgWCaIWpBZrpxkWBqZPjilJfGCpFntAPwwJBgmmArkCdGkZr0JMqRkJEFtrEQKKBhIPuAkYBRZQBS5Jer2heqmODIAZFQkTCb0TBpR1BENVAqyXELsFu70MzAkBBeoUFWrYMLir9qsCvAW0APQqoEYQAgi6IiAUAAbGEEGXAu2aEMeRQWvNLFAwxYBABgQBh/+AIkjL1AQIJyNA/GGNgj5hzR5YFALPAjM0FSAsGDDyQYRQEY4h0LfAQIAEKFUMgRdS0AMKAy5AmBcBQQZcBRAAIHDiwYRJDhwYEaCODkGbDNdkiPAgwdcEEQYYwAAhETYCYt9AreAzLAQGAFB+RTPh2CAKJwJIoIPCCJQKCKAVAGAuz7VoaOaaWLB1jxQiaPhA3ZyG0iWUAhAwoPxS1J+dRSSlNgAljYUJAOGhqRvg7IFmfzs5AlRgwbljDPZEegkH2gIAAzAX2CnkXzMA6uYAMArIHEoDECpwVAuGhPIEahBMWCOKWe9VSQkARJibwAEkoFyyxF1M1JMAQ8cJosukA1gkdwRdojQUSSTxESbKGqH88oNO7SBBDlVsLKEQRfyoYwEDDFiwmRNSIaFEJpPsQdI5mwFwDhtXSMIJIYpoAQYdUCQwyWsFQGDNFQ06WEgRcjjhyEmUKLjAL2L9+MeOD8YCxh9LhAJQBW8wgVIe2znAxRc+kiGmEpiZwUdXn2CwQI1bwCkHFlhYoeeeejIQwAUnxCDnCivIIIMKKRCq6AEOhAAAOw==',
-      nogi: 'data:image/gif;base64,R0lGODdhIgAiAMQAAAQCBCQmJBQWFDw6NAwODDQyLBweHERCRAwKBCwuLCwqJBwaFDw+PBQSDDQ2NCQiHAQGBDw6PDQyNERGRAwKDCwqLBwaHBQSFCQiJAAAAAAAAAAAAAAAAAAAAAAAAAAAACwAAAAAIgAiAAAF/+BRRYfjSBJjOhHbMsUgFao52GZyJFAP+IAgJPiDEIzHBgSBoDCdFIvEMSQKe5QsheD8IXy9cJhQiFirRAgFKziqEdwmAc4lNByJc3C9JfgJF2FbWD1HUHcRQ1UQgUJZgBcIAgsWC1sNF5gXFwIXBCxWP35bAhYGAQGBkxYCFAt/DXaYdw5XdXUXFhgVEgYUnZMEAbGxnA0CtFaGgFyEDQsJDDcKbYACwG0taHxqfrkYARZz3g0AkLHXC8lXj6MEAuDD76e+fsfInAQRiUR8mxd9LFTa8iCBBHmaMF1bF2SZJ08LDEg8coGSJXudFOqjkqYZs1wGwAEUYGDBK0jv3v81YGhOTZ8tuSot0WVAAARimR5u3NYtVhaSp+YIeMDKyKyHsW6c6ROHFAYFPS4ElcOMQjETZ5rQ+ULAVIUeQzE0eBTLDjOs/eAsGXXsgYI1DcCNI2ePFpola0YZWRAAw5wLqNyV9QQI7R4jj5pIDWCAC2CoTcoSKzzgLlcnfiJiYBWrwts+mPpkMgzgSxY4FTE8MMDKTgLI7TxdrZzmi20BqB6k85Pg69iVk1eS7gGHpOqafx5UkLigG5znhWulWdIXA+uxSxokSHBy7ZbvdtAqWmJ9QadRURIUKFntj/sLDgboYTRKzsqK1zyZcw9rSqglWoXxRQ7HzbEFdH3EoMhTD0V8sQQWFjCm3w9QaIXZcAwSB+AXlfwhyRMWIgCfGQw2KAaDCCgBwEoUulNHAwetsUcaNIJxBn9/GFDABFOcEMEULbTAwpAr9BhfCwMgGUE0IQAAOw==',
-      ruki: 'data:image/gif;base64,R0lGODdhIgAiAMQAAAQCBCwqJBQWFDw+PDQ2NAwODCQiHCwyNERGRBQODAwKBBweHDw2NCwmJCwuLBwaFERCPCQmJDQyLBQSDDw6NAQGBCwqLAwSDCQiJExKTAwKDBwaHERCRDQyNBQSFDw6PCwAAAAAIgAiAAAF/yAUDRTRUQyhfkSqUiX1pef3lXfDOUAF/JWgoqLQKIqaYJJYMAqLCg9l8Kv6gL1g8DfsFYa+sK9DBRJ7w2EyvS64PZeJ23gBECRVbDjdNfbkABMeDwIJQR4aDANbPgpujwmPBQIeFRoCEwAbCxgBC5GFBB9WXpaOGl8aqHJvCwauDhEPbhMEFFVfUE2SBYYJCwIFBgMRGBEqBsEeLHqnBRMXBR6UwQKUAXcSCBgEERwWCQIwYT2qbgke0OHSGskEDhYOHwHxHQ6TJWZMX9ITqAIKZjkwgACbBAcOFkCwNclWszmSBF0Q4CABhwgdLHQz4KFbBAAXVGBRo+GCoQrTHv8sW1bgQ4EAGwxsChChASZb5CzxSyXgVQQJd+50IHBgIYFKQUISGFnBDREBG3oiBDrgwwACAQB8EeDjwoYCDnugedYjAswFDBBaENFBgNYCABQk0ODB0YGlWVJptSDgwYg7CG0tIGIElaSOH64A8XpBg4QPHR2okGAhwoQKAlChigSto4ScEzDIPUZhgVACfK9EOtyrFt4wAiLARXAQgoUBJywTLmBSWr8LHfECoUvBcYQPCBxQsOdWAaVeJqN7kBbWiyN7xQ5mIDBAAty3jqZPl5NOJJqUEw5QhomgwQcHDxQAp/WsPnnuV5oWePA1wIABwTTRxREonWNgAkoBUQCoSlABQ15fs+jXhByR9HYODLhUEM4CwKxhTWaW+FMSJL08Yh4ASTyzwAaXxSXAAhMM8YgjjvBSUnVDCIKJAj14wOEShgU542b5/LDgNAsesoBKYNR4Co2SaHAiERMY4uEGSJFUmDOFNXWiF04Y4QaPlhCxW1O7iYlhHloU0aYSSGhWWCplErDAd2IplgebOk3iwZ9/UmLAAbg5MNQKKiSq6KIpsMCoPCEAADs=',
-      kolco: 'data:image/gif;base64,R0lGODdhIgAiAMQAAAQCBCwqJBQWFDw+PDQ2NAwODCQiHDQyLAwKBBweHCwuLBwaFExKTDw6NBQSDCQmJAQGBCwqLERCRCQiJDQyNAwKDBwaHDw6PBQSFAAAAAAAAAAAAAAAAAAAAAAAAAAAACwAAAAAIgAiAAAF/6D0DBJxXYSpoldDNE0Lp26aGpICQRVQVLwdELgrGhE7ZAVREZgggGjwV/lZl0smAgkwCp+8CoboLXa91wJCDSEoosDCroChF+51x32vzu7OFBdxFVVjEHKEU4RVhHtaWxUpcEV0GJaXGHoFmnpMd4x3KFF4jXZ4VD9ad3oCDhgCraI+VZ+FVAKbuXQJdxAOFQ4Jh09ioxMWPxgWyMB7msCXXQZiF28VChQEFA8TGDuvsHZVrncLDw0KBwS4MWIJrxEEAxfbuHRiDjwCEwHbCxMP1CFwIAnAg0AJKiRQME+BgDGb6pijcOBBAgEJDjagM4CAjwkTGDJQFpIChQkFcP8hWKAAnTALByQMmMdxQJcI2CIkGKCAm8kHBRZUmaDNwD4FKRJMiFBFGwCFGSkMMGDhVciEPwQE0InRgYGWB2BscgMAAbd0FCwomMDygTdN+yIYVVDBQEc3QFz4WICTwkIDDwgEwOBJDwZzAQBmjHAhMAQE8gDUUZDgwEKWEoT1yYXhq1+5lCkIQBLZVwIHBwFaPpQvV5WJAQI8MFCggQ/IHgHoyRggQYMHo1I102eAwAMFBSjIGXYAyBYKESAgxVAWgQ8+QwowXuAbgIAdKA75SDD4gIXHcnQ7U8NkwToFhLHE8CG++AP0XeQYcr3JwYXvAtwmSQH57fPYIYdUscaWQGpY4dockXhknRRsYHGHJ6CswYcSSMDw1BlPHYjIGgruUQV6iDwWyQVl5ccED5BYQeKFwo2IoF5QaCFiHCo2KCMVCxICGYtQIMjEICTOeGEzGgr3gg9d8PjilKlUSctmSkhSpIpYYHGkM4zo0QgSjxFAWxSjaMLHmmzmYQcG5A1wQDbZNFDnC3jG8AIKerrQQgsvIBUCADs=',
-      amulet: 'data:image/gif;base64,R0lGODdhIgAiAMQAAAQCBCwqJBQWFDw+PDQ2NAwODCQiHDQyLERGRAwKBBweHCwuLBwaFERCPDw6NBQSDCQmJAQGBCwqLCQiJDQyNExKRAwKDBwaHERCRDw6PBQSFAAAAAAAAAAAAAAAAAAAACwAAAAAIgAiAAAF/2CzOIREHgQxEtBBkoSTZWQWp3MwSFEP+ICgsEdMFC0JCzJZUDgcwmivAEhABIWHRiDQPAoFojhRWAwi0V9Q8AuEyQUN2JhERsAFCypdTQAYPxB2WV95RhFkSmQPBBloPndoVAAaaj8RdgBgD19cXQQHUlNxDFgPF6VZnnlgXpsaJFF5FgVJCgIRAhIKDFoCFw8Wd3JeWwIpQ4hkmhcCBhAGzb8MGhrUCdZaCmA2apI9GgcZ0RAQDhcFFwpf23dYv17IQUZKtRYCCtARAxDpvAKlLDwQoIUBNwLJDjGAMIHBM2jQtKEjGKcAF07yLiGhZGBCuQldymFhcOuLMC1aCv90e4TojpkDEB0gwOBAAhtN0YJx2ZSxBxJea7Y9eMRgQgAKCMp10iCwQKwgPiUlWKbpUIQtVCyiGXhPJQE0QewM3KnIXakuDwwyaQoL4RAmAJs9oBfHC5dmtTZV7CYESauzeTC9iosF05dCT6Fi4+KFlhbD0+IGw5NFQ8YfpCjiGUrmbimQeS1gTQyV8cDGd5gMVJBPrWOCfMEmIOipixFDou8qkEOrlVeopZvJKSQMLjWu9Q47pRAFztkvLXtz8mxAQILDWGyAxTxcjj3Bm3/hE9CbUIztjmm5EqZs1kAGJLEkivPkUZUseu0IKw5mvAENcMCh3RCipWSIT2RA1sxaLXiI5pRbilnkxSFJRJIXQNaQB8YdjDiw3RSFvNFSEkxUJJ8iWQyomDDf9UBhS1lc9wZdDlwhhBHA8aEjJGiQcQEFDWRwwAIppPDCDUYWKUORFFCQgpMD6BACADs=',
-      ykr: 'data:image/gif;base64,R0lGODdhIgAiAMQAAAQCBCwqJBQWFDw+PDQ2NAwODCQiHDQyLAwKBBweHCwuLBwaFExKTDw6NBQSDCQmJAQGBCwqLERCRCQiJDQyNAwKDBwaHDw6PBQSFAAAAAAAAAAAAAAAAAAAAAAAAAAAACwAAAAAIgAiAAAF/yBkOB7lOOapridlIh7ColgHNM0N7Hy/474g4OASGoM4zeBw+FgsHw4p98NZrw2NJmmpVG5aKs7j6OWoOjFPO/goB+EswOM5ZxscTX6vT2TbA3BabAsfbic/OnmDgwMceW0fcBaBHwcVGQcWZFU4C0pvoJ84AxkVDwKGGQ8PFW6cP5AWbIKBFo+TJh0MDhtNGgeIigmCSguVbYWCXpYVTZIfwjkJHIFakscfCRpQFguZBxmSA8cTwWXD5IHWghyWCw8dDwcGBxqWkdIA1HDrtgMVALYyYEAAB1fAMiw5l+jPn0JenLU51WqLpHtOPkzQx0+DuUsGOhi4eKBiAzcDKP9p+MSQx58Pph5s2MWgg4I2vk5+uKHtnoVgCBJxWPCzwwAKBQwUkPfAgK8BxMh5W/dhgQR0OwRWkFcTYANWCjY8+KRuQiCiVWHlqBCSrVNnpwRU2GBAwYF+Z89KkuAhET0GGzYwaDKzwCm6G8yuO3bWG6wdH5oyMMBgJ5SCDyJEeABnwjZ/gK76pSvgQIe7GobQrXs3wTiyxNKig3MgMIABHShw1iB4c4YJbKKyIyqBQhVL9jI4gNChmgEPBioo3gYKr9kYO5Q0sXeAgQctBShMEIDqQxbhUSfsdZC6wYANFU4CMP8AwgMNBO1CfQO1n/oBJeRgiVNiddABBAR0wNabZAFpsI1iDq4zgQUy7MBEZAU4cMFgC3AgAAAKVGCBH6ApIdwAMOzgjBI1AVABL0sV4MQW7iVADTHu8UdCVrWtWMEJu2xwm40mctDAZ9sQQ4w0HwS2QXguGgCMG404eJ6DSvzhQAGJAGCBSPIMcYCXNN4Iyh9E+oEAAwP0QOMWVaaZ5JxxaJCBARhQ4N0KKZxABhkzrHCVCRJ4FwIAOw==',
-      serga2: './assets/ui/inventory/pusto/serga2.gif',
-      kolco2: './assets/ui/inventory/pusto/kolco2.gif',
-      plash: 'data:image/gif;base64,R0lGODdhIgAiAMQAAAQCBCwqJBQWFDw+PDQ2NAwODCQiHDQyLERGRAwKBBweHCwuLBwaFERCPDw6NBQSDCQmJAQGBCwqLCQiJDQyNAwKDBwaHERCRDw6PBQSFAAAAAAAAAAAAAAAAAAAACwAAAAAIgAiAAAF/6D0DBJxXYSpoldDNE0Lp26aGpICQRVQVLwdELgrGhE7ZAVREZgggGjwV/lZl0smAgkwCp+8CoboLXa91wJCDSEoosDCroChF+51x32vzu7OFBdxFVVjEHKEU4RVhHtaWxUpcEV0GJaXGHoFmnpMd4x3KFF4jXZ4VD9ad3oCDhgCraI+VZ+FVAKbuXQJdxAOFQ4Jh09ioxMWPxgWyMB7msCXXQZiF28VChQEFA8TGDuvsHZVrncLDw0KBwS4MWIJrxEEAxfbuHRiDjwCEwHbCxMP1CFwIAnAg0AJKiRQME+BgDGb6pijcOBBAgEJDjagM4CAjwkTGDJQFpIChQkFcP8hWKAAnTALByQMmMdxQJcI2CIkGKCAm8kHBRZUmaDNwD4FKRJMiFBFGwCFGSkMMGDhVciEPwQE0InRgYGWB2BscgMAAbd0FCwomMDygTdN+yIYVVDBQEc3QFz4WICTwkIDDwgEwOBJDwZzAQBmjHAhMAQE8gDUUZDgwEKWEoT1yYXhq1+5lCkIQBLZVwIHBwFaPpQvV5WJAQI8MFCggQ/IHgHoyRggQYMHo1I102eAwAMFBSjIGXYAyBYKESAgxVAWgQ8+QwowXuAbgIAdKA75SDD4gIXHcnQ7U8NkwToFhLHE8CG++AP0XeQYcr3JwYXvAtwmSQH57fPYIYdUscaWQGpY4dockXhknRRsYHGHJ6CswYcSSMDw1BlPHYjIGgruUQV6iDwWyQVl5ccED5BYQeKFwo2IoF5QaCFiHCo2KCMVCxICGYtQIMjEICTOeGEzGgr3gg9d8PjilKlUSctmSkhSpIpYYHGkM4zo0QgSjxFAWxSjaMLHmmzmYQcG5A1wQDbZNFDnC3jG8AIKerrQQgsvIBUCADs=',
-      poyas: 'data:image/gif;base64,R0lGODdhIgAiAMQAAAQCBDQyLBwaFAwODExKTDw+PCQmJBQWFDQ6NAwKBCQiHBQODCwuLAQGBDQ2NBweHERGRCwqJDw6NBQSDDQyNBwaHAwSDFxaXERCRBQWHAwKDCQiJAQGDCwqLDw6PBQSFCwAAAAAIgAiAAAF/yBkOB7lOOapridlIh7ColgHNM0N7Hy/474g4OASGoM4zeBw+FgsHw4p98NZrw2NJmmpVG5aKs7j6OWoOjFPO/goB+EswOM5ZxscTX6vT2TbA3BabAsfbic/OnmDgwMceW0fcBaBHwcVGQcWZFU4C0pvoJ84AxkVDwKGGQ8PFW6cP5AWbIKBFo+TJh0MDhtNGgeIigmCSguVbYWCXpYVTZIfwjkJHIFakscfCRpQFguZBxmSA8cTwWXD5IHWghyWCw8dDwcGBxqWkdIA1HDrtgMVALYyYEAAB1fAMiw5l+jPn0JenLU51WqLpHtOPkzQx0+DuUsGOhi4eKBiAzcDKP9p+MSQx58Pph5s2MWgg4I2vk5+uKHtnoVgCBJxWPCzwwAKBQwUkPfAgK8BxMh5W/dhgQR0OwRWkFcTYANWCjY8+KRuQiCiVWHlqBCSrVNnpwRU2GBAwYF+Z89KkuAhET0GGzYwaDKzwCm6G8yuO3bWG6wdH5oyMMBgJ5SCDyJEeABnwjZ/gK76pSvgQIe7GobQrXs3wTiyxNKig3MgMIABHShw1iB4c4YJbKKyIyqBQhVL9jI4gNChmgEPBioo3gYKr9kYO5Q0sXeAgQctBShMEIDqQxbhUSfsdZC6wYANFU4CMP8AwgMNBO1CfQO1n/oBJeRgiVNiddABBAR0wNabZAFpsI1iDq4zgQUy7MBEZAU4cMFgC3AgAAAKVGCBH6ApIdwAMOzgjBI1AVABL0sV4MQW7iVADTHu8UdCVrWtWMEJu2xwm40mctDAZ9sQQ4w0HwS2QXguGgCMG404eJ6DSvzhQAGJAGCBSPIMcYCXNN4Iyh9E+oEAAwP0QOMWVaaZ5JxxaJCBARhQ4N0KKZxABhkzrHCVCRJ4FwIAOw=='
+    const EMPTY_SLOT_ICONS = {{
     };
+
+    EMPTY_SLOT_ICONS.plash = './assets/ui/inventory/pusto/plash.gif';
+    EMPTY_SLOT_ICONS.amulet = './assets/ui/inventory/pusto/amulet.gif';
+    EMPTY_SLOT_ICONS.kolco = './assets/ui/inventory/pusto/kolco.gif';
+    EMPTY_SLOT_ICONS.poyas = './assets/ui/inventory/pusto/poyas.gif';
+    EMPTY_SLOT_ICONS.serga2 = './assets/ui/inventory/pusto/serga2.gif';
 
     function emptyIconPathForSlot(slot) {
       const name = normalizeText(slot);
@@ -785,6 +781,8 @@
     }
 
     function emptyIconPathForEquipSlot(slotId) {
+      if (slotId === 'earring1') return EMPTY_SLOT_ICONS.poyas;
+      if (slotId === 'earring2') return EMPTY_SLOT_ICONS.serga2;
       const slot = SLOT_MAP[slotId];
       if (!slot) return null;
       return EMPTY_SLOT_ICONS[slot.emptyIcon] || emptyIconPathForSlot(slot.emptyIcon || slotId);
@@ -1270,3 +1268,4 @@
   </script>
 </body>
 </html>
+
