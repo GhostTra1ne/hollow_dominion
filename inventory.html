@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-      const APP_VERSION = '20260421-telegram-13';
+      const APP_VERSION = '20260421-telegram-14';
       const url = new URL(window.location.href);
       if (url.searchParams.get('appv') !== APP_VERSION) {
         url.searchParams.set('appv', APP_VERSION);
@@ -19,7 +19,7 @@
   </script>
   <title>Инвентарь</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="common.css?v=20260421-telegram-13">
+  <link rel="stylesheet" href="common.css?v=20260421-telegram-14">
   <style>
     .inventory-shell {
       min-height: 0;
@@ -166,14 +166,6 @@
       display: none;
     }
 
-    .legacy-row.empty-slot .legacy-copy strong {
-      color: rgba(243, 237, 222, .72);
-    }
-
-    .legacy-row.empty-slot .legacy-copy span {
-      color: rgba(243, 237, 222, .56);
-    }
-
     .legacy-icon {
       width: 48px;
       height: 48px;
@@ -211,16 +203,6 @@
       gap: 6px;
       flex-wrap: wrap;
       justify-content: flex-end;
-    }
-
-    .legacy-status {
-      padding: 7px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, .08);
-      background: rgba(255, 255, 255, .04);
-      color: rgba(243, 237, 222, .66);
-      font-size: 11px;
-      font-weight: 700;
     }
 
     .legacy-action {
@@ -294,7 +276,7 @@
   </div>
   <div class="toast" id="toast"></div>
 
-  <script src="common.js?v=20260421-telegram-13"></script>
+  <script src="common.js?v=20260421-telegram-14"></script>
   <script>
     let state = loadState();
     if (!ensureHero(state)) {
@@ -365,8 +347,9 @@
       return 'all';
     }
 
-    const equippedItems = inventory.filter(isEquipped);
-    const bagItems = inventory.filter((entry) => !isEquipped(entry));
+    const realInventory = inventory.filter((entry) => !isEmptyItem(entry));
+    const equippedItems = realInventory.filter(isEquipped);
+    const bagItems = realInventory.filter((entry) => !isEquipped(entry));
     const generalItems = bagItems.filter((entry) => !isResource(entry) && !isQuest(entry));
     const resourceItems = bagItems.filter(isResource);
     const questItems = bagItems.filter(isQuest);
@@ -408,24 +391,22 @@
       const itemName = entry.item;
       const slotName = entry.slot;
       const groupKey = tab === 'general' ? getGroupKey(entry, tab) : 'all';
-      const isEmpty = isEmptyItem(entry);
-      const safeActions = isEmpty ? [] : actionLabels;
       return `
-        <article class="legacy-row${isEmpty ? ' empty-slot' : ''}" data-row-tab="${tab}" data-row-group="${groupKey}">
+        <article class="legacy-row" data-row-tab="${tab}" data-row-group="${groupKey}">
           <div class="legacy-icon">${glyphForSlot(slotName)}</div>
           <div class="legacy-copy">
             <strong>${itemName}</strong>
             <span>${slotName}</span>
           </div>
           <div class="legacy-actions">
-            ${safeActions.length ? safeActions.map((action) => `
+            ${actionLabels.map((action) => `
               <button
                 class="legacy-action${action.kind === 'drop' ? ' drop' : ''}"
                 type="button"
                 data-item-action="${action.label}"
                 data-item-name="${itemName}"
               >${action.label}</button>
-            `).join('') : '<span class="legacy-status">Пустой слот</span>'}
+            `).join('')}
           </div>
         </article>
       `;
