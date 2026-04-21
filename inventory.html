@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-      const APP_VERSION = '20260421-telegram-17';
+    const APP_VERSION = '20260421-telegram-20';
       const url = new URL(window.location.href);
       if (url.searchParams.get('appv') !== APP_VERSION) {
         url.searchParams.set('appv', APP_VERSION);
@@ -19,7 +19,7 @@
   </script>
   <title>Инвентарь</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="common.css?v=20260421-telegram-17">
+  <link rel="stylesheet" href="common.css?v=20260421-telegram-20">
   <style>
     .inventory-shell {
       min-height: 0;
@@ -253,6 +253,63 @@
       line-height: 1.6;
     }
 
+    .equip-summary {
+      display: grid;
+      gap: 12px;
+      padding: 14px;
+      border-radius: 20px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, .03), rgba(255, 255, 255, .015)),
+        radial-gradient(circle at 50% 0%, rgba(214, 178, 116, .08), rgba(214, 178, 116, 0) 62%);
+      border: 1px solid rgba(255, 255, 255, .06);
+    }
+
+    .equip-summary strong {
+      color: #fff1cb;
+      font-size: 15px;
+    }
+
+    .equip-summary p {
+      margin: 0;
+      color: rgba(243, 237, 222, .72);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .equip-stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
+      gap: 8px;
+    }
+
+    .equip-stat-chip,
+    .equip-set-chip {
+      display: grid;
+      gap: 2px;
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, .04);
+      border: 1px solid rgba(214, 178, 116, .10);
+    }
+
+    .equip-stat-chip span,
+    .equip-set-chip span {
+      color: rgba(243, 237, 222, .62);
+      font-size: 11px;
+    }
+
+    .equip-stat-chip b,
+    .equip-set-chip b {
+      color: #fff0cb;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .equip-sets {
+      display: grid;
+      gap: 8px;
+    }
+
     @media (max-width: 560px) {
       .inventory-tabs {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -284,93 +341,338 @@
   </div>
   <div class="toast" id="toast"></div>
 
-  <script src="common.js?v=20260421-telegram-17"></script>
+  <script src="common.js?v=20260421-telegram-20"></script>
   <script>
     let state = loadState();
     if (!ensureHero(state)) {
       throw new Error('Hero not found');
     }
 
-    const inventory = Array.isArray(state.hero.inventory) ? state.hero.inventory : [];
+    let inventory = Array.isArray(state.hero.inventory) ? state.hero.inventory : [];
 
     function normalizeText(value) {
       return String(value || '').toLowerCase();
     }
 
+    const EQUIP_SLOTS = [
+      { id: 'weapon', family: 'weapon', label: 'Меч', emptyIcon: 'weapon' },
+      { id: 'head', family: 'head', label: 'Шлем', emptyIcon: 'golova' },
+      { id: 'body', family: 'body', label: 'Тело', emptyIcon: 'body' },
+      { id: 'legs', family: 'legs', label: 'Низ', emptyIcon: 'nogi' },
+      { id: 'gloves', family: 'gloves', label: 'Перчатки', emptyIcon: 'ruki' },
+      { id: 'boots', family: 'boots', label: 'Ботинки', emptyIcon: 'nogi' },
+      { id: 'necklace', family: 'necklace', label: 'Ожерелье', emptyIcon: 'amulet' },
+      { id: 'earring1', family: 'earring', label: 'Серьга I', emptyIcon: 'serga2' },
+      { id: 'earring2', family: 'earring', label: 'Серьга II', emptyIcon: 'serga2' },
+      { id: 'ring1', family: 'ring', label: 'Кольцо I', emptyIcon: 'kolco' },
+      { id: 'ring2', family: 'ring', label: 'Кольцо II', emptyIcon: 'kolco2' }
+    ];
+
+    const SLOT_MAP = Object.fromEntries(EQUIP_SLOTS.map((slot) => [slot.id, slot]));
+
+    const ITEM_LIBRARY = {
+      'железный меч': {
+        family: 'weapon',
+        stats: { patt: 8, matt: 6 }
+      },
+      'club': {
+        family: 'weapon',
+        stats: { patt: 8, matt: 6 }
+      },
+      'кожаный доспех': {
+        family: 'body',
+        setKey: 'leather-init',
+        setPart: 'body',
+        stats: { pdef: 35, mdef: 0 }
+      },
+      'cotton robe': {
+        family: 'body',
+        setKey: 'starter-magic',
+        setPart: 'body',
+        stats: { pdef: 35, mdef: 0 }
+      },
+      'кожаный низ': {
+        family: 'legs',
+        setKey: 'leather-init',
+        setPart: 'legs',
+        stats: { pdef: 16, mdef: 0 }
+      },
+      'кожаные перчатки': {
+        family: 'gloves',
+        setKey: 'leather-init',
+        setPart: 'gloves',
+        stats: { pdef: 8, mdef: 0 }
+      },
+      'кожаные ботинки': {
+        family: 'boots',
+        setKey: 'leather-init',
+        setPart: 'boots',
+        stats: { pdef: 8, mdef: 0 }
+      },
+      'железный шлем': {
+        family: 'head',
+        stats: { pdef: 14, mdef: 0 }
+      },
+      'necklace of magic': {
+        family: 'necklace',
+        stats: { pdef: 0, mdef: 15 }
+      },
+      'ожерелье ученика': {
+        family: 'necklace',
+        stats: { pdef: 0, mdef: 8 }
+      },
+      'серьга ученика': {
+        family: 'earring',
+        stats: { pdef: 0, mdef: 4 }
+      },
+      'кольцо ученика': {
+        family: 'ring',
+        stats: { pdef: 0, mdef: 4 }
+      }
+    };
+
+    const SET_LIBRARY = {
+      'leather-init': {
+        name: 'Кожаный комплект новобранца',
+        thresholds: {
+          2: { pdef: 6 },
+          3: { pdef: 12 },
+          4: { pdef: 18, mdef: 6 }
+        }
+      },
+      'starter-magic': {
+        name: 'Комплект ученика мага',
+        thresholds: {
+          2: { mdef: 8 },
+          3: { mdef: 12, matt: 4 }
+        }
+      }
+    };
+
+    const STAT_LABELS = {
+      patt: 'P.Atk',
+      matt: 'M.Atk',
+      pdef: 'P.Def',
+      mdef: 'M.Def'
+    };
+
     function isEquipped(entry) {
       return normalizeText(entry.type).includes('над');
-    }
-
-    function isResource(entry) {
-      return normalizeText(entry.slot).includes('матер');
-    }
-
-    function isQuest(entry) {
-      return normalizeText(entry.slot).includes('квест');
-    }
-
-    function isPotion(entry) {
-      return normalizeText(entry.slot).includes('зель');
-    }
-
-    function isScroll(entry) {
-      return normalizeText(entry.slot).includes('свит');
-    }
-
-    function isAccessory(entry) {
-      const slot = normalizeText(entry.slot);
-      return slot.includes('аксесс') || slot.includes('амул') || slot.includes('коль');
-    }
-
-    function isWearable(entry) {
-      const slot = normalizeText(entry.slot);
-      return (
-        slot.includes('оруж') ||
-        slot.includes('брон') ||
-        slot.includes('шлем') ||
-        slot.includes('голов') ||
-        slot.includes('щит') ||
-        slot.includes('сап') ||
-        slot.includes('ног') ||
-        slot.includes('рук') ||
-        slot.includes('амул') ||
-        slot.includes('коль') ||
-        slot.includes('аксесс') ||
-        slot.includes('украш') ||
-        slot.includes('пояс') ||
-        slot.includes('плащ')
-      );
     }
 
     function isEmptyItem(entry) {
       return normalizeText(entry.item).trim() === 'пусто';
     }
 
+    function parseStackedItem(entry) {
+      const match = String(entry.item || '').match(/^\s*(\d+)\s*x\s*(.+?)\s*$/i);
+      if (!match) return null;
+      return {
+        count: Number(match[1]),
+        baseName: match[2]
+      };
+    }
+
+    function getBaseItemName(entry) {
+      const stack = parseStackedItem(entry);
+      return String(stack ? stack.baseName : entry.item || '').trim();
+    }
+
+    function inferFamilyFromEntry(entry) {
+      const text = normalizeText(`${entry.slot || ''} ${getBaseItemName(entry)}`);
+      if (text.includes('оруж') || text.includes('меч') || text.includes('club') || text.includes('weapon')) return 'weapon';
+      if (text.includes('шлем') || text.includes('голов') || text.includes('helmet')) return 'head';
+      if (text.includes('брон') || text.includes('доспех') || text.includes('armor') || text.includes('robe')) return 'body';
+      if (text.includes('низ') || text.includes('понож') || text.includes('штаны') || text.includes('legs')) return 'legs';
+      if (text.includes('перчат') || text.includes('gloves') || text.includes('рук')) return 'gloves';
+      if (text.includes('ботин') || text.includes('сап') || text.includes('boots') || text.includes('ноги')) return 'boots';
+      if (text.includes('ожер') || text.includes('амул') || text.includes('necklace')) return 'necklace';
+      if (text.includes('серьг') || text.includes('earring')) return 'earring';
+      if (text.includes('коль') || text.includes('ring')) return 'ring';
+      return null;
+    }
+
+    function getItemBlueprint(entry) {
+      return ITEM_LIBRARY[normalizeText(getBaseItemName(entry))] || null;
+    }
+
+    function getPrimaryEquipSlotId(family) {
+      return {
+        weapon: 'weapon',
+        head: 'head',
+        body: 'body',
+        legs: 'legs',
+        gloves: 'gloves',
+        boots: 'boots',
+        necklace: 'necklace',
+        ring: 'ring1',
+        earring: 'earring1'
+      }[family] || null;
+    }
+
+    function getBagSlotLabel(family) {
+      return {
+        weapon: 'Оружие',
+        head: 'Шлем',
+        body: 'Броня',
+        legs: 'Низ',
+        gloves: 'Перчатки',
+        boots: 'Ботинки',
+        necklace: 'Ожерелье',
+        ring: 'Кольцо',
+        earring: 'Серьга'
+      }[family] || 'Экипировка';
+    }
+
+    function getEntryMeta(entry) {
+      const blueprint = getItemBlueprint(entry);
+      const family = entry.equipFamily || blueprint?.family || inferFamilyFromEntry(entry);
+      return {
+        family,
+        stats: entry.stats || blueprint?.stats || {},
+        setKey: entry.setKey || blueprint?.setKey || null,
+        setPart: entry.setPart || blueprint?.setPart || family || null
+      };
+    }
+
+    function normalizeInventorySchema(entries) {
+      let changed = false;
+      let ringIndex = 0;
+      let earringIndex = 0;
+      const seed = Date.now().toString(36);
+
+      const normalized = entries.map((raw, index) => {
+        const entry = { ...raw };
+        const family = getEntryMeta(entry).family;
+
+        if (!entry.uid) {
+          entry.uid = `inv-${seed}-${index}`;
+          changed = true;
+        }
+
+        if (family && entry.equipFamily !== family) {
+          entry.equipFamily = family;
+          changed = true;
+        }
+
+        if (!entry.category) {
+          const slotText = normalizeText(entry.slot);
+          const itemText = normalizeText(getBaseItemName(entry));
+          if (slotText.includes('матер')) {
+            entry.category = 'resource';
+          } else if (slotText.includes('квест')) {
+            entry.category = 'quest';
+          } else if (slotText.includes('зель') || slotText.includes('свит') || itemText.includes('эликсир') || itemText.includes('элексир')) {
+            entry.category = 'consumable';
+          } else if (family) {
+            entry.category = 'wearable';
+          } else {
+            entry.category = 'general';
+          }
+          changed = true;
+        }
+
+        const blueprint = getItemBlueprint(entry);
+        if ((!entry.stats || typeof entry.stats !== 'object') && blueprint?.stats) {
+          entry.stats = blueprint.stats;
+          changed = true;
+        }
+        if (!entry.setKey && blueprint?.setKey) {
+          entry.setKey = blueprint.setKey;
+          changed = true;
+        }
+        if (!entry.setPart && blueprint?.setPart) {
+          entry.setPart = blueprint.setPart;
+          changed = true;
+        }
+
+        if (isEquipped(entry) && !entry.equipSlot && family) {
+          if (family === 'ring') {
+            ringIndex += 1;
+            entry.equipSlot = ringIndex === 2 ? 'ring2' : 'ring1';
+          } else if (family === 'earring') {
+            earringIndex += 1;
+            entry.equipSlot = earringIndex === 2 ? 'earring2' : 'earring1';
+          } else {
+            entry.equipSlot = getPrimaryEquipSlotId(family);
+          }
+          changed = true;
+        }
+
+        if (isEquipped(entry) && entry.equipSlot && SLOT_MAP[entry.equipSlot] && entry.slot !== SLOT_MAP[entry.equipSlot].label) {
+          entry.slot = SLOT_MAP[entry.equipSlot].label;
+          changed = true;
+        }
+
+        if (!isEquipped(entry) && family) {
+          const bagLabel = getBagSlotLabel(family);
+          if (entry.slot !== bagLabel && entry.category !== 'resource' && entry.category !== 'quest' && entry.category !== 'consumable') {
+            entry.slot = bagLabel;
+            changed = true;
+          }
+          if (entry.equipSlot) {
+            entry.equipSlot = '';
+            changed = true;
+          }
+        }
+
+        return entry;
+      });
+
+      return { inventory: normalized, changed };
+    }
+
+    const normalizedInventory = normalizeInventorySchema(inventory);
+    inventory = normalizedInventory.inventory;
+    state.hero.inventory = inventory;
+    if (normalizedInventory.changed) {
+      saveState(state);
+    }
+
+    function isResource(entry) {
+      return entry.category === 'resource' || normalizeText(entry.slot).includes('матер');
+    }
+
+    function isQuest(entry) {
+      return entry.category === 'quest' || normalizeText(entry.slot).includes('квест');
+    }
+
+    function isPotion(entry) {
+      return entry.category === 'consumable' && normalizeText(entry.slot).includes('зель');
+    }
+
+    function isScroll(entry) {
+      return entry.category === 'consumable' && normalizeText(entry.slot).includes('свит');
+    }
+
+    function isAccessory(entry) {
+      return ['necklace', 'ring', 'earring'].includes(getEntryMeta(entry).family);
+    }
+
+    function isWearable(entry) {
+      return Boolean(getEntryMeta(entry).family);
+    }
+
     function isConsumable(entry) {
-      const item = normalizeText(entry.item);
-      return (
-        isPotion(entry) ||
-        isScroll(entry) ||
-        item.includes('эликсир') ||
-        item.includes('элексир')
-      );
+      const item = normalizeText(getBaseItemName(entry));
+      return entry.category === 'consumable' || isPotion(entry) || isScroll(entry) || item.includes('эликсир') || item.includes('элексир');
     }
 
     function glyphForSlot(slot) {
       const name = normalizeText(slot);
-      if (name.includes('оруж')) return '⚔';
-      if (name.includes('брон')) return '🛡';
-      if (name.includes('шлем') || name.includes('голов')) return '⛑';
-      if (name.includes('щит')) return '🛡';
-      if (name.includes('сап') || name.includes('ног')) return '🥾';
-      if (name.includes('рук')) return '🧤';
-      if (name.includes('амул')) return '✦';
-      if (name.includes('коль')) return '◌';
+      if (name.includes('weapon') || name.includes('оруж') || name.includes('меч')) return '⚔';
+      if (name.includes('body') || name.includes('брон') || name.includes('тело')) return '🛡';
+      if (name.includes('head') || name.includes('шлем') || name.includes('голов')) return '⛑';
+      if (name.includes('legs') || name.includes('низ')) return '⌖';
+      if (name.includes('gloves') || name.includes('перчат') || name.includes('рук')) return '🧤';
+      if (name.includes('boots') || name.includes('ботин') || name.includes('сап') || name.includes('ног')) return '🥾';
+      if (name.includes('necklace') || name.includes('ожер') || name.includes('амул')) return '✦';
+      if (name.includes('earring') || name.includes('серьг')) return '◈';
+      if (name.includes('ring') || name.includes('коль')) return '◌';
       if (name.includes('зель')) return '✚';
       if (name.includes('свит')) return '✧';
       if (name.includes('матер')) return '◆';
       if (name.includes('квест')) return '✪';
-      if (name.includes('аксесс')) return '◈';
       return '⬠';
     }
 
@@ -384,20 +686,30 @@
       kolco: 'data:image/gif;base64,R0lGODdhIgAiAMQAAAQCBCwqJBQWFDw+PDQ2NAwODCQiHDQyLAwKBBweHCwuLBwaFExKTDw6NBQSDCQmJAQGBCwqLERCRCQiJDQyNAwKDBwaHDw6PBQSFAAAAAAAAAAAAAAAAAAAAAAAAAAAACwAAAAAIgAiAAAF/6D0DBJxXYSpoldDNE0Lp26aGpICQRVQVLwdELgrGhE7ZAVREZgggGjwV/lZl0smAgkwCp+8CoboLXa91wJCDSEoosDCroChF+51x32vzu7OFBdxFVVjEHKEU4RVhHtaWxUpcEV0GJaXGHoFmnpMd4x3KFF4jXZ4VD9ad3oCDhgCraI+VZ+FVAKbuXQJdxAOFQ4Jh09ioxMWPxgWyMB7msCXXQZiF28VChQEFA8TGDuvsHZVrncLDw0KBwS4MWIJrxEEAxfbuHRiDjwCEwHbCxMP1CFwIAnAg0AJKiRQME+BgDGb6pijcOBBAgEJDjagM4CAjwkTGDJQFpIChQkFcP8hWKAAnTALByQMmMdxQJcI2CIkGKCAm8kHBRZUmaDNwD4FKRJMiFBFGwCFGSkMMGDhVciEPwQE0InRgYGWB2BscgMAAbd0FCwomMDygTdN+yIYVVDBQEc3QFz4WICTwkIDDwgEwOBJDwZzAQBmjHAhMAQE8gDUUZDgwEKWEoT1yYXhq1+5lCkIQBLZVwIHBwFaPpQvV5WJAQI8MFCggQ/IHgHoyRggQYMHo1I102eAwAMFBSjIGXYAyBYKESAgxVAWgQ8+QwowXuAbgIAdKA75SDD4gIXHcnQ7U8NkwToFhLHE8CG++AP0XeQYcr3JwYXvAtwmSQH57fPYIYdUscaWQGpY4dockXhknRRsYHGHJ6CswYcSSMDw1BlPHYjIGgruUQV6iDwWyQVl5ccED5BYQeKFwo2IoF5QaCFiHCo2KCMVCxICGYtQIMjEICTOeGEzGgr3gg9d8PjilKlUSctmSkhSpIpYYHGkM4zo0QgSjxFAWxSjaMLHmmzmYQcG5A1wQDbZNFDnC3jG8AIKerrQQgsvIBUCADs=',
       amulet: 'data:image/gif;base64,R0lGODdhIgAiAMQAAAQCBCwqJBQWFDw+PDQ2NAwODCQiHDQyLERGRAwKBBweHCwuLBwaFERCPDw6NBQSDCQmJAQGBCwqLCQiJDQyNExKRAwKDBwaHERCRDw6PBQSFAAAAAAAAAAAAAAAAAAAACwAAAAAIgAiAAAF/2CzOIREHgQxEtBBkoSTZWQWp3MwSFEP+ICgsEdMFC0JCzJZUDgcwmivAEhABIWHRiDQPAoFojhRWAwi0V9Q8AuEyQUN2JhERsAFCypdTQAYPxB2WV95RhFkSmQPBBloPndoVAAaaj8RdgBgD19cXQQHUlNxDFgPF6VZnnlgXpsaJFF5FgVJCgIRAhIKDFoCFw8Wd3JeWwIpQ4hkmhcCBhAGzb8MGhrUCdZaCmA2apI9GgcZ0RAQDhcFFwpf23dYv17IQUZKtRYCCtARAxDpvAKlLDwQoIUBNwLJDjGAMIHBM2jQtKEjGKcAF07yLiGhZGBCuQldymFhcOuLMC1aCv90e4TojpkDEB0gwOBAAhtN0YJx2ZSxBxJea7Y9eMRgQgAKCMp10iCwQKwgPiUlWKbpUIQtVCyiGXhPJQE0QewM3KnIXakuDwwyaQoL4RAmAJs9oBfHC5dmtTZV7CYESauzeTC9iosF05dCT6Fi4+KFlhbD0+IGw5NFQ8YfpCjiGUrmbimQeS1gTQyV8cDGd5gMVJBPrWOCfMEmIOipixFDou8qkEOrlVeopZvJKSQMLjWu9Q47pRAFztkvLXtz8mxAQILDWGyAxTxcjj3Bm3/hE9CbUIztjmm5EqZs1kAGJLEkivPkUZUseu0IKw5mvAENcMCh3RCipWSIT2RA1sxaLXiI5pRbilnkxSFJRJIXQNaQB8YdjDiw3RSFvNFSEkxUJJ8iWQyomDDf9UBhS1lc9wZdDlwhhBHA8aEjJGiQcQEFDWRwwAIppPDCDUYWKUORFFCQgpMD6BACADs=',
       ykr: 'data:image/gif;base64,R0lGODdhIgAiAMQAAAQCBCwqJBQWFDw+PDQ2NAwODCQiHDQyLAwKBBweHCwuLBwaFExKTDw6NBQSDCQmJAQGBCwqLERCRCQiJDQyNAwKDBwaHDw6PBQSFAAAAAAAAAAAAAAAAAAAAAAAAAAAACwAAAAAIgAiAAAF/yBkOB7lOOapridlIh7ColgHNM0N7Hy/474g4OASGoM4zeBw+FgsHw4p98NZrw2NJmmpVG5aKs7j6OWoOjFPO/goB+EswOM5ZxscTX6vT2TbA3BabAsfbic/OnmDgwMceW0fcBaBHwcVGQcWZFU4C0pvoJ84AxkVDwKGGQ8PFW6cP5AWbIKBFo+TJh0MDhtNGgeIigmCSguVbYWCXpYVTZIfwjkJHIFakscfCRpQFguZBxmSA8cTwWXD5IHWghyWCw8dDwcGBxqWkdIA1HDrtgMVALYyYEAAB1fAMiw5l+jPn0JenLU51WqLpHtOPkzQx0+DuUsGOhi4eKBiAzcDKP9p+MSQx58Pph5s2MWgg4I2vk5+uKHtnoVgCBJxWPCzwwAKBQwUkPfAgK8BxMh5W/dhgQR0OwRWkFcTYANWCjY8+KRuQiCiVWHlqBCSrVNnpwRU2GBAwYF+Z89KkuAhET0GGzYwaDKzwCm6G8yuO3bWG6wdH5oyMMBgJ5SCDyJEeABnwjZ/gK76pSvgQIe7GobQrXs3wTiyxNKig3MgMIABHShw1iB4c4YJbKKyIyqBQhVL9jI4gNChmgEPBioo3gYKr9kYO5Q0sXeAgQctBShMEIDqQxbhUSfsdZC6wYANFU4CMP8AwgMNBO1CfQO1n/oBJeRgiVNiddABBAR0wNabZAFpsI1iDq4zgQUy7MBEZAU4cMFgC3AgAAAKVGCBH6ApIdwAMOzgjBI1AVABL0sV4MQW7iVADTHu8UdCVrWtWMEJu2xwm40mctDAZ9sQQ4w0HwS2QXguGgCMG404eJ6DSvzhQAGJAGCBSPIMcYCXNN4Iyh9E+oEAAwP0QOMWVaaZ5JxxaJCBARhQ4N0KKZxABhkzrHCVCRJ4FwIAOw==',
+      serga2: './assets/ui/inventory/pusto/serga2.gif',
+      kolco2: './assets/ui/inventory/pusto/kolco2.gif',
       plash: 'data:image/gif;base64,R0lGODdhIgAiAMQAAAQCBCwqJBQWFDw+PDQ2NAwODCQiHDQyLERGRAwKBBweHCwuLBwaFERCPDw6NBQSDCQmJAQGBCwqLCQiJDQyNAwKDBwaHERCRDw6PBQSFAAAAAAAAAAAAAAAAAAAACwAAAAAIgAiAAAF/6D0DBJxXYSpoldDNE0Lp26aGpICQRVQVLwdELgrGhE7ZAVREZgggGjwV/lZl0smAgkwCp+8CoboLXa91wJCDSEoosDCroChF+51x32vzu7OFBdxFVVjEHKEU4RVhHtaWxUpcEV0GJaXGHoFmnpMd4x3KFF4jXZ4VD9ad3oCDhgCraI+VZ+FVAKbuXQJdxAOFQ4Jh09ioxMWPxgWyMB7msCXXQZiF28VChQEFA8TGDuvsHZVrncLDw0KBwS4MWIJrxEEAxfbuHRiDjwCEwHbCxMP1CFwIAnAg0AJKiRQME+BgDGb6pijcOBBAgEJDjagM4CAjwkTGDJQFpIChQkFcP8hWKAAnTALByQMmMdxQJcI2CIkGKCAm8kHBRZUmaDNwD4FKRJMiFBFGwCFGSkMMGDhVciEPwQE0InRgYGWB2BscgMAAbd0FCwomMDygTdN+yIYVVDBQEc3QFz4WICTwkIDDwgEwOBJDwZzAQBmjHAhMAQE8gDUUZDgwEKWEoT1yYXhq1+5lCkIQBLZVwIHBwFaPpQvV5WJAQI8MFCggQ/IHgHoyRggQYMHo1I102eAwAMFBSjIGXYAyBYKESAgxVAWgQ8+QwowXuAbgIAdKA75SDD4gIXHcnQ7U8NkwToFhLHE8CG++AP0XeQYcr3JwYXvAtwmSQH57fPYIYdUscaWQGpY4dockXhknRRsYHGHJ6CswYcSSMDw1BlPHYjIGgruUQV6iDwWyQVl5ccED5BYQeKFwo2IoF5QaCFiHCo2KCMVCxICGYtQIMjEICTOeGEzGgr3gg9d8PjilKlUSctmSkhSpIpYYHGkM4zo0QgSjxFAWxSjaMLHmmzmYQcG5A1wQDbZNFDnC3jG8AIKerrQQgsvIBUCADs=',
       poyas: 'data:image/gif;base64,R0lGODdhIgAiAMQAAAQCBDQyLBwaFAwODExKTDw+PCQmJBQWFDQ6NAwKBCQiHBQODCwuLAQGBDQ2NBweHERGRCwqJDw6NBQSDDQyNBwaHAwSDFxaXERCRBQWHAwKDCQiJAQGDCwqLDw6PBQSFCwAAAAAIgAiAAAF/yBkOB7lOOapridlIh7ColgHNM0N7Hy/474g4OASGoM4zeBw+FgsHw4p98NZrw2NJmmpVG5aKs7j6OWoOjFPO/goB+EswOM5ZxscTX6vT2TbA3BabAsfbic/OnmDgwMceW0fcBaBHwcVGQcWZFU4C0pvoJ84AxkVDwKGGQ8PFW6cP5AWbIKBFo+TJh0MDhtNGgeIigmCSguVbYWCXpYVTZIfwjkJHIFakscfCRpQFguZBxmSA8cTwWXD5IHWghyWCw8dDwcGBxqWkdIA1HDrtgMVALYyYEAAB1fAMiw5l+jPn0JenLU51WqLpHtOPkzQx0+DuUsGOhi4eKBiAzcDKP9p+MSQx58Pph5s2MWgg4I2vk5+uKHtnoVgCBJxWPCzwwAKBQwUkPfAgK8BxMh5W/dhgQR0OwRWkFcTYANWCjY8+KRuQiCiVWHlqBCSrVNnpwRU2GBAwYF+Z89KkuAhET0GGzYwaDKzwCm6G8yuO3bWG6wdH5oyMMBgJ5SCDyJEeABnwjZ/gK76pSvgQIe7GobQrXs3wTiyxNKig3MgMIABHShw1iB4c4YJbKKyIyqBQhVL9jI4gNChmgEPBioo3gYKr9kYO5Q0sXeAgQctBShMEIDqQxbhUSfsdZC6wYANFU4CMP8AwgMNBO1CfQO1n/oBJeRgiVNiddABBAR0wNabZAFpsI1iDq4zgQUy7MBEZAU4cMFgC3AgAAAKVGCBH6ApIdwAMOzgjBI1AVABL0sV4MQW7iVADTHu8UdCVrWtWMEJu2xwm40mctDAZ9sQQ4w0HwS2QXguGgCMG404eJ6DSvzhQAGJAGCBSPIMcYCXNN4Iyh9E+oEAAwP0QOMWVaaZ5JxxaJCBARhQ4N0KKZxABhkzrHCVCRJ4FwIAOw=='
     };
 
     function emptyIconPathForSlot(slot) {
       const name = normalizeText(slot);
+      if (name.includes('ring2') || name.includes('кольцо ii')) return EMPTY_SLOT_ICONS.kolco2;
+      if (name.includes('earring') || name.includes('серьга')) return EMPTY_SLOT_ICONS.serga2;
       if (name.includes('оруж')) return EMPTY_SLOT_ICONS.weapon;
+      if (name.includes('weapon')) return EMPTY_SLOT_ICONS.weapon;
       if (name.includes('брон')) return EMPTY_SLOT_ICONS.body;
+      if (name.includes('body') || name.includes('тело')) return EMPTY_SLOT_ICONS.body;
       if (name.includes('шлем') || name.includes('голов')) return EMPTY_SLOT_ICONS.golova;
-      if (name.includes('щит')) return EMPTY_SLOT_ICONS.shit;
+      if (name.includes('head')) return EMPTY_SLOT_ICONS.golova;
       if (name.includes('сап') || name.includes('ног')) return EMPTY_SLOT_ICONS.nogi;
+      if (name.includes('legs') || name.includes('низ') || name.includes('boots') || name.includes('ботинки')) return EMPTY_SLOT_ICONS.nogi;
       if (name.includes('рук')) return EMPTY_SLOT_ICONS.ruki;
+      if (name.includes('gloves') || name.includes('перчат')) return EMPTY_SLOT_ICONS.ruki;
       if (name.includes('коль')) return EMPTY_SLOT_ICONS.kolco;
+      if (name.includes('ring1')) return EMPTY_SLOT_ICONS.kolco;
       if (name.includes('амул')) return EMPTY_SLOT_ICONS.amulet;
+      if (name.includes('necklace') || name.includes('ожер')) return EMPTY_SLOT_ICONS.amulet;
       if (name.includes('аксесс') || name.includes('украш')) return EMPTY_SLOT_ICONS.ykr;
       if (name.includes('пояс')) return EMPTY_SLOT_ICONS.poyas;
       if (name.includes('плащ')) return EMPTY_SLOT_ICONS.plash;
@@ -415,8 +727,142 @@
       return 'all';
     }
 
+    function buildEquipmentEntries(entries) {
+      const equippedMap = new Map(
+        entries
+          .filter(isEquipped)
+          .filter((entry) => entry.equipSlot)
+          .map((entry) => [entry.equipSlot, entry])
+      );
+
+      return EQUIP_SLOTS.map((slot) => (
+        equippedMap.get(slot.id) || {
+          uid: `empty-${slot.id}`,
+          slot: slot.label,
+          item: 'Пусто',
+          type: 'Надето',
+          equipSlot: slot.id,
+          equipFamily: slot.family,
+          category: 'wearable'
+        }
+      ));
+    }
+
+    function addStats(target, stats) {
+      Object.keys(STAT_LABELS).forEach((key) => {
+        target[key] = (target[key] || 0) + Number(stats?.[key] || 0);
+      });
+      return target;
+    }
+
+    function formatStatLine(stats) {
+      return Object.entries(STAT_LABELS)
+        .filter(([key]) => Number(stats[key] || 0) > 0)
+        .map(([key, label]) => `${label} +${stats[key]}`)
+        .join(' • ');
+    }
+
+    function computeEquipmentBonuses(entries) {
+      const activeItems = entries.filter((entry) => !isEmptyItem(entry));
+      const direct = addStats({ patt: 0, matt: 0, pdef: 0, mdef: 0 }, {});
+      const setTotal = addStats({ patt: 0, matt: 0, pdef: 0, mdef: 0 }, {});
+      const setCounters = {};
+      const setSummaries = [];
+
+      activeItems.forEach((entry) => {
+        const meta = getEntryMeta(entry);
+        addStats(direct, meta.stats);
+        if (meta.setKey) {
+          if (!setCounters[meta.setKey]) {
+            setCounters[meta.setKey] = { parts: new Set(), count: 0 };
+          }
+          setCounters[meta.setKey].count += 1;
+          if (meta.setPart) {
+            setCounters[meta.setKey].parts.add(meta.setPart);
+          }
+        }
+      });
+
+      Object.entries(setCounters).forEach(([setKey, payload]) => {
+        const config = SET_LIBRARY[setKey];
+        if (!config) return;
+        const activeBonus = { patt: 0, matt: 0, pdef: 0, mdef: 0 };
+        Object.keys(config.thresholds)
+          .map(Number)
+          .sort((a, b) => a - b)
+          .forEach((threshold) => {
+            if (payload.parts.size >= threshold) {
+              addStats(activeBonus, config.thresholds[threshold]);
+            }
+          });
+        if (formatStatLine(activeBonus)) {
+          addStats(setTotal, activeBonus);
+          setSummaries.push({
+            name: config.name,
+            parts: payload.parts.size,
+            bonusText: formatStatLine(activeBonus)
+          });
+        }
+      });
+
+      return {
+        direct,
+        setTotal,
+        total: addStats({ patt: 0, matt: 0, pdef: 0, mdef: 0 }, direct) && addStats(direct, setTotal),
+        setSummaries
+      };
+    }
+
+    function renderEquipmentSummary(entries) {
+      const bonuses = computeEquipmentBonuses(entries);
+      const totalStats = bonuses.total;
+      return `
+        <section class="equip-summary">
+          <div>
+            <strong>Бонусы экипировки</strong>
+            <p>Старая логика сохранена по смыслу: вещь даёт свои статы, а собранные части комплекта добавляют бонус сверху.</p>
+          </div>
+          <div class="equip-stat-grid">
+            ${Object.entries(STAT_LABELS).map(([key, label]) => `
+              <div class="equip-stat-chip">
+                <span>${label}</span>
+                <b>+${Number(totalStats[key] || 0)}</b>
+              </div>
+            `).join('')}
+          </div>
+          ${bonuses.setSummaries.length ? `
+            <div class="equip-sets">
+              ${bonuses.setSummaries.map((set) => `
+                <div class="equip-set-chip">
+                  <span>${set.name} • частей: ${set.parts}</span>
+                  <b>${set.bonusText}</b>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+        </section>
+      `;
+    }
+
+    function findTargetEquipSlotId(entry, entries) {
+      const { family } = getEntryMeta(entry);
+      if (!family) return null;
+
+      if (family === 'ring') {
+        const occupied = new Set(entries.filter(isEquipped).map((item) => item.equipSlot));
+        return ['ring1', 'ring2'].find((slotId) => !occupied.has(slotId)) || null;
+      }
+
+      if (family === 'earring') {
+        const occupied = new Set(entries.filter(isEquipped).map((item) => item.equipSlot));
+        return ['earring1', 'earring2'].find((slotId) => !occupied.has(slotId)) || null;
+      }
+
+      return getPrimaryEquipSlotId(family);
+    }
+
     const realInventory = inventory.filter((entry) => !isEmptyItem(entry));
-    const equippedItems = inventory.filter(isEquipped);
+    const equippedItems = buildEquipmentEntries(inventory);
     const bagItems = realInventory.filter((entry) => !isEquipped(entry));
     const generalItems = bagItems.filter((entry) => !isResource(entry) && !isQuest(entry));
     const resourceItems = bagItems.filter(isResource);
@@ -503,7 +949,7 @@
 
     function renderIcon(entry, tab) {
       if (tab === 'equipment' && isEmptyItem(entry)) {
-        const iconPath = emptyIconPathForSlot(entry.slot);
+        const iconPath = emptyIconPathForSlot(entry.equipSlot || entry.slot);
         if (iconPath) {
           return `<img class="legacy-empty-icon" src="${iconPath}" alt="">`;
         }
@@ -530,6 +976,7 @@
                 class="legacy-action${action.kind === 'drop' ? ' drop' : ''}"
                 type="button"
                 data-item-action="${action.label}"
+                data-item-uid="${entry.uid || ''}"
                 data-item-name="${itemName}"
                 data-item-slot="${slotName}"
                 data-item-tab="${tab}"
@@ -551,15 +998,6 @@
       `;
     }
 
-    function parseStackedItem(entry) {
-      const match = String(entry.item || '').match(/^\s*(\d+)\s*x\s*(.+?)\s*$/i);
-      if (!match) return null;
-      return {
-        count: Number(match[1]),
-        baseName: match[2]
-      };
-    }
-
     q('app').innerHTML = `
       <div class="single-page-layout inventory-shell">
         <div class="inventory-tabs">
@@ -573,6 +1011,7 @@
           <section class="inventory-panel">
             <div class="inventory-panel-inner">
               <div class="tab-panel active" data-panel="equipment">
+                ${renderEquipmentSummary(equippedItems)}
                 ${renderSimpleList(
                   'equipment',
                   equippedItems,
@@ -641,14 +1080,13 @@
     document.querySelectorAll('[data-item-action]').forEach((button) => {
       button.addEventListener('click', () => {
         const action = button.dataset.itemAction;
+        const itemUid = button.dataset.itemUid;
         const itemName = button.dataset.itemName;
         const slotName = button.dataset.itemSlot;
 
         if (action === 'Снять') {
           const equippedIndex = state.hero.inventory.findIndex((entry) => (
-            isEquipped(entry) &&
-            entry.slot === slotName &&
-            entry.item === itemName
+            entry.uid === itemUid
           ));
 
           if (equippedIndex === -1) {
@@ -657,16 +1095,13 @@
           }
 
           const equippedEntry = state.hero.inventory[equippedIndex];
+          const equippedMeta = getEntryMeta(equippedEntry);
           state.hero.inventory[equippedIndex] = {
-            slot: equippedEntry.slot,
-            item: 'Пусто',
-            type: 'Надето'
+            ...equippedEntry,
+            slot: getBagSlotLabel(equippedMeta.family),
+            type: 'Сумка',
+            equipSlot: ''
           };
-          state.hero.inventory.push({
-            slot: equippedEntry.slot,
-            item: equippedEntry.item,
-            type: 'Сумка'
-          });
           saveState(state);
           showToast(`Снято: ${itemName}`);
           setTimeout(() => window.location.reload(), 120);
@@ -675,9 +1110,7 @@
 
         if (action === 'Надеть') {
           const bagIndex = state.hero.inventory.findIndex((entry) => (
-            !isEquipped(entry) &&
-            entry.slot === slotName &&
-            entry.item === itemName
+            entry.uid === itemUid
           ));
 
           if (bagIndex === -1) {
@@ -686,34 +1119,43 @@
           }
 
           const bagEntry = state.hero.inventory[bagIndex];
+          const targetSlotId = findTargetEquipSlotId(bagEntry, state.hero.inventory);
+          const bagMeta = getEntryMeta(bagEntry);
+
+          if (!targetSlotId) {
+            showToast(
+              bagMeta.family === 'ring'
+                ? 'Сначала снимите одно из колец.'
+                : bagMeta.family === 'earring'
+                  ? 'Сначала снимите одну из серёг.'
+                  : 'Для предмета не найден слот экипировки.'
+            );
+            return;
+          }
+
           const equippedIndex = state.hero.inventory.findIndex((entry) => (
             isEquipped(entry) &&
-            entry.slot === slotName
+            entry.equipSlot === targetSlotId
           ));
 
           if (equippedIndex !== -1) {
             const equippedEntry = state.hero.inventory[equippedIndex];
-            if (!isEmptyItem(equippedEntry)) {
-              state.hero.inventory.push({
-                slot: equippedEntry.slot,
-                item: equippedEntry.item,
-                type: 'Сумка'
-              });
-            }
+            const equippedMeta = getEntryMeta(equippedEntry);
             state.hero.inventory[equippedIndex] = {
-              slot: slotName,
-              item: itemName,
-              type: 'Надето'
+              ...equippedEntry,
+              slot: getBagSlotLabel(equippedMeta.family),
+              type: 'Сумка',
+              equipSlot: ''
             };
-          } else {
-            state.hero.inventory.push({
-              slot: slotName,
-              item: itemName,
-              type: 'Надето'
-            });
           }
 
-          state.hero.inventory.splice(bagIndex, 1);
+          state.hero.inventory[bagIndex] = {
+            ...bagEntry,
+            slot: SLOT_MAP[targetSlotId].label,
+            type: 'Надето',
+            equipSlot: targetSlotId
+          };
+
           saveState(state);
           showToast(`Надето: ${itemName}`);
           setTimeout(() => window.location.reload(), 120);
@@ -723,8 +1165,7 @@
         if (action === 'Использовать') {
           const bagIndex = state.hero.inventory.findIndex((entry) => (
             !isEquipped(entry) &&
-            entry.slot === slotName &&
-            entry.item === itemName
+            entry.uid === itemUid
           ));
 
           if (bagIndex === -1) {
