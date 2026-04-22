@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-      const APP_VERSION = '20260422-telegram-33';
+      const APP_VERSION = '20260422-telegram-42';
       const url = new URL(window.location.href);
       if (url.searchParams.get('appv') !== APP_VERSION) {
         url.searchParams.set('appv', APP_VERSION);
@@ -19,7 +19,7 @@
   </script>
   <title>Инвентарь</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="common.css?v=20260422-telegram-33">
+  <link rel="stylesheet" href="common.css?v=20260422-telegram-42">
   <style>
     .inventory-shell {
       min-height: 0;
@@ -200,7 +200,7 @@
     }
 
     .equip-slot-card {
-      min-height: 78px;
+      min-height: 88px;
       padding: 8px 9px;
       border-radius: 10px;
       border: 1px solid rgba(141, 102, 49, .62);
@@ -212,9 +212,10 @@
       grid-template-areas:
         "icon label"
         "icon name"
+        "icon desc"
         "action action";
       align-items: center;
-      gap: 4px 10px;
+      gap: 3px 10px;
       box-shadow:
         inset 0 1px 0 rgba(255, 241, 212, .06),
         inset 0 0 0 1px rgba(26, 18, 10, .38);
@@ -268,6 +269,18 @@
 
     .equip-slot-name.empty {
       color: rgba(220, 210, 188, .42);
+    }
+
+    .equip-slot-desc {
+      grid-area: desc;
+      color: rgba(232, 223, 200, .68);
+      font-size: 10px;
+      line-height: 1.25;
+      text-align: left;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
 
     .equip-slot-action {
@@ -350,6 +363,16 @@
       line-height: 1.45;
     }
 
+    .legacy-copy .legacy-meta {
+      color: var(--muted);
+    }
+
+    .legacy-copy .legacy-desc {
+      color: rgba(232, 223, 200, .78);
+      font-size: 11px;
+      line-height: 1.4;
+    }
+
     .legacy-actions {
       display: flex;
       gap: 6px;
@@ -421,7 +444,7 @@
       }
 
       .equip-slot-card {
-        min-height: 68px;
+        min-height: 78px;
         padding: 7px 8px;
         grid-template-columns: 38px minmax(0, 1fr);
         gap: 3px 8px;
@@ -435,6 +458,14 @@
       .equip-slot-action {
         font-size: 10px;
       }
+
+      .equip-slot-desc {
+        font-size: 9px;
+      }
+
+      .legacy-copy .legacy-desc {
+        font-size: 10px;
+      }
     }
   </style>
 </head>
@@ -444,8 +475,8 @@
   </div>
   <div class="toast" id="toast"></div>
 
-  <script src="item-catalog.js?v=20260422-telegram-33"></script>
-  <script src="common.js?v=20260422-telegram-33"></script>
+  <script src="item-catalog.js?v=20260422-telegram-42"></script>
+  <script src="common.js?v=20260422-telegram-42"></script>
   <script>
     (async () => {
     let state = await window.HD_BOOTSTRAP_APP_STATE();
@@ -927,6 +958,7 @@
       const slot = SLOT_MAP[entry.equipSlot];
       const isEmpty = isEmptyItem(entry);
       const blueprint = getItemBlueprint(entry);
+      const description = isEmpty ? '' : buildItemDescription(entry);
       const iconPath = isEmpty
         ? emptyIconPathForEquipSlot(entry.equipSlot)
         : blueprint?.icon || emptyIconPathForEquipSlot(entry.equipSlot);
@@ -948,7 +980,8 @@
             ${iconPath ? `<img class="legacy-empty-icon" src="${iconPath}" alt="">` : glyphForSlot(slot?.label || entry.slot)}
           </div>
           <div class="equip-slot-label">${String(slot?.label || entry.slot || '').toUpperCase()}</div>
-          <div class="equip-slot-name${isEmpty ? ' empty' : ''}">${isEmpty ? 'Пусто' : entry.item}</div>
+          <div class="equip-slot-name${isEmpty ? ' empty' : ''}">${isEmpty ? 'Пусто' : escapeHtml(entry.item)}</div>
+          ${description ? `<div class="equip-slot-desc">${escapeHtml(description)}</div>` : ''}
           ${actionButton}
         </article>
       `;
@@ -1080,9 +1113,129 @@
       return glyphForSlot(entry.slot);
     }
 
+    function escapeHtml(value) {
+      return String(value || '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    function isAccessoryFamily(family, slotLabel) {
+      const text = normalizeText(`${family || ''} ${slotLabel || ''}`);
+      return (
+        text.includes('ring') ||
+        text.includes('earring') ||
+        text.includes('amulet') ||
+        text.includes('necklace') ||
+        text.includes('ожер') ||
+        text.includes('серьг') ||
+        text.includes('кольц')
+      );
+    }
+
+    function isArmorFamily(family, slotLabel) {
+      const text = normalizeText(`${family || ''} ${slotLabel || ''}`);
+      return (
+        text.includes('body') ||
+        text.includes('head') ||
+        text.includes('helmet') ||
+        text.includes('legs') ||
+        text.includes('boots') ||
+        text.includes('gloves') ||
+        text.includes('shield') ||
+        text.includes('тело') ||
+        text.includes('шлем') ||
+        text.includes('низ') ||
+        text.includes('бот') ||
+        text.includes('перчат') ||
+        text.includes('щит')
+      );
+    }
+
+    function isWeaponFamily(family, slotLabel) {
+      const text = normalizeText(`${family || ''} ${slotLabel || ''}`);
+      return (
+        text.includes('weapon') ||
+        text.includes('оруж') ||
+        text.includes('меч') ||
+        text.includes('лук') ||
+        text.includes('кинжал')
+      );
+    }
+
+    function numericStat(stats, key) {
+      const value = Number(stats?.[key] || 0);
+      return Number.isFinite(value) ? value : 0;
+    }
+
+    function buildItemDescription(entry) {
+      const blueprint = getItemBlueprint(entry);
+      const stats = blueprint?.stats || {};
+      const family = blueprint?.family || entry?.equipFamily || entry?.equipSlot || '';
+      const slotLabel = blueprint?.slotLabel || entry?.slot || '';
+      const category = normalizeText(blueprint?.category || entry?.category || '');
+      const lines = [];
+
+      if (blueprint?.effect === 'hp') {
+        const healAmount = Number(blueprint?.give || 0);
+        return healAmount > 0
+          ? `Восстанавливает ${healAmount} HP.`
+          : 'Восстанавливает здоровье.';
+      }
+
+      if (blueprint?.effect === 'return_scroll') {
+        return 'Телепортирует в ближайший город.';
+      }
+
+      if (category === 'resource' || isResource(entry)) {
+        return 'Материал для крафта и ремесла.';
+      }
+
+      if (category === 'quest' || isQuest(entry)) {
+        return 'Квестовый предмет.';
+      }
+
+      if (isWeaponFamily(family, slotLabel)) {
+        const pAtk = numericStat(stats, 'patt');
+        const mAtk = numericStat(stats, 'matt');
+        const critical = numericStat(stats, 'critical') || numericStat(stats, 'crit');
+        if (pAtk) lines.push(`Урон: ${pAtk}`);
+        if (mAtk) lines.push(`Маг. урон: ${mAtk}`);
+        if (critical) lines.push(`Крит: ${critical}`);
+      } else if (isAccessoryFamily(family, slotLabel)) {
+        const mDef = numericStat(stats, 'mdef');
+        if (mDef) lines.push(`M.Def: ${mDef}`);
+      } else if (isArmorFamily(family, slotLabel)) {
+        const pDef = numericStat(stats, 'pdef');
+        if (pDef) lines.push(`P.Def: ${pDef}`);
+      }
+
+      const hpBonus = numericStat(stats, 'hp');
+      if (hpBonus) {
+        lines.push(`HP: +${hpBonus}`);
+      }
+
+      if (!lines.length && category === 'consumable') {
+        return 'Расходуется при использовании.';
+      }
+
+      if (!lines.length && blueprint?.category === 'wearable') {
+        return 'Предмет экипировки.';
+      }
+
+      if (!lines.length && blueprint) {
+        return 'Предмет инвентаря.';
+      }
+
+      return lines.join(' • ') || 'Описание предмета скоро появится.';
+    }
+
     function renderRow(entry, tab, actionLabels) {
       const itemName = entry.item;
       const slotName = entry.slot;
+      const description = buildItemDescription(entry);
       const groupKey = tab === 'general' ? getGroupKey(entry, tab) : 'all';
       const isEmpty = isEmptyItem(entry);
       const safeActions = isEmpty ? [] : actionLabels;
@@ -1090,8 +1243,9 @@
         <article class="legacy-row" data-row-tab="${tab}" data-row-group="${groupKey}">
           <div class="legacy-icon">${renderIcon(entry, tab)}</div>
           <div class="legacy-copy">
-            <strong>${itemName}</strong>
-            <span>${slotName}</span>
+            <strong>${escapeHtml(itemName)}</strong>
+            <span class="legacy-meta">${escapeHtml(slotName)}</span>
+            ${description ? `<span class="legacy-desc">${escapeHtml(description)}</span>` : ''}
           </div>
           <div class="legacy-actions">
             ${safeActions.map((action) => `
@@ -1243,6 +1397,14 @@
         const itemUid = button.dataset.itemUid;
         const itemName = button.dataset.itemName;
         const slotName = button.dataset.itemSlot;
+
+        if (action === 'Инфо') {
+          const infoEntry = state.hero.inventory.find((entry) => entry.uid === itemUid)
+            || buildEquipmentEntries(state.hero.inventory).find((entry) => entry.uid === itemUid)
+            || { item: itemName, slot: slotName };
+          showToast(buildItemDescription(infoEntry));
+          return;
+        }
 
         if (action === 'Снять') {
           const equippedIndex = state.hero.inventory.findIndex((entry) => (
