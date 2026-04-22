@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-      const APP_VERSION = '20260422-telegram-34';
+      const APP_VERSION = '20260422-telegram-35';
       const url = new URL(window.location.href);
       window.__HD_DEBUG_GRID__ = url.searchParams.get('grid') === '1';
       if (url.searchParams.get('appv') !== APP_VERSION) {
@@ -19,7 +19,7 @@
     })();
   </script>  <title>Hollow Dominion</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="common.css?v=20260422-telegram-34">
+  <link rel="stylesheet" href="common.css?v=20260422-telegram-35">
   <style>
     .screen-page {
       position: relative;
@@ -666,6 +666,49 @@
       border-radius: 12px;
       mix-blend-mode: screen;
       opacity: 1;
+    }
+
+    .profile-location-banner {
+      position: absolute;
+      top: 28px;
+      left: 50%;
+      width: min(86%, 360px);
+      transform: translateX(-50%);
+      z-index: 4;
+      pointer-events: none;
+      opacity: 0;
+      filter:
+        drop-shadow(0 8px 18px rgba(0, 0, 0, .34))
+        drop-shadow(0 0 16px rgba(255, 220, 154, .18));
+      animation: locationBannerReveal 5s ease-out forwards;
+    }
+
+    .profile-location-banner img {
+      display: block;
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    @keyframes locationBannerReveal {
+      0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-10px) scale(.96);
+      }
+      12% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0) scale(1);
+      }
+      74% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(8px) scale(1.02);
+      }
     }
 
     .city-portrait-atmosphere::before,
@@ -1338,6 +1381,11 @@
         inset: -90px -38px -132px -38px;
       }
 
+      .profile-location-banner {
+        top: 26px;
+        width: min(84%, 324px);
+      }
+
       .city-portrait-card .character-stage {
         inset: 40px 10px 72px;
       }
@@ -1458,6 +1506,11 @@
       .city-portrait-card .hero-portrait-bg,
       .city-portrait-atmosphere {
         inset: 20px 10px 34px;
+      }
+
+      .profile-location-banner {
+        top: 24px;
+        width: min(84%, 276px);
       }
 
       .city-portrait-card .character-stage {
@@ -1604,6 +1657,11 @@
       .city-portrait-card .hero-portrait-bg,
       .city-portrait-atmosphere {
         inset: 18px 9px 30px;
+      }
+
+      .profile-location-banner {
+        top: 20px;
+        width: min(82%, 244px);
       }
 
       .city-portrait-card .character-stage {
@@ -1827,6 +1885,11 @@
       background-position: center 44%;
     }
 
+    body.env-telegram.device-mobile.platform-ios .profile-location-banner {
+      top: 22px;
+      width: min(84%, 258px);
+    }
+
     body.env-telegram.device-mobile.platform-ios .city-portrait-atmosphere {
       inset: 20px 6px 28px;
     }
@@ -1904,6 +1967,11 @@
       body.env-telegram.device-mobile.platform-ios .city-portrait-card .hero-portrait-bg,
       body.env-telegram.device-mobile.platform-ios .city-portrait-atmosphere {
         inset: 18px 6px 26px;
+      }
+
+      body.env-telegram.device-mobile.platform-ios .profile-location-banner {
+        top: 18px;
+        width: min(82%, 232px);
       }
 
       body.env-telegram.device-mobile.platform-ios .city-portrait-card .character-stage {
@@ -2067,8 +2135,8 @@
   </div>
   <div class="toast" id="toast"></div>
 
-<script src="item-catalog.js?v=20260422-telegram-34"></script>
-<script src="common.js?v=20260422-telegram-34"></script>
+<script src="item-catalog.js?v=20260422-telegram-35"></script>
+<script src="common.js?v=20260422-telegram-35"></script>
     <script>
       (async () => {
       const screenPage = document.querySelector('.screen-page');
@@ -2413,6 +2481,8 @@
     }
 
     function renderCityScreen() {
+      const locationBannerSrc = './assets/ui/location/gludin-location-banner.png';
+
       q('app').innerHTML = `
         <div class="single-page-layout city-profile-shell">
           <div class="profile-fixed-block">
@@ -2420,6 +2490,9 @@
               <div class="city-home-layout">
                 <div class="panel city-portrait-card">
                   <div class="hero-portrait-bg" id="portraitBg"></div>
+                  <div class="profile-location-banner" aria-hidden="true">
+                    <img src="${locationBannerSrc}" alt="">
+                  </div>
                   <div class="city-portrait-atmosphere" aria-hidden="true">
                     <span class="city-portrait-mist m1"></span>
                     <span class="city-portrait-mist m2"></span>
