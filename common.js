@@ -764,13 +764,19 @@ function renderPortraitPanel(state) {
 
 function applyPortrait(state) {
   const city = getCurrentCity(state);
+  const fallbackCity = cities.start_village || city;
   const root = q('profilePreviewRoot');
   if (root) setPreview(root, state.hero);
   const bg = q('portraitBg');
   if (bg) {
     safeSetBackground(
       bg,
-      [city.portraitBg, city.sceneBg].filter(Boolean),
+      [
+        city.portraitBg,
+        city.sceneBg,
+        fallbackCity.portraitBg,
+        fallbackCity.sceneBg
+      ].filter(Boolean),
       'linear-gradient(180deg, rgba(10,12,18,.08), rgba(10,12,18,.26))'
     );
   }

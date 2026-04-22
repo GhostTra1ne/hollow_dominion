@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-      const APP_VERSION = '20260422-telegram-28';
+      const APP_VERSION = '20260422-telegram-29';
       const url = new URL(window.location.href);
       window.__HD_DEBUG_GRID__ = url.searchParams.get('grid') === '1';
       if (url.searchParams.get('appv') !== APP_VERSION) {
@@ -19,7 +19,7 @@
     })();
   </script>  <title>Hollow Dominion</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="common.css?v=20260422-telegram-28">
+  <link rel="stylesheet" href="common.css?v=20260422-telegram-29">
   <style>
     .screen-page {
       position: relative;
@@ -1993,6 +1993,11 @@
       aspect-ratio: 1 / 1.02;
     }
 
+    body.env-telegram.platform-desktop-runtime.viewport-compact-desktop .city-portrait-card .hero-portrait-bg,
+    body.env-telegram.platform-desktop-runtime.viewport-compact-desktop .city-portrait-atmosphere {
+      inset: 22px 18px 34px;
+    }
+
     body.env-telegram.platform-desktop-runtime.viewport-compact-desktop .profile-fixed-block,
     body.env-telegram.platform-desktop-runtime.viewport-compact-desktop .city-screen.bannerless,
     body.env-telegram.platform-desktop-runtime.viewport-compact-desktop .city-screen.bannerless .city-home-layout,
@@ -2062,8 +2067,8 @@
   </div>
   <div class="toast" id="toast"></div>
 
-    <script src="item-catalog.js?v=20260422-telegram-28"></script>
-  <script src="common.js?v=20260422-telegram-28"></script>
+<script src="item-catalog.js?v=20260422-telegram-29"></script>
+<script src="common.js?v=20260422-telegram-29"></script>
     <script>
       const screenPage = document.querySelector('.screen-page');
       const gridToggleBtn = document.getElementById('gridToggleBtn');
