@@ -219,6 +219,64 @@ function buildPublicAccount(user, authDate) {
   };
 }
 
+function normalizeNickname(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function fallbackHeroId(userId, nickname) {
+  const safeNick = normalizeNickname(nickname).replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'hero';
+  return `hero-tg-${userId}-${safeNick}`;
+}
+
+function getHeroIdentityKey(hero) {
+  if (!hero || typeof hero !== 'object') return '';
+
+  const explicitId = String(hero.id || '').trim();
+  if (explicitId) return `id:${explicitId}`;
+
+  const ownerId = String(hero.ownerTelegramId || '').trim();
+  const nickname = normalizeNickname(hero.nickname);
+  if (ownerId && nickname) return `tg:${ownerId}:${nickname}`;
+  if (nickname) return `nick:${nickname}`;
+  return '';
+}
+
+function bindStateToTelegramAccount(userId, state, currentState) {
+  if (!state || typeof state !== 'object') {
+    throw new Error('Missing state payload');
+  }
+
+  const nextState = JSON.parse(JSON.stringify(state));
+
+  if (nextState.account?.provider === 'telegram') {
+    nextState.account.telegramId = Number(userId);
+  }
+
+  if (currentState?.hero && !nextState.hero) {
+    nextState.hero = currentState.hero;
+  }
+
+  if (nextState.hero) {
+    nextState.hero.ownerTelegramId = String(userId);
+    if (!nextState.hero.id) {
+      nextState.hero.id = currentState?.hero?.id || fallbackHeroId(userId, nextState.hero.nickname);
+    }
+  }
+
+  if (currentState?.hero && nextState.hero) {
+    const currentHeroKey = getHeroIdentityKey(currentState.hero);
+    const nextHeroKey = getHeroIdentityKey(nextState.hero);
+    if (currentHeroKey && nextHeroKey && currentHeroKey !== nextHeroKey) {
+      const error = new Error('This Telegram account already has a character');
+      error.code = 'CHARACTER_EXISTS';
+      error.state = currentState;
+      throw error;
+    }
+  }
+
+  return nextState;
+}
+
 function getBearerToken(req) {
   const header = req.headers.authorization || '';
   if (!header.startsWith('Bearer ')) return '';
@@ -255,12 +313,15 @@ async function handleApi(req, res, pathname) {
     if (req.method === 'PUT') {
       try {
         const body = await readJsonBody(req);
-        if (!body?.state || typeof body.state !== 'object') {
-          throw new Error('Missing state payload');
-        }
-        writeAccountState(payload.sub, body.state);
-        sendJson(res, 200, { ok: true });
+        const currentState = readAccountState(payload.sub);
+        const nextState = bindStateToTelegramAccount(payload.sub, body.state, currentState);
+        writeAccountState(payload.sub, nextState);
+        sendJson(res, 200, { ok: true, state: nextState });
       } catch (error) {
+        if (error?.code === 'CHARACTER_EXISTS') {
+          sendJson(res, 409, { ok: false, error: error.message, state: error.state });
+          return true;
+        }
         sendJson(res, 400, { ok: false, error: error.message });
       }
       return true;

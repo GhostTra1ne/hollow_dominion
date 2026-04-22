@@ -332,9 +332,9 @@ function saveLocalState(state) {
   localStorage.setItem(STORAGE_STATE, JSON.stringify(state));
 }
 
-function saveState(state) {
+function saveState(state, options = {}) {
   saveLocalState(state);
-  scheduleRemoteStateSync(state);
+  scheduleRemoteStateSync(state, options);
 }
 
 function hasTelegramInitData() {
@@ -359,6 +359,34 @@ function buildTelegramAccount(account) {
   };
 }
 
+function createHeroId(accountId = '', nickname = '') {
+  const safeAccount = String(accountId || 'local');
+  const safeNick = nicknameKey(nickname).replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'hero';
+  const randomPart = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+    ? crypto.randomUUID().slice(0, 8)
+    : Math.random().toString(36).slice(2, 10);
+  return `hero-${safeAccount}-${safeNick}-${randomPart}`;
+}
+
+function assignHeroAccountIdentity(state) {
+  if (!state?.hero) return false;
+
+  const ownerTelegramId = String(state.account?.telegramId || state.hero.ownerTelegramId || '');
+  let changed = false;
+
+  if (ownerTelegramId && String(state.hero.ownerTelegramId || '') !== ownerTelegramId) {
+    state.hero.ownerTelegramId = ownerTelegramId;
+    changed = true;
+  }
+
+  if (!state.hero.id) {
+    state.hero.id = createHeroId(ownerTelegramId || 'local', state.hero.nickname || state.creator?.nickname || '');
+    changed = true;
+  }
+
+  return changed;
+}
+
 async function authenticateTelegramAccount() {
   if (!canUseTelegramAuthApi()) return null;
 
@@ -380,7 +408,7 @@ async function pushRemoteStateNow(state) {
   if (!hdAuthState.sessionToken || !AUTH_API_BASE) return;
 
   const snapshot = clone(state);
-  await fetch(`${AUTH_API_BASE}/state`, {
+  const response = await fetch(`${AUTH_API_BASE}/state`, {
     method: 'PUT',
     keepalive: true,
     headers: {
@@ -389,6 +417,28 @@ async function pushRemoteStateNow(state) {
     },
     body: JSON.stringify({state: snapshot})
   });
+
+  if (response.status === 409) {
+    let payload = null;
+    try {
+      payload = await response.json();
+    } catch {}
+
+    if (payload?.state && typeof payload.state === 'object') {
+      const remoteState = hydrateState(payload.state);
+      saveLocalState(remoteState);
+      window.dispatchEvent(new CustomEvent('hd:remote-state-replaced', {
+        detail: {reason: 'character-conflict', state: remoteState}
+      }));
+    }
+
+    throw new Error(payload?.error || 'This Telegram account already has a character');
+  }
+
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => '');
+    throw new Error(errorText || `Remote state sync failed with ${response.status}`);
+  }
 }
 
 function flushRemoteStateSync() {
@@ -477,9 +527,14 @@ async function bootstrapAppState() {
         state.account = account;
       }
 
+      const heroIdentityChanged = assignHeroAccountIdentity(state);
+
       saveLocalState(state);
 
-      if (!auth.state && (state.hero || normalizeNickname(state.creator.nickname))) {
+      if (
+        heroIdentityChanged ||
+        (!auth.state && (state.hero || normalizeNickname(state.creator.nickname)))
+      ) {
         scheduleRemoteStateSync(state, {immediate: true});
       }
 
@@ -496,6 +551,9 @@ async function bootstrapAppState() {
 
 window.HD_BOOTSTRAP_APP_STATE = bootstrapAppState;
 window.HD_CLEAR_SAVED_STATE = clearSavedState;
+window.addEventListener('hd:remote-state-replaced', () => {
+  window.location.reload();
+});
 window.addEventListener('pagehide', () => {
   flushRemoteStateSync();
 });
@@ -738,6 +796,8 @@ function buildHero(state) {
   };
 
   const hero = {
+    id: createHeroId(state.account?.telegramId || 'local', state.creator.nickname),
+    ownerTelegramId: String(state.account?.telegramId || ''),
     nickname: normalizeNickname(state.creator.nickname),
     race: state.creator.race,
     classId: state.creator.classId,
@@ -990,6 +1050,10 @@ function ensureHero(state) {
   }
 
   let changed = false;
+
+  if (assignHeroAccountIdentity(state)) {
+    changed = true;
+  }
 
   if (!state.hero.inventorySeedVersion || state.hero.inventorySeedVersion < 2) {
     const hasReturnScroll = (state.hero.inventory || []).some((entry) => {
