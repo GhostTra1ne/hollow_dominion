@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-      const APP_VERSION = '20260422-telegram-30';
+      const APP_VERSION = '20260422-telegram-32';
       const url = new URL(window.location.href);
       window.__HD_DEBUG_GRID__ = url.searchParams.get('grid') === '1';
       if (url.searchParams.get('appv') !== APP_VERSION) {
@@ -19,7 +19,7 @@
     })();
   </script>  <title>Hollow Dominion</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="common.css?v=20260422-telegram-30">
+  <link rel="stylesheet" href="common.css?v=20260422-telegram-31">
   <style>
     .screen-page {
       position: relative;
@@ -752,22 +752,22 @@
     }
 
     .city-portrait-card .character-stage {
-      inset: 48px 12px 86px;
-      padding: 8px 8px 0;
+      inset: 40px 10px 72px;
+      padding: 6px 6px 0;
       z-index: 3;
     }
 
     .city-portrait-card .character-stage .character-box {
-      transform: translateY(-10px);
+      transform: translateY(-6px);
     }
 
     .city-portrait-card .shadow {
-      width: 214px;
-      bottom: 6px;
+      width: 172px;
+      bottom: 8px;
     }
 
     .city-portrait-card .character-box {
-      width: min(100%, 216px);
+      width: min(100%, 182px);
     }
 
     .city-portrait-frame {
@@ -1339,15 +1339,15 @@
       }
 
       .city-portrait-card .character-stage {
-        inset: 44px 12px 80px;
+        inset: 40px 10px 72px;
       }
 
       .city-portrait-card .character-stage .character-box {
-        transform: translateY(-8px);
+        transform: translateY(-6px);
       }
 
       .city-portrait-card .character-box {
-        width: min(100%, 216px);
+        width: min(100%, 182px);
       }
 
       .portrait-overlay-ui {
@@ -2067,8 +2067,8 @@
   </div>
   <div class="toast" id="toast"></div>
 
-<script src="item-catalog.js?v=20260422-telegram-30"></script>
-<script src="common.js?v=20260422-telegram-30"></script>
+<script src="item-catalog.js?v=20260422-telegram-31"></script>
+<script src="common.js?v=20260422-telegram-31"></script>
     <script>
       (async () => {
       const screenPage = document.querySelector('.screen-page');
