@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-      const APP_VERSION = '20260422-telegram-29';
+      const APP_VERSION = '20260422-telegram-30';
       const url = new URL(window.location.href);
       window.__HD_DEBUG_GRID__ = url.searchParams.get('grid') === '1';
       if (url.searchParams.get('appv') !== APP_VERSION) {
@@ -19,7 +19,7 @@
     })();
   </script>  <title>Hollow Dominion</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="common.css?v=20260422-telegram-29">
+  <link rel="stylesheet" href="common.css?v=20260422-telegram-30">
   <style>
     .screen-page {
       position: relative;
@@ -2067,9 +2067,10 @@
   </div>
   <div class="toast" id="toast"></div>
 
-<script src="item-catalog.js?v=20260422-telegram-29"></script>
-<script src="common.js?v=20260422-telegram-29"></script>
+<script src="item-catalog.js?v=20260422-telegram-30"></script>
+<script src="common.js?v=20260422-telegram-30"></script>
     <script>
+      (async () => {
       const screenPage = document.querySelector('.screen-page');
       const gridToggleBtn = document.getElementById('gridToggleBtn');
       const debugGridTop = document.getElementById('debugGridTop');
@@ -2111,7 +2112,7 @@
 
       window.addEventListener('resize', buildDebugGridAxes);
 
-      let state = loadState();
+      let state = await window.HD_BOOTSTRAP_APP_STATE();
       tryArriveFromTravel(state);
 
     function renderChooser(value, helper) {
@@ -2467,7 +2468,8 @@
       renderCreatorScreen();
     }
 
-    render();
+      render();
+      })();
   </script>
 </body>
 </html>

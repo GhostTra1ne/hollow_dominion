@@ -135,8 +135,27 @@ window.addEventListener('orientationchange', syncRuntimeViewport, {passive: true
 
 const STORAGE_STATE = 'hd_split_fixed_v1';
 const STORAGE_TAKEN_NICKS = 'hd_taken_nicks_split_fixed_v1';
+const AUTH_API_BASE = (() => {
+  if (!window.location) return '';
+  if (!/^https?:$/i.test(window.location.protocol)) return '';
+  return `${window.location.origin}/api`;
+})();
 const FALLBACK_CHARACTER = './assets/characters/human/male';
 const CREATE_BG_DEFAULT = './assets/backgrounds/create_bg.jpg';
+const TELEGRAM_AUTH_PROVIDER = 'telegram';
+
+const hdAuthState = {
+  status: 'guest',
+  sessionToken: '',
+  account: null
+};
+
+let bootstrapStatePromise = null;
+let remoteStateSyncTimer = null;
+let remoteStateSyncPending = null;
+let remoteStateSyncInFlight = Promise.resolve();
+
+window.HD_AUTH = hdAuthState;
 
 const steps = [
   {key: 'race', label: 'Раса'},
@@ -251,6 +270,7 @@ const stateDefault = {
   creator: {race: 'human', classId: 'warrior', gender: 'male', face: '01', nickname: ''},
   stepIndex: 0,
   hero: null,
+  account: null,
   activeMapPointId: 'blacksmith',
   activeRouteCityId: 'lyon',
   marketQuery: '',
@@ -289,22 +309,196 @@ function withAppParams(href) {
 function q(id) { return document.getElementById(id); }
 function clone(obj) { return JSON.parse(JSON.stringify(obj)); }
 
+function hydrateState(parsed) {
+  if (!parsed || typeof parsed !== 'object') return clone(stateDefault);
+  return {
+    ...clone(stateDefault),
+    ...parsed,
+    creator: {...clone(stateDefault.creator), ...(parsed.creator || {})}
+  };
+}
+
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_STATE);
     if (!raw) return clone(stateDefault);
-    const parsed = JSON.parse(raw);
-    return {
-      ...clone(stateDefault),
-      ...parsed,
-      creator: {...clone(stateDefault.creator), ...(parsed.creator || {})}
-    };
+    return hydrateState(JSON.parse(raw));
   } catch {
     return clone(stateDefault);
   }
 }
 
-function saveState(state) { localStorage.setItem(STORAGE_STATE, JSON.stringify(state)); }
+function saveLocalState(state) {
+  localStorage.setItem(STORAGE_STATE, JSON.stringify(state));
+}
+
+function saveState(state) {
+  saveLocalState(state);
+  scheduleRemoteStateSync(state);
+}
+
+function hasTelegramInitData() {
+  return Boolean(tg?.initData);
+}
+
+function canUseTelegramAuthApi() {
+  return Boolean(AUTH_API_BASE && hasTelegramInitData());
+}
+
+function buildTelegramAccount(account) {
+  if (!account?.id) return null;
+  return {
+    provider: TELEGRAM_AUTH_PROVIDER,
+    telegramId: account.id,
+    username: account.username || '',
+    firstName: account.firstName || '',
+    lastName: account.lastName || '',
+    photoUrl: account.photoUrl || '',
+    languageCode: account.languageCode || '',
+    verifiedAt: account.verifiedAt || Date.now()
+  };
+}
+
+async function authenticateTelegramAccount() {
+  if (!canUseTelegramAuthApi()) return null;
+
+  const response = await fetch(`${AUTH_API_BASE}/auth/telegram`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({initData: tg.initData})
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => '');
+    throw new Error(errorText || `Telegram auth failed with ${response.status}`);
+  }
+
+  return response.json();
+}
+
+async function pushRemoteStateNow(state) {
+  if (!hdAuthState.sessionToken || !AUTH_API_BASE) return;
+
+  const snapshot = clone(state);
+  await fetch(`${AUTH_API_BASE}/state`, {
+    method: 'PUT',
+    keepalive: true,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${hdAuthState.sessionToken}`
+    },
+    body: JSON.stringify({state: snapshot})
+  });
+}
+
+function flushRemoteStateSync() {
+  if (!remoteStateSyncPending) return remoteStateSyncInFlight;
+
+  const snapshot = remoteStateSyncPending;
+  remoteStateSyncPending = null;
+  remoteStateSyncInFlight = remoteStateSyncInFlight
+    .catch(() => {})
+    .then(() => pushRemoteStateNow(snapshot))
+    .catch((error) => {
+      console.warn('Remote state sync failed:', error);
+    });
+
+  return remoteStateSyncInFlight;
+}
+
+function scheduleRemoteStateSync(state, options = {}) {
+  if (!hdAuthState.sessionToken) return;
+
+  remoteStateSyncPending = clone(state);
+  if (remoteStateSyncTimer) {
+    clearTimeout(remoteStateSyncTimer);
+    remoteStateSyncTimer = null;
+  }
+
+  if (options.immediate) {
+    flushRemoteStateSync();
+    return;
+  }
+
+  remoteStateSyncTimer = window.setTimeout(() => {
+    remoteStateSyncTimer = null;
+    flushRemoteStateSync();
+  }, 140);
+}
+
+async function clearSavedState() {
+  localStorage.removeItem(STORAGE_STATE);
+
+  if (hdAuthState.sessionToken && AUTH_API_BASE) {
+    try {
+      await fetch(`${AUTH_API_BASE}/state`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${hdAuthState.sessionToken}`
+        }
+      });
+    } catch (error) {
+      console.warn('Remote state delete failed:', error);
+    }
+  }
+}
+
+async function bootstrapAppState() {
+  if (bootstrapStatePromise) return bootstrapStatePromise;
+
+  bootstrapStatePromise = (async () => {
+    let state = loadState();
+
+    if (!canUseTelegramAuthApi()) {
+      hdAuthState.status = hasTelegramInitData() ? 'local-telegram' : 'guest';
+      return state;
+    }
+
+    try {
+      const auth = await authenticateTelegramAccount();
+      const account = buildTelegramAccount(auth.account);
+
+      hdAuthState.status = 'authenticated';
+      hdAuthState.sessionToken = auth.sessionToken || '';
+      hdAuthState.account = account;
+
+      if (
+        state.account?.provider === TELEGRAM_AUTH_PROVIDER &&
+        String(state.account.telegramId || '') !== String(account?.telegramId || '')
+      ) {
+        state = clone(stateDefault);
+      }
+
+      if (auth.state && typeof auth.state === 'object') {
+        state = hydrateState(auth.state);
+      }
+
+      if (account) {
+        state.account = account;
+      }
+
+      saveLocalState(state);
+
+      if (!auth.state && (state.hero || normalizeNickname(state.creator.nickname))) {
+        scheduleRemoteStateSync(state, {immediate: true});
+      }
+
+      return state;
+    } catch (error) {
+      hdAuthState.status = 'fallback-local';
+      console.warn('Telegram auth bootstrap fallback:', error);
+      return state;
+    }
+  })();
+
+  return bootstrapStatePromise;
+}
+
+window.HD_BOOTSTRAP_APP_STATE = bootstrapAppState;
+window.HD_CLEAR_SAVED_STATE = clearSavedState;
+window.addEventListener('pagehide', () => {
+  flushRemoteStateSync();
+});
 function normalizeNickname(v) { return (v || '').trim(); }
 function nicknameKey(v) { return normalizeNickname(v).toLowerCase(); }
 

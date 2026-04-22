@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-      const APP_VERSION = '20260422-telegram-28';
+      const APP_VERSION = '20260422-telegram-30';
       const url = new URL(window.location.href);
       if (url.searchParams.get('appv') !== APP_VERSION) {
         url.searchParams.set('appv', APP_VERSION);
@@ -19,7 +19,7 @@
   </script>
   <title>РЎС‚Р°С‚СѓСЃ</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="common.css?v=20260422-telegram-28">
+  <link rel="stylesheet" href="common.css?v=20260422-telegram-30">
   <style>
     .legacy-block {
       display: grid;
@@ -147,10 +147,11 @@
     </div>
   </div>
 
-  <script src="item-catalog.js?v=20260422-telegram-28"></script>
-  <script src="common.js?v=20260422-telegram-28"></script>
+  <script src="item-catalog.js?v=20260422-telegram-30"></script>
+  <script src="common.js?v=20260422-telegram-30"></script>
   <script>
-    let state = loadState();
+    (async () => {
+    let state = await window.HD_BOOTSTRAP_APP_STATE();
     if (!ensureHero(state)) {
       throw new Error('Hero not found');
     }
@@ -299,11 +300,12 @@
 
     q('deleteBtn').onclick = () => q('confirmModal').classList.add('show');
     q('cancelDeleteBtn').onclick = () => q('confirmModal').classList.remove('show');
-    q('confirmDeleteBtn').onclick = () => {
+    q('confirmDeleteBtn').onclick = async () => {
       releaseNickname(state.hero.nickname);
-      localStorage.removeItem(STORAGE_STATE);
-      location.href = 'index.html';
+      await window.HD_CLEAR_SAVED_STATE();
+      location.href = withAppParams('index.html');
     };
+    })();
   </script>
 </body>
 </html>

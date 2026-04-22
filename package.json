@@ -1,0 +1,8 @@
+{
+  "name": "hollow-dominion-miniapp",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server/auth-server.mjs"
+  }
+}
