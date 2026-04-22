@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-      const APP_VERSION = '20260423-telegram-43';
+      const APP_VERSION = '20260423-telegram-44';
       const url = new URL(window.location.href);
       if (url.searchParams.get('appv') !== APP_VERSION) {
         url.searchParams.set('appv', APP_VERSION);
@@ -19,7 +19,7 @@
   </script>
   <title>Инвентарь</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="common.css?v=20260423-telegram-43">
+  <link rel="stylesheet" href="common.css?v=20260423-telegram-44">
   <style>
     .inventory-shell {
       min-height: 0;
@@ -507,8 +507,8 @@
   </div>
   <div class="toast" id="toast"></div>
 
-  <script src="item-catalog.js?v=20260423-telegram-43"></script>
-  <script src="common.js?v=20260423-telegram-43"></script>
+  <script src="item-catalog.js?v=20260423-telegram-44"></script>
+  <script src="common.js?v=20260423-telegram-44"></script>
   <script>
     (async () => {
     let state = await window.HD_BOOTSTRAP_APP_STATE();
@@ -1089,22 +1089,22 @@
       return Math.max(1, Number(state.hero.inventoryLimit || 80) || 80);
     }
 
-    function getBagInventoryEntries(entries = state.hero.inventory) {
-      return (entries || []).filter((entry) => !isEmptyItem(entry) && !isEquipped(entry));
+    function getOccupiedInventoryEntries(entries = state.hero.inventory) {
+      return (entries || []).filter((entry) => !isEmptyItem(entry));
     }
 
-    function getBagSlotUsage(entries = state.hero.inventory) {
-      return getBagInventoryEntries(entries).length;
+    function getOccupiedInventorySlotUsage(entries = state.hero.inventory) {
+      return getOccupiedInventoryEntries(entries).length;
     }
 
-    function hasBagCapacity(entries = state.hero.inventory, slotsNeeded = 1) {
-      return getBagSlotUsage(entries) + slotsNeeded <= getInventoryLimit();
+    function hasInventoryCapacity(entries = state.hero.inventory, slotsNeeded = 1) {
+      return getOccupiedInventorySlotUsage(entries) + slotsNeeded <= getInventoryLimit();
     }
 
     function renderGeneralMeta() {
       return `
         <div class="inventory-general-meta">
-          <div class="inventory-capacity">${getBagSlotUsage()}/${getInventoryLimit()}</div>
+          <div class="inventory-capacity">${getOccupiedInventorySlotUsage()}/${getInventoryLimit()}</div>
         </div>
       `;
     }
@@ -1464,11 +1464,6 @@
         }
 
         if (action === 'Снять') {
-          if (!hasBagCapacity(state.hero.inventory, 1)) {
-            showToast(`Инвентарь заполнен: ${getBagSlotUsage()}/${getInventoryLimit()}`);
-            return;
-          }
-
           const equippedIndex = state.hero.inventory.findIndex((entry) => (
             entry.uid === itemUid
           ));
