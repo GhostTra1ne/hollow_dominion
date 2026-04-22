@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-      const APP_VERSION = '20260422-telegram-40';
+      const APP_VERSION = '20260422-telegram-41';
       const url = new URL(window.location.href);
       window.__HD_DEBUG_GRID__ = url.searchParams.get('grid') === '1';
       if (url.searchParams.get('appv') !== APP_VERSION) {
@@ -19,7 +19,7 @@
     })();
   </script>  <title>Hollow Dominion</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="common.css?v=20260422-telegram-40">
+  <link rel="stylesheet" href="common.css?v=20260422-telegram-41">
   <style>
     .screen-page {
       position: relative;
@@ -694,7 +694,7 @@
 
     .profile-overhead-name {
       position: absolute;
-      top: 126px;
+      top: 100px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 5;
@@ -1413,7 +1413,7 @@
       }
 
       .profile-overhead-name {
-        top: 122px;
+        top: 96px;
         max-width: min(76%, 210px);
         font-size: 12px;
       }
@@ -1546,7 +1546,7 @@
       }
 
       .profile-overhead-name {
-        top: 116px;
+        top: 90px;
         max-width: min(74%, 182px);
         font-size: 11px;
       }
@@ -1703,7 +1703,7 @@
       }
 
       .profile-overhead-name {
-        top: 106px;
+        top: 80px;
         max-width: min(72%, 164px);
         font-size: 10px;
       }
@@ -1935,7 +1935,7 @@
     }
 
     body.env-telegram.device-mobile.platform-ios .profile-overhead-name {
-      top: 114px;
+      top: 88px;
     }
 
     body.env-telegram.device-mobile.platform-ios .city-portrait-atmosphere {
@@ -2023,7 +2023,7 @@
       }
 
       body.env-telegram.device-mobile.platform-ios .profile-overhead-name {
-        top: 104px;
+        top: 78px;
       }
 
       body.env-telegram.device-mobile.platform-ios .city-portrait-card .character-stage {
@@ -2124,7 +2124,7 @@
     }
 
     body.env-telegram.platform-desktop-runtime.viewport-compact-desktop .city-portrait-card .character-stage .character-box {
-      transform: translateY(-6px);
+      transform: translateY(-10px);
     }
 
     body.env-telegram.platform-desktop-runtime.viewport-compact-desktop .city-portrait-card .character-box {
@@ -2205,8 +2205,8 @@
   </div>
   <div class="toast" id="toast"></div>
 
-<script src="item-catalog.js?v=20260422-telegram-40"></script>
-<script src="common.js?v=20260422-telegram-40"></script>
+<script src="item-catalog.js?v=20260422-telegram-41"></script>
+<script src="common.js?v=20260422-telegram-41"></script>
     <script>
       (async () => {
       const screenPage = document.querySelector('.screen-page');
