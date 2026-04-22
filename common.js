@@ -824,6 +824,7 @@ function buildHero(state) {
     atkSpd: 356,
     castSpd: state.creator.classId === 'mage' ? 262 : 118,
     speed: 131,
+    inventoryLimit: 80,
     con: 34,
     men: 29,
     wit: 12,
@@ -1050,6 +1051,11 @@ function ensureHero(state) {
   }
 
   let changed = false;
+
+  if (!Number.isFinite(Number(state.hero.inventoryLimit)) || Number(state.hero.inventoryLimit) <= 0) {
+    state.hero.inventoryLimit = 80;
+    changed = true;
+  }
 
   if (assignHeroAccountIdentity(state)) {
     changed = true;
