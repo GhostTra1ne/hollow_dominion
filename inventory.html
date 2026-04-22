@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-    const APP_VERSION = '20260421-telegram-27';
+    const APP_VERSION = '20260422-telegram-28';
       const url = new URL(window.location.href);
       if (url.searchParams.get('appv') !== APP_VERSION) {
         url.searchParams.set('appv', APP_VERSION);
@@ -19,7 +19,7 @@
   </script>
   <title>Инвентарь</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="common.css?v=20260421-telegram-27">
+  <link rel="stylesheet" href="common.css?v=20260422-telegram-28">
   <style>
     .inventory-shell {
       min-height: 0;
@@ -110,6 +110,10 @@
       background:
         linear-gradient(180deg, rgba(62, 45, 25, .72), rgba(24, 18, 12, .9)),
         linear-gradient(180deg, rgba(255, 244, 214, .02), rgba(255, 244, 214, 0));
+    }
+
+    .inventory-panel[data-current-tab="equipment"] .inventory-panel-footer {
+      display: none;
     }
 
     .adena-tracker {
@@ -440,8 +444,8 @@
   </div>
   <div class="toast" id="toast"></div>
 
-  <script src="item-catalog.js?v=20260421-telegram-27"></script>
-  <script src="common.js?v=20260421-telegram-27"></script>
+  <script src="item-catalog.js?v=20260422-telegram-28"></script>
+  <script src="common.js?v=20260422-telegram-28"></script>
   <script>
     let state = loadState();
     if (!ensureHero(state)) {
@@ -1159,7 +1163,7 @@
         </div>
 
         <div class="inventory-body">
-          <section class="inventory-panel">
+          <section class="inventory-panel" data-current-tab="equipment">
             <div class="inventory-panel-inner">
               <div class="tab-panel active" data-panel="equipment">
                 ${renderEquipmentPaperdoll(equippedItems)}
@@ -1207,12 +1211,16 @@
 
     const tabs = [...document.querySelectorAll('[data-tab]')];
     const panels = [...document.querySelectorAll('[data-panel]')];
+    const inventoryPanel = document.querySelector('.inventory-panel');
 
     tabs.forEach((tab) => {
       tab.addEventListener('click', () => {
         const target = tab.dataset.tab;
         tabs.forEach((item) => item.classList.toggle('active', item === tab));
         panels.forEach((panel) => panel.classList.toggle('active', panel.dataset.panel === target));
+        if (inventoryPanel) {
+          inventoryPanel.dataset.currentTab = target;
+        }
       });
     });
 
@@ -1356,6 +1364,7 @@
   </script>
 </body>
 </html>
+
 
 
 

@@ -768,7 +768,11 @@ function applyPortrait(state) {
   if (root) setPreview(root, state.hero);
   const bg = q('portraitBg');
   if (bg) {
-    safeSetBackground(bg, [city.portraitBg], 'linear-gradient(180deg, rgba(10,12,18,.08), rgba(10,12,18,.26))');
+    safeSetBackground(
+      bg,
+      [city.portraitBg, city.sceneBg].filter(Boolean),
+      'linear-gradient(180deg, rgba(10,12,18,.08), rgba(10,12,18,.26))'
+    );
   }
 }
 
