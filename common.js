@@ -805,13 +805,6 @@ function setPreview(root, config) {
   safeSetCandidates(getSlot(root, 'headBase'), bases.flatMap((p) => [`${p}/base/head_base.png`, `${p}/base/head.png`]));
   safeSetCandidates(getSlot(root, 'face'), bases.map((p) => `${p}/faces/${config.face}.png`));
   safeSetCandidates(
-    getSlot(root, 'armorHead'),
-    [
-      ...buildEquipmentLayerCandidates(bases, equipped, ['head'], 'head'),
-      ...classBases.map((p) => `${p}/head.png`)
-    ]
-  );
-  safeSetCandidates(
     getSlot(root, 'armorTorso'),
     [
       ...buildEquipmentLayerCandidates(bases, equipped, ['body'], 'torso'),
@@ -1296,7 +1289,7 @@ function applyPortrait(state) {
 function characterMarkup() {
   return `
 <img data-slot="legL" class="character-layer" alt=""><img data-slot="legR" class="character-layer" alt=""><img data-slot="armorLegL" class="character-layer" alt=""><img data-slot="armorLegR" class="character-layer" alt="">
-<div class="upper-body"><div class="arm-back-group"><img data-slot="shield" class="character-layer" alt=""><img data-slot="armL" class="character-layer" alt=""><img data-slot="armorArmL" class="character-layer" alt=""></div><div class="head-group"><img data-slot="headBase" class="character-layer" alt=""><img data-slot="face" class="character-layer" alt=""><img data-slot="armorHead" class="character-layer" alt=""></div><img data-slot="torso" class="character-layer" alt=""><img data-slot="armorTorso" class="character-layer" alt=""><div class="arm-front-group"><img data-slot="armR" class="character-layer" alt=""><img data-slot="armorArmR" class="character-layer" alt=""><img data-slot="weapon" class="character-layer" alt=""></div></div>
+<div class="upper-body"><div class="arm-back-group"><img data-slot="shield" class="character-layer" alt=""><img data-slot="armL" class="character-layer" alt=""><img data-slot="armorArmL" class="character-layer" alt=""></div><div class="head-group"><img data-slot="headBase" class="character-layer" alt=""><img data-slot="face" class="character-layer" alt=""></div><img data-slot="torso" class="character-layer" alt=""><img data-slot="armorTorso" class="character-layer" alt=""><div class="arm-front-group"><img data-slot="armR" class="character-layer" alt=""><img data-slot="armorArmR" class="character-layer" alt=""><img data-slot="weapon" class="character-layer" alt=""></div></div>
 <img data-slot="pelvis" class="character-layer" alt=""><img data-slot="armorPelvis" class="character-layer" alt="">`;
 }
 

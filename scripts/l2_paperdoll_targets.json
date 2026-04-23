@@ -4,7 +4,7 @@
     "notes": [
       "Upper/lower/gloves/boots in classic L2 use shared body-slot meshes with swapped textures.",
       "These mappings are confirmed from the MASTERWORK client at E:/GamePirate/MASTERWORK.",
-      "Helmet is still pending a dedicated head/accessory route."
+      "Helmet visuals are intentionally disabled in the browser paperdoll; the character head/appearance stays visible."
     ],
     "items": {
       "Leather Shirt": {
@@ -40,7 +40,7 @@
         "mesh": null,
         "texturePackage": null,
         "textureObject": null,
-        "status": "pending_head_route"
+        "status": "intentionally_hidden"
       }
     },
     "probeArtifacts": {
