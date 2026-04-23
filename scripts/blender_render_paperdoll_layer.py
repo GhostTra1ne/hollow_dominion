@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 
 import bpy
+from mathutils import Vector
 
 
 def parse_args() -> argparse.Namespace:
@@ -128,30 +129,61 @@ def setup_light() -> None:
     light.rotation_euler = (math.radians(35.0), math.radians(0.0), math.radians(25.0))
 
 
-def center_objects(imported: list[bpy.types.Object]) -> tuple[float, float]:
-    mesh_objects = [obj for obj in imported if obj.type == "MESH"]
+def get_world_bounds(objects: list[bpy.types.Object]) -> tuple[Vector, Vector]:
+    mesh_objects = [obj for obj in objects if obj.type == "MESH"]
     if not mesh_objects:
+        zero = Vector((0.0, 0.0, 0.0))
+        return zero.copy(), zero.copy()
+
+    min_corner = Vector((float("inf"), float("inf"), float("inf")))
+    max_corner = Vector((float("-inf"), float("-inf"), float("-inf")))
+
+    for obj in mesh_objects:
+        for corner in obj.bound_box:
+            world_corner = obj.matrix_world @ Vector(corner)
+            min_corner.x = min(min_corner.x, world_corner.x)
+            min_corner.y = min(min_corner.y, world_corner.y)
+            min_corner.z = min(min_corner.z, world_corner.z)
+            max_corner.x = max(max_corner.x, world_corner.x)
+            max_corner.y = max(max_corner.y, world_corner.y)
+            max_corner.z = max(max_corner.z, world_corner.z)
+    return min_corner, max_corner
+
+
+def normalize_scale(imported: list[bpy.types.Object], target_height: float = 1.8) -> None:
+    min_corner, max_corner = get_world_bounds(imported)
+    current_height = max(max_corner.z - min_corner.z, 0.0)
+    if current_height <= 0.0:
+        return
+
+    scale_factor = target_height / current_height
+    for obj in imported:
+        obj.scale = tuple(component * scale_factor for component in obj.scale)
+    bpy.context.view_layer.update()
+
+
+def center_objects(imported: list[bpy.types.Object]) -> tuple[float, float]:
+    if not any(obj.type == "MESH" for obj in imported):
         return 0.0, 0.0
 
     bpy.ops.object.select_all(action="DESELECT")
-    for obj in mesh_objects:
+    for obj in [obj for obj in imported if obj.type == "MESH"]:
         obj.select_set(True)
-    bpy.context.view_layer.objects.active = mesh_objects[0]
+    bpy.context.view_layer.objects.active = next(obj for obj in imported if obj.type == "MESH")
     bpy.ops.object.origin_set(type="ORIGIN_GEOMETRY", center="BOUNDS")
 
-    min_x = min((obj.bound_box[i][0] for obj in mesh_objects for i in range(8)), default=0.0)
-    max_x = max((obj.bound_box[i][0] for obj in mesh_objects for i in range(8)), default=0.0)
-    min_z = min((obj.bound_box[i][2] for obj in mesh_objects for i in range(8)), default=0.0)
-    max_z = max((obj.bound_box[i][2] for obj in mesh_objects for i in range(8)), default=0.0)
-    center_x = (min_x + max_x) / 2.0
-    center_z = (min_z + max_z) / 2.0
+    min_corner, max_corner = get_world_bounds(imported)
+    center_x = (min_corner.x + max_corner.x) / 2.0
+    center_z = (min_corner.z + max_corner.z) / 2.0
 
     for obj in imported:
         obj.location.x -= center_x
         obj.location.z -= center_z
 
-    width = max_x - min_x
-    height = max_z - min_z
+    bpy.context.view_layer.update()
+    min_corner, max_corner = get_world_bounds(imported)
+    width = max_corner.x - min_corner.x
+    height = max_corner.z - min_corner.z
     return width, height
 
 
@@ -182,6 +214,7 @@ def main() -> None:
             material = ensure_material(obj)
             apply_texture(material, texture_path)
 
+    normalize_scale(imported)
     width, height = center_objects(imported)
     if args.auto_frame and bpy.context.scene.camera and bpy.context.scene.camera.type == "CAMERA":
         camera_data = bpy.context.scene.camera.data
