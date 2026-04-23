@@ -769,7 +769,7 @@
       icon: './assets/ui/items/presets/ng/armor_t07_l_i00_0.png'
     },
     {
-      name: registerPresetItem(\"Apprentice's Tunic\"),
+      name: registerPresetItem("Apprentice's Tunic"),
       source: 'preset',
       family: 'body',
       category: 'wearable',
@@ -1327,4 +1327,3 @@
   window.HD_CANONICAL_ITEM_KEY = canonicalItemKey;
   window.HD_RESOLVE_ITEM_BLUEPRINT = resolveItemBlueprint;
 })();
-
