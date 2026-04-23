@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-      const APP_VERSION = '20260423-telegram-48';
+      const APP_VERSION = '20260423-telegram-49';
       const url = new URL(window.location.href);
       if (url.searchParams.get('appv') !== APP_VERSION) {
         url.searchParams.set('appv', APP_VERSION);
@@ -19,7 +19,7 @@
   </script>
   <title>Инвентарь</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="common.css?v=20260423-telegram-48">
+  <link rel="stylesheet" href="common.css?v=20260423-telegram-49">
   <style>
     .inventory-shell {
       min-height: 0;
@@ -507,8 +507,8 @@
   </div>
   <div class="toast" id="toast"></div>
 
-  <script src="item-catalog.js?v=20260423-telegram-48"></script>
-  <script src="common.js?v=20260423-telegram-48"></script>
+  <script src="item-catalog.js?v=20260423-telegram-49"></script>
+  <script src="common.js?v=20260423-telegram-49"></script>
   <script>
     (async () => {
     let state = await window.HD_BOOTSTRAP_APP_STATE();
@@ -1233,6 +1233,7 @@
       const slotLabel = blueprint?.slotLabel || entry?.slot || '';
       const category = normalizeText(blueprint?.category || entry?.category || '');
       const lines = [];
+      const directDescription = String(blueprint?.description || '').trim();
 
       if (blueprint?.effect === 'hp') {
         const healAmount = Number(blueprint?.give || 0);
@@ -1276,6 +1277,10 @@
       const mpBonus = numericStat(stats, 'mp');
       if (mpBonus) {
         lines.push(`MP: +${mpBonus}`);
+      }
+
+      if (directDescription) {
+        lines.unshift(directDescription);
       }
 
       if (!lines.length && category === 'consumable') {
