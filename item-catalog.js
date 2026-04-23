@@ -167,6 +167,77 @@
     icon: './assets/ui/items/custom/scroll_return.png'
   };
 
+  const USER_PRESET_ITEMS = new Set(window.HD_USER_PRESET_ITEMS || []);
+  function registerPresetItem(name) {
+    USER_PRESET_ITEMS.add(name);
+    return name;
+  }
+
+  const devotionSetKey = 'devotion_set';
+  window.HD_SET_LIBRARY = window.HD_SET_LIBRARY || {};
+  window.HD_SET_LIBRARY[devotionSetKey] = {
+    name: 'Devotion Set',
+    thresholds: {
+      3: {
+        castSpdPct: 15
+      }
+    },
+    notes: {
+      3: '+15% Casting Speed'
+    }
+  };
+
+  const devotionTunic = {
+    name: registerPresetItem('Tunic of Devotion'),
+    source: 'preset',
+    family: 'body',
+    category: 'wearable',
+    slotLabel: 'Верхняя броня',
+    price: 20300,
+    weight: 2090,
+    level: 0,
+    setKey: devotionSetKey,
+    setPart: 'body',
+    stats: { pdef: 30, mp: 67 },
+    icon: './assets/ui/items/presets/devotion/armor_t55_u_i00_0.bmp'
+  };
+
+  const devotionStockings = {
+    name: registerPresetItem('Stockings of Devotion'),
+    source: 'preset',
+    family: 'legs',
+    category: 'wearable',
+    slotLabel: 'Нижняя броня',
+    price: 12700,
+    weight: 1040,
+    level: 0,
+    setKey: devotionSetKey,
+    setPart: 'legs',
+    stats: { pdef: 19, mp: 42 },
+    icon: './assets/ui/items/presets/devotion/armor_t55_l_i00_0.bmp'
+  };
+
+  const devotionHelmet = {
+    name: registerPresetItem('Leather Helmet'),
+    source: 'preset',
+    family: 'head',
+    category: 'wearable',
+    slotLabel: 'Шлемы',
+    price: 10200,
+    weight: 650,
+    level: 0,
+    setKey: devotionSetKey,
+    setPart: 'head',
+    stats: { pdef: 23 },
+    icon: './assets/ui/items/presets/devotion/armor_leather_helmet_i00_0.bmp'
+  };
+
+  CATALOG[normalizeItemName('Tunic of Devotion')] = devotionTunic;
+  CATALOG[normalizeItemName('Stockings of Devotion')] = devotionStockings;
+  CATALOG[normalizeItemName('Leather Helmet')] = devotionHelmet;
+  ALIASES[normalizeItemName('Robe of Devotion')] = normalizeItemName('Tunic of Devotion');
+  delete CATALOG[normalizeItemName('Robe of Devotion')];
+
   function canonicalItemKey(value) {
     const key = normalizeItemName(value);
     return ALIASES[key] || key;
@@ -179,7 +250,7 @@
   window.HD_ITEM_CATALOG = CATALOG;
   window.HD_ITEM_ALIASES = ALIASES;
   window.HD_ITEM_CATALOG_META = DATA.meta || {};
-  window.HD_SET_LIBRARY = window.HD_SET_LIBRARY || {};
+  window.HD_USER_PRESET_ITEMS = Array.from(USER_PRESET_ITEMS);
   window.HD_NORMALIZE_ITEM_NAME = normalizeItemName;
   window.HD_CANONICAL_ITEM_KEY = canonicalItemKey;
   window.HD_RESOLVE_ITEM_BLUEPRINT = resolveItemBlueprint;

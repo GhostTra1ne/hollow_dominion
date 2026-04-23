@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-      const APP_VERSION = '20260423-telegram-44';
+      const APP_VERSION = '20260423-telegram-45';
       const url = new URL(window.location.href);
       if (url.searchParams.get('appv') !== APP_VERSION) {
         url.searchParams.set('appv', APP_VERSION);
@@ -19,7 +19,7 @@
   </script>
   <title>Инвентарь</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="common.css?v=20260423-telegram-44">
+  <link rel="stylesheet" href="common.css?v=20260423-telegram-45">
   <style>
     .inventory-shell {
       min-height: 0;
@@ -507,8 +507,8 @@
   </div>
   <div class="toast" id="toast"></div>
 
-  <script src="item-catalog.js?v=20260423-telegram-44"></script>
-  <script src="common.js?v=20260423-telegram-44"></script>
+  <script src="item-catalog.js?v=20260423-telegram-45"></script>
+  <script src="common.js?v=20260423-telegram-45"></script>
   <script>
     (async () => {
     let state = await window.HD_BOOTSTRAP_APP_STATE();
@@ -1271,6 +1271,11 @@
       const hpBonus = numericStat(stats, 'hp');
       if (hpBonus) {
         lines.push(`HP: +${hpBonus}`);
+      }
+
+      const mpBonus = numericStat(stats, 'mp');
+      if (mpBonus) {
+        lines.push(`MP: +${mpBonus}`);
       }
 
       if (!lines.length && category === 'consumable') {
