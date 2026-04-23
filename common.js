@@ -756,8 +756,46 @@ function safeSetBackground(el, candidates, fallback = 'none') {
 function buildBases(race, gender) { return [`./assets/characters/${race}/${gender}`, FALLBACK_CHARACTER]; }
 function getSlot(root, slot) { return root.querySelector(`[data-slot="${slot}"]`); }
 
+function toCharacterEquipmentSlug(itemName) {
+  const normalized = normalizeInventoryItemName(itemName);
+  if (!normalized || normalized === 'пусто') return '';
+  return normalized
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .replace(/_+/g, '_');
+}
+
+function getEquippedPaperdollMap(config) {
+  const equipped = {};
+  if (!Array.isArray(config?.inventory)) return equipped;
+  config.inventory
+    .filter(isInventoryEntryEquipped)
+    .forEach((entry) => {
+      const slotKey = entry?.equipSlot || entry?.equipFamily;
+      const rawItemName = parseInventoryStackItem(entry?.item)?.baseName || entry?.item || '';
+      const slug = toCharacterEquipmentSlug(rawItemName);
+      if (!slotKey || !slug) return;
+      equipped[slotKey] = { name: rawItemName, slug };
+    });
+  return equipped;
+}
+
+function buildEquipmentLayerCandidates(bases, equipped, slotKeys, partName) {
+  const candidates = [];
+  slotKeys.forEach((slotKey) => {
+    const equippedItem = equipped[slotKey];
+    if (!equippedItem?.slug) return;
+    bases.forEach((basePath) => {
+      candidates.push(`${basePath}/equipment/${equippedItem.slug}/${partName}.png`);
+    });
+  });
+  return candidates;
+}
+
 function setPreview(root, config) {
   const bases = buildBases(config.race, config.gender);
+  const equipped = getEquippedPaperdollMap(config);
+  const classBases = bases.map((p) => `${p}/class_preview/${config.classId}`);
   safeSetCandidates(getSlot(root, 'legL'), bases.map((p) => `${p}/base/leg_l.png`));
   safeSetCandidates(getSlot(root, 'legR'), bases.map((p) => `${p}/base/leg_r.png`));
   safeSetCandidates(getSlot(root, 'armL'), bases.map((p) => `${p}/base/arm_l.png`));
@@ -766,14 +804,66 @@ function setPreview(root, config) {
   safeSetCandidates(getSlot(root, 'pelvis'), bases.map((p) => `${p}/base/pelvis.png`));
   safeSetCandidates(getSlot(root, 'headBase'), bases.flatMap((p) => [`${p}/base/head_base.png`, `${p}/base/head.png`]));
   safeSetCandidates(getSlot(root, 'face'), bases.map((p) => `${p}/faces/${config.face}.png`));
-  const classBases = bases.map((p) => `${p}/class_preview/${config.classId}`);
-  safeSetCandidates(getSlot(root, 'armorTorso'), classBases.map((p) => `${p}/torso.png`));
-  safeSetCandidates(getSlot(root, 'armorArmL'), classBases.map((p) => `${p}/arm_l.png`));
-  safeSetCandidates(getSlot(root, 'armorArmR'), classBases.map((p) => `${p}/arm_r.png`));
-  safeSetCandidates(getSlot(root, 'armorPelvis'), classBases.map((p) => `${p}/pelvis.png`));
-  safeSetCandidates(getSlot(root, 'armorLegL'), classBases.map((p) => `${p}/leg_l.png`));
-  safeSetCandidates(getSlot(root, 'armorLegR'), classBases.map((p) => `${p}/leg_r.png`));
-  safeSetCandidates(getSlot(root, 'weapon'), classBases.map((p) => `${p}/weapon.png`));
+  safeSetCandidates(
+    getSlot(root, 'armorHead'),
+    [
+      ...buildEquipmentLayerCandidates(bases, equipped, ['head'], 'head'),
+      ...classBases.map((p) => `${p}/head.png`)
+    ]
+  );
+  safeSetCandidates(
+    getSlot(root, 'armorTorso'),
+    [
+      ...buildEquipmentLayerCandidates(bases, equipped, ['body'], 'torso'),
+      ...classBases.map((p) => `${p}/torso.png`)
+    ]
+  );
+  safeSetCandidates(
+    getSlot(root, 'armorArmL'),
+    [
+      ...buildEquipmentLayerCandidates(bases, equipped, ['gloves', 'body'], 'arm_l'),
+      ...classBases.map((p) => `${p}/arm_l.png`)
+    ]
+  );
+  safeSetCandidates(
+    getSlot(root, 'armorArmR'),
+    [
+      ...buildEquipmentLayerCandidates(bases, equipped, ['gloves', 'body'], 'arm_r'),
+      ...classBases.map((p) => `${p}/arm_r.png`)
+    ]
+  );
+  safeSetCandidates(
+    getSlot(root, 'armorPelvis'),
+    [
+      ...buildEquipmentLayerCandidates(bases, equipped, ['legs', 'body'], 'pelvis'),
+      ...classBases.map((p) => `${p}/pelvis.png`)
+    ]
+  );
+  safeSetCandidates(
+    getSlot(root, 'armorLegL'),
+    [
+      ...buildEquipmentLayerCandidates(bases, equipped, ['boots', 'legs', 'body'], 'leg_l'),
+      ...classBases.map((p) => `${p}/leg_l.png`)
+    ]
+  );
+  safeSetCandidates(
+    getSlot(root, 'armorLegR'),
+    [
+      ...buildEquipmentLayerCandidates(bases, equipped, ['boots', 'legs', 'body'], 'leg_r'),
+      ...classBases.map((p) => `${p}/leg_r.png`)
+    ]
+  );
+  safeSetCandidates(
+    getSlot(root, 'shield'),
+    buildEquipmentLayerCandidates(bases, equipped, ['shield'], 'shield')
+  );
+  safeSetCandidates(
+    getSlot(root, 'weapon'),
+    [
+      ...buildEquipmentLayerCandidates(bases, equipped, ['weapon'], 'weapon'),
+      ...classBases.map((p) => `${p}/weapon.png`)
+    ]
+  );
 }
 
 function setCreatorBg(el, state) {
@@ -1206,7 +1296,7 @@ function applyPortrait(state) {
 function characterMarkup() {
   return `
 <img data-slot="legL" class="character-layer" alt=""><img data-slot="legR" class="character-layer" alt=""><img data-slot="armorLegL" class="character-layer" alt=""><img data-slot="armorLegR" class="character-layer" alt="">
-<div class="upper-body"><div class="arm-back-group"><img data-slot="armL" class="character-layer" alt=""><img data-slot="armorArmL" class="character-layer" alt=""></div><div class="head-group"><img data-slot="headBase" class="character-layer" alt=""><img data-slot="face" class="character-layer" alt=""></div><img data-slot="torso" class="character-layer" alt=""><img data-slot="armorTorso" class="character-layer" alt=""><div class="arm-front-group"><img data-slot="armR" class="character-layer" alt=""><img data-slot="armorArmR" class="character-layer" alt=""><img data-slot="weapon" class="character-layer" alt=""></div></div>
+<div class="upper-body"><div class="arm-back-group"><img data-slot="shield" class="character-layer" alt=""><img data-slot="armL" class="character-layer" alt=""><img data-slot="armorArmL" class="character-layer" alt=""></div><div class="head-group"><img data-slot="headBase" class="character-layer" alt=""><img data-slot="face" class="character-layer" alt=""><img data-slot="armorHead" class="character-layer" alt=""></div><img data-slot="torso" class="character-layer" alt=""><img data-slot="armorTorso" class="character-layer" alt=""><div class="arm-front-group"><img data-slot="armR" class="character-layer" alt=""><img data-slot="armorArmR" class="character-layer" alt=""><img data-slot="weapon" class="character-layer" alt=""></div></div>
 <img data-slot="pelvis" class="character-layer" alt=""><img data-slot="armorPelvis" class="character-layer" alt="">`;
 }
 
