@@ -1,0 +1,52 @@
+{
+  "human_male_leather_set": {
+    "client_family": "FFighter_m001",
+    "notes": [
+      "Upper/lower/gloves/boots in classic L2 use shared body-slot meshes with swapped textures.",
+      "These mappings are confirmed from the MASTERWORK client at E:/GamePirate/MASTERWORK.",
+      "Helmet is still pending a dedicated head/accessory route."
+    ],
+    "items": {
+      "Leather Shirt": {
+        "slot": "armorTorso",
+        "mesh": "FFighter_m001_u",
+        "texturePackage": "FFighter.utx",
+        "textureObject": "FFighter_m001_t04_u",
+        "status": "confirmed"
+      },
+      "Leather Pants": {
+        "slot": "armorPelvis+armorLegL+armorLegR",
+        "mesh": "FFighter_m001_l",
+        "texturePackage": "FFighter.utx",
+        "textureObject": "FFighter_m001_t04_l",
+        "status": "confirmed"
+      },
+      "Leather Gloves": {
+        "slot": "armorArmL+armorArmR",
+        "mesh": "FFighter_m001_g",
+        "texturePackage": "FFighter.utx",
+        "textureObject": "FFighter_m001_t04_g",
+        "status": "confirmed"
+      },
+      "Leather Sandals": {
+        "slot": "armorLegL+armorLegR",
+        "mesh": "FFighter_m001_b",
+        "texturePackage": "FFighter.utx",
+        "textureObject": "FFighter_m001_t03_b",
+        "status": "provisional_best_match"
+      },
+      "Leather Helmet": {
+        "slot": "armorHead",
+        "mesh": null,
+        "texturePackage": null,
+        "textureObject": null,
+        "status": "pending_head_route"
+      }
+    },
+    "probeArtifacts": {
+      "bodyProbe": "_l2_leather_probe/FFighter/Texture/_contact_sheet.png",
+      "headProbe": "_l2_leather_head_probe/FFighter/_contact_sheet2.png",
+      "accessoryProbe": "_l2_accessory_probe/_contact_sheet.png"
+    }
+  }
+}
