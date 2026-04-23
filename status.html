@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-      const APP_VERSION = '20260422-telegram-33';
+      const APP_VERSION = '20260423-telegram-52';
       const url = new URL(window.location.href);
       if (url.searchParams.get('appv') !== APP_VERSION) {
         url.searchParams.set('appv', APP_VERSION);
@@ -19,7 +19,7 @@
   </script>
   <title>РЎС‚Р°С‚СѓСЃ</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="common.css?v=20260422-telegram-33">
+  <link rel="stylesheet" href="common.css?v=20260423-telegram-52">
   <style>
     .legacy-block {
       display: grid;
@@ -123,7 +123,12 @@
       font-size: 24px;
     }
 
+    .status-columns-wide {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
     @media (max-width: 900px) {
+      .status-columns-wide,
       .legacy-rules,
       .skills-grid {
         grid-template-columns: 1fr;
@@ -147,8 +152,8 @@
     </div>
   </div>
 
-  <script src="item-catalog.js?v=20260422-telegram-33"></script>
-  <script src="common.js?v=20260422-telegram-33"></script>
+<script src="item-catalog.js?v=20260423-telegram-52"></script>
+<script src="common.js?v=20260423-telegram-52"></script>
   <script>
     (async () => {
     let state = await window.HD_BOOTSTRAP_APP_STATE();
@@ -161,6 +166,41 @@
     const mpPct = Math.max(0, Math.min(100, Math.round(hero.mp / hero.maxMp * 100)));
     const cpPct = Math.max(0, Math.min(100, Math.round(hero.cp / hero.maxCp * 100)));
     const xpPct = Math.max(0, Math.min(100, parseFloat(hero.xpPercent) || 0));
+    const profileLabel = hero.baseProfileLabel || `${hero.race} ${hero.classId}`;
+    const formatWeight = (value) => Number(value || 0).toLocaleString('ru-RU');
+
+    const primaryStats = [
+      ['STR', hero.str],
+      ['DEX', hero.dex],
+      ['CON', hero.con],
+      ['INT', hero.int],
+      ['WIT', hero.wit],
+      ['MEN', hero.men]
+    ];
+
+    const physicalStats = [
+      ['P. Atk.', hero.pAtk],
+      ['P. Def.', hero.pDef],
+      ['Accuracy', hero.accuracy],
+      ['Crit. Rate', hero.critical],
+      ['Evasion', hero.evasion],
+      ['Atk. Speed', hero.atkSpd],
+      ['Speed', hero.speed]
+    ];
+
+    const magicStats = [
+      ['M. Atk.', hero.mAtk],
+      ['M. Def.', hero.mDef],
+      ['Cast. Speed', hero.castSpd],
+      ['HP', `${hero.hp}/${hero.maxHp}`],
+      ['MP', `${hero.mp}/${hero.maxMp}`],
+      ['CP', `${hero.cp}/${hero.maxCp}`],
+      ['Weight Limit', formatWeight(hero.weightLimit)]
+    ];
+
+    const renderStatRows = (items) => items.map(([label, value]) => `
+      <div><span>${label}</span><b>${value}</b></div>
+    `).join('');
 
     const legacyProfiles = {
       warrior: {
@@ -242,36 +282,25 @@
               </div>
             </div>
 
-            <div class="status-columns">
+            <div class="status-columns status-columns-wide">
               <div class="status-card">
-                <h4>Combat</h4>
-                <div class="status-list">
-                  <div><span>P. Atk.</span><b>${hero.pAtk}</b></div>
-                  <div><span>P. Def.</span><b>${hero.pDef}</b></div>
-                  <div><span>Accuracy</span><b>${hero.accuracy}</b></div>
-                  <div><span>Evasion</span><b>${hero.evasion}</b></div>
-                  <div><span>Critical</span><b>${hero.critical}</b></div>
-                  <div><span>Atk. Spd.</span><b>${hero.atkSpd}</b></div>
-                  <div><span>Speed</span><b>${hero.speed}</b></div>
-                </div>
+                <h4>Base Stats</h4>
+                <div class="status-list">${renderStatRows(primaryStats)}</div>
               </div>
               <div class="status-card">
-                <h4>Magic & Stats</h4>
-                <div class="status-list">
-                  <div><span>M. Atk.</span><b>${hero.mAtk}</b></div>
-                  <div><span>M. Def.</span><b>${hero.mDef}</b></div>
-                  <div><span>M. Accuracy</span><b>${hero.mAccuracy}</b></div>
-                  <div><span>M. Evasion</span><b>${hero.mEvasion}</b></div>
-                  <div><span>Casting Spd.</span><b>${hero.castSpd}</b></div>
-                  <div><span>STR / DEX / CON</span><b>${hero.str} / ${hero.dex} / ${hero.con}</b></div>
-                  <div><span>INT / WIT / MEN</span><b>${hero.int} / ${hero.wit} / ${hero.men}</b></div>
-                </div>
+                <h4>Combat</h4>
+                <div class="status-list">${renderStatRows(physicalStats)}</div>
+              </div>
+              <div class="status-card">
+                <h4>Magic & Utility</h4>
+                <div class="status-list">${renderStatRows(magicStats)}</div>
               </div>
             </div>
 
             <div class="legacy-block">
               <div class="feature-card">
                 <h3 class="status-section-title">${legacyProfile.title}</h3>
+                <p class="legacy-lead">Архетип: ${profileLabel}</p>
                 <p class="legacy-lead">${legacyProfile.lead}</p>
                 <div class="legacy-rules">${combatRulesMarkup}</div>
               </div>

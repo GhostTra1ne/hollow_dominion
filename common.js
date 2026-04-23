@@ -185,10 +185,110 @@ const genders = [
 
 const faces = ['01', '02', '03', '04', '05', '06'];
 
-const classStats = {
-  warrior: {hp: 120, maxHp: 120, mp: 45, maxMp: 45, str: 12, dex: 10, int: 8, def: 11, adena: 100},
-  mage: {hp: 82, maxHp: 82, mp: 100, maxMp: 100, str: 7, dex: 9, int: 15, def: 8, adena: 100}
+const HERO_BASE_PROFILE_VERSION = 2;
+
+const heroBaseProfiles = {
+  dark_elf_warrior: {
+    label: 'Dark Fighter',
+    primary: {str: 41, con: 32, dex: 34, int: 25, men: 26, wit: 12},
+    combat: {maxHp: 107, maxMp: 39, pAtk: 4, pDef: 72, mAtk: 3, mDef: 47, atkSpd: 342, castSpd: 226, accuracy: 35, critical: 45, evasion: 35, speed: 139, weightLimit: 69000}
+  },
+  dark_elf_mage: {
+    label: 'Dark Mystic',
+    primary: {str: 23, con: 24, dex: 23, int: 44, men: 37, wit: 19},
+    combat: {maxHp: 95, maxMp: 58, pAtk: 2, pDef: 48, mAtk: 7, mDef: 53, atkSpd: 309, castSpd: 316, accuracy: 29, critical: 41, evasion: 29, speed: 125, weightLimit: 61000}
+  },
+  elf_warrior: {
+    label: 'Elf Fighter',
+    primary: {str: 36, con: 36, dex: 35, int: 23, men: 26, wit: 14},
+    combat: {maxHp: 113, maxMp: 39, pAtk: 4, pDef: 72, mAtk: 3, mDef: 47, atkSpd: 345, castSpd: 249, accuracy: 36, critical: 46, evasion: 36, speed: 143, weightLimit: 73000}
+  },
+  elf_mage: {
+    label: 'Elf Mystic',
+    primary: {str: 21, con: 25, dex: 24, int: 37, men: 40, wit: 23},
+    combat: {maxHp: 96, maxMp: 59, pAtk: 2, pDef: 48, mAtk: 6, mDef: 54, atkSpd: 312, castSpd: 386, accuracy: 30, critical: 41, evasion: 30, speed: 126, weightLimit: 62000}
+  },
+  orc_warrior: {
+    label: 'Orc Fighter',
+    primary: {str: 40, con: 47, dex: 26, int: 18, men: 27, wit: 12},
+    combat: {maxHp: 133, maxMp: 39, pAtk: 4, pDef: 72, mAtk: 2, mDef: 48, atkSpd: 318, castSpd: 226, accuracy: 31, critical: 42, evasion: 31, speed: 124, weightLimit: 87000}
+  },
+  orc_mage: {
+    label: 'Orc Mystic',
+    primary: {str: 27, con: 31, dex: 24, int: 31, men: 42, wit: 15},
+    combat: {maxHp: 105, maxMp: 60, pAtk: 2, pDef: 48, mAtk: 4, mDef: 56, atkSpd: 312, castSpd: 265, accuracy: 30, critical: 41, evasion: 30, speed: 125, weightLimit: 68000}
+  },
+  dwarf_warrior: {
+    label: 'Dwarven Fighter',
+    primary: {str: 39, con: 45, dex: 29, int: 20, men: 27, wit: 10},
+    combat: {maxHp: 129, maxMp: 39, pAtk: 4, pDef: 72, mAtk: 3, mDef: 48, atkSpd: 327, castSpd: 316, accuracy: 29, critical: 43, evasion: 33, speed: 125, weightLimit: 83000}
+  },
+  human_warrior: {
+    label: 'Human Fighter',
+    primary: {str: 40, con: 43, dex: 30, int: 21, men: 25, wit: 11},
+    combat: {maxHp: 126, maxMp: 38, pAtk: 4, pDef: 72, mAtk: 3, mDef: 47, atkSpd: 330, castSpd: 213, accuracy: 33, critical: 44, evasion: 33, speed: 126, weightLimit: 81900}
+  },
+  human_mage: {
+    label: 'Human Mystic',
+    primary: {str: 22, con: 27, dex: 21, int: 41, men: 39, wit: 20},
+    combat: {maxHp: 99, maxMp: 59, pAtk: 2, pDef: 48, mAtk: 7, mDef: 54, atkSpd: 303, castSpd: 333, accuracy: 28, critical: 40, evasion: 28, speed: 121, weightLimit: 62500}
+  }
 };
+
+function deriveBaseCp(maxHp) {
+  return Math.max(0, Math.round(Number(maxHp || 0) * 0.26));
+}
+
+function resolveHeroBaseProfile(race, classId) {
+  const exactKey = `${race}_${classId}`;
+  const fallbackByRace = `${race}_warrior`;
+  const fallbackByClass = classId === 'mage' ? 'human_mage' : 'human_warrior';
+  const profile = heroBaseProfiles[exactKey] || heroBaseProfiles[fallbackByRace] || heroBaseProfiles[fallbackByClass] || heroBaseProfiles.human_warrior;
+  return clone(profile);
+}
+
+function applyHeroBaseProfile(hero, creator) {
+  if (!hero || !creator) return false;
+
+  const profile = resolveHeroBaseProfile(creator.race, creator.classId);
+  const nextPrimary = {...profile.primary};
+  const nextCombat = {
+    ...profile.combat,
+    maxCp: deriveBaseCp(profile.combat.maxHp),
+    mCritical: Number(profile.combat.mCritical || 0)
+  };
+
+  let changed = false;
+
+  if (JSON.stringify(hero.basePrimary || {}) !== JSON.stringify(nextPrimary)) {
+    hero.basePrimary = nextPrimary;
+    changed = true;
+  }
+
+  if (JSON.stringify(hero.baseCombat || {}) !== JSON.stringify(nextCombat)) {
+    hero.baseCombat = nextCombat;
+    changed = true;
+  }
+
+  if (hero.baseProfileLabel !== profile.label) {
+    hero.baseProfileLabel = profile.label;
+    changed = true;
+  }
+
+  if (hero.baseProfileVersion !== HERO_BASE_PROFILE_VERSION) {
+    hero.baseProfileVersion = HERO_BASE_PROFILE_VERSION;
+    changed = true;
+  }
+
+  Object.entries(nextPrimary).forEach(([key, value]) => {
+    if (hero[key] !== value) {
+      hero[key] = value;
+      changed = true;
+    }
+  });
+
+  return changed;
+}
 
 const cities = {
   start_village: {
@@ -730,13 +830,26 @@ function recomputeHeroEquipmentStats(state) {
 
   const hero = state.hero;
   const baseCombat = hero.baseCombat || {
+    maxHp: hero.maxHp || 0,
+    maxMp: hero.maxMp || 0,
+    maxCp: hero.maxCp || deriveBaseCp(hero.maxHp || 0),
     pAtk: hero.pAtk || 0,
     pDef: hero.pDef || 0,
     mAtk: hero.mAtk || 0,
     mDef: hero.mDef || 0,
+    accuracy: hero.accuracy || 0,
+    evasion: hero.evasion || 0,
     critical: hero.critical || 0,
-    mCritical: hero.mCritical || 0
+    mCritical: hero.mCritical || 0,
+    atkSpd: hero.atkSpd || 0,
+    castSpd: hero.castSpd || 0,
+    speed: hero.speed || 0,
+    weightLimit: hero.weightLimit || 0
   };
+
+  const hpRatio = hero.maxHp > 0 ? clamp(hero.hp / hero.maxHp, 0, 1) : 1;
+  const mpRatio = hero.maxMp > 0 ? clamp(hero.mp / hero.maxMp, 0, 1) : 1;
+  const cpRatio = hero.maxCp > 0 ? clamp(hero.cp / hero.maxCp, 0, 1) : 1;
 
   let changed = false;
   if (!hero.baseCombat) {
@@ -745,11 +858,21 @@ function recomputeHeroEquipmentStats(state) {
   }
 
   const bonus = {
+    hp: 0,
+    mp: 0,
+    cp: 0,
     patt: 0,
     pdef: 0,
     matt: 0,
     mdef: 0,
-    critical: 0
+    accuracy: 0,
+    evasion: 0,
+    critical: 0,
+    mCritical: 0,
+    atkSpd: 0,
+    castSpd: 0,
+    speed: 0,
+    weightLimit: 0
   };
 
   (hero.inventory || [])
@@ -757,19 +880,39 @@ function recomputeHeroEquipmentStats(state) {
     .forEach((entry) => {
       const blueprint = resolveInventoryItemBlueprint(entry);
       const stats = blueprint?.stats || entry?.stats || {};
+      bonus.hp += Number(stats.hp || 0);
+      bonus.mp += Number(stats.mp || 0);
+      bonus.cp += Number(stats.cp || 0);
       bonus.patt += Number(stats.patt || 0);
       bonus.pdef += Number(stats.pdef || 0);
       bonus.matt += Number(stats.matt || 0);
       bonus.mdef += Number(stats.mdef || 0);
+      bonus.accuracy += Number(stats.accuracy || 0);
+      bonus.evasion += Number(stats.evasion || 0);
       bonus.critical += Number(stats.critical || stats.crit || 0);
+      bonus.mCritical += Number(stats.mCritical || stats.magicCrit || 0);
+      bonus.atkSpd += Number(stats.atkSpd || 0);
+      bonus.castSpd += Number(stats.castSpd || 0);
+      bonus.speed += Number(stats.speed || 0);
+      bonus.weightLimit += Number(stats.weightLimit || 0);
     });
 
   const nextValues = {
+    maxHp: baseCombat.maxHp + bonus.hp,
+    maxMp: baseCombat.maxMp + bonus.mp,
+    maxCp: baseCombat.maxCp + bonus.cp,
     pAtk: baseCombat.pAtk + bonus.patt,
     pDef: baseCombat.pDef + bonus.pdef,
     mAtk: baseCombat.mAtk + bonus.matt,
     mDef: baseCombat.mDef + bonus.mdef,
-    critical: baseCombat.critical + bonus.critical
+    accuracy: baseCombat.accuracy + bonus.accuracy,
+    evasion: baseCombat.evasion + bonus.evasion,
+    critical: baseCombat.critical + bonus.critical,
+    mCritical: baseCombat.mCritical + bonus.mCritical,
+    atkSpd: baseCombat.atkSpd + bonus.atkSpd,
+    castSpd: baseCombat.castSpd + bonus.castSpd,
+    speed: baseCombat.speed + bonus.speed,
+    weightLimit: baseCombat.weightLimit + bonus.weightLimit
   };
 
   Object.entries(nextValues).forEach(([key, value]) => {
@@ -779,21 +922,30 @@ function recomputeHeroEquipmentStats(state) {
     }
   });
 
+  const nextHp = clamp(Math.round(nextValues.maxHp * hpRatio), 0, nextValues.maxHp);
+  const nextMp = clamp(Math.round(nextValues.maxMp * mpRatio), 0, nextValues.maxMp);
+  const nextCp = clamp(Math.round(nextValues.maxCp * cpRatio), 0, nextValues.maxCp);
+
+  if (hero.hp !== nextHp) {
+    hero.hp = nextHp;
+    changed = true;
+  }
+  if (hero.mp !== nextMp) {
+    hero.mp = nextMp;
+    changed = true;
+  }
+  if (hero.cp !== nextCp) {
+    hero.cp = nextCp;
+    changed = true;
+  }
+
   return changed;
 }
 
 window.HD_RECOMPUTE_HERO_STATS = recomputeHeroEquipmentStats;
 
 function buildHero(state) {
-  const stats = classStats[state.creator.classId];
-  const baseCombat = {
-    pAtk: state.creator.classId === 'warrior' ? 299 : 154,
-    pDef: state.creator.classId === 'warrior' ? 353 : 220,
-    mAtk: state.creator.classId === 'mage' ? 404 : 121,
-    mDef: 287,
-    critical: 66,
-    mCritical: 58
-  };
+  const isMage = state.creator.classId === 'mage';
 
   const hero = {
     id: createHeroId(state.account?.telegramId || 'local', state.creator.nickname),
@@ -804,37 +956,18 @@ function buildHero(state) {
     gender: state.creator.gender,
     face: state.creator.face,
     cityId: 'start_village',
-    ...stats,
     level: 80,
     clanName: 'No Clan',
     xpPercent: '0.00',
-    cp: Math.round(stats.maxHp * 0.26),
-    maxCp: Math.round(stats.maxHp * 0.26),
-    baseCombat,
-    pAtk: baseCombat.pAtk,
-    pDef: baseCombat.pDef,
-    mAtk: baseCombat.mAtk,
-    mDef: baseCombat.mDef,
-    accuracy: 124,
-    mAccuracy: 173,
-    evasion: 121,
-    mEvasion: 170,
-    critical: baseCombat.critical,
-    mCritical: baseCombat.mCritical,
-    atkSpd: 356,
-    castSpd: state.creator.classId === 'mage' ? 262 : 118,
-    speed: 131,
+    adena: 100,
     inventoryLimit: 80,
-    con: 34,
-    men: 29,
-    wit: 12,
     rep: 0,
     pvp: 0,
     raid: 0,
     inventory: [
       {
         slot: 'Оружие',
-        item: state.creator.classId === 'mage' ? 'Mage Staff' : 'Short Sword',
+        item: isMage ? 'Mage Staff' : 'Short Sword',
         type: 'Надето',
         category: 'wearable',
         equipFamily: 'weapon',
@@ -842,7 +975,7 @@ function buildHero(state) {
       },
       {
         slot: 'Шлем',
-        item: 'Leather Helmet',
+        item: isMage ? 'Cloth Cap' : 'Leather Helmet',
         type: 'Надето',
         category: 'wearable',
         equipFamily: 'head',
@@ -850,7 +983,7 @@ function buildHero(state) {
       },
       {
         slot: 'Тело',
-        item: 'Cotton Robe',
+        item: isMage ? 'Cotton Robe' : 'Leather Shirt',
         type: 'Надето',
         category: 'wearable',
         equipFamily: 'body',
@@ -858,7 +991,7 @@ function buildHero(state) {
       },
       {
         slot: 'Низ',
-        item: 'Кожаный низ',
+        item: isMage ? 'Пусто' : 'Leather Pants',
         type: 'Надето',
         category: 'wearable',
         equipFamily: 'legs',
@@ -866,7 +999,7 @@ function buildHero(state) {
       },
       {
         slot: 'Перчатки',
-        item: 'Leather Gloves',
+        item: isMage ? 'Short Gloves' : 'Leather Gloves',
         type: 'Надето',
         category: 'wearable',
         equipFamily: 'gloves',
@@ -874,7 +1007,7 @@ function buildHero(state) {
       },
       {
         slot: 'Ботинки',
-        item: 'Leather Sandals',
+        item: isMage ? 'Cloth Shoes' : 'Leather Sandals',
         type: 'Надето',
         category: 'wearable',
         equipFamily: 'boots',
@@ -906,7 +1039,7 @@ function buildHero(state) {
       },
       {
         slot: 'Щит',
-        item: state.creator.classId === 'mage' ? 'Пусто' : 'Small Shield',
+        item: isMage ? 'Пусто' : 'Small Shield',
         type: 'Надето',
         category: 'wearable',
         equipFamily: 'shield',
@@ -920,6 +1053,39 @@ function buildHero(state) {
       { slot: 'Сумка', item: 'Факел путника', type: 'Сумка', category: 'general' }
     ]
   };
+
+  const equippedBySlot = Object.fromEntries(
+    (hero.inventory || [])
+      .filter((entry) => entry?.equipSlot)
+      .map((entry) => [entry.equipSlot, entry])
+  );
+
+  if (equippedBySlot.head) equippedBySlot.head.item = isMage ? 'Cloth Cap' : 'Leather Helmet';
+  if (equippedBySlot.body) equippedBySlot.body.item = isMage ? 'Cotton Robe' : 'Leather Shirt';
+  if (equippedBySlot.legs) equippedBySlot.legs.item = isMage ? 'Пусто' : 'Leather Pants';
+  if (equippedBySlot.gloves) equippedBySlot.gloves.item = isMage ? 'Short Gloves' : 'Leather Gloves';
+  if (equippedBySlot.boots) equippedBySlot.boots.item = isMage ? 'Cloth Shoes' : 'Leather Sandals';
+  if (equippedBySlot.shield) equippedBySlot.shield.item = isMage ? 'Пусто' : 'Small Shield';
+
+  applyHeroBaseProfile(hero, state.creator);
+  hero.maxHp = hero.baseCombat.maxHp;
+  hero.maxMp = hero.baseCombat.maxMp;
+  hero.maxCp = hero.baseCombat.maxCp;
+  hero.hp = hero.maxHp;
+  hero.mp = hero.maxMp;
+  hero.cp = hero.maxCp;
+  hero.pAtk = hero.baseCombat.pAtk;
+  hero.pDef = hero.baseCombat.pDef;
+  hero.mAtk = hero.baseCombat.mAtk;
+  hero.mDef = hero.baseCombat.mDef;
+  hero.accuracy = hero.baseCombat.accuracy;
+  hero.evasion = hero.baseCombat.evasion;
+  hero.critical = hero.baseCombat.critical;
+  hero.mCritical = hero.baseCombat.mCritical;
+  hero.atkSpd = hero.baseCombat.atkSpd;
+  hero.castSpd = hero.baseCombat.castSpd;
+  hero.speed = hero.baseCombat.speed;
+  hero.weightLimit = hero.baseCombat.weightLimit;
 
   recomputeHeroEquipmentStats({ hero });
   return hero;
@@ -1058,6 +1224,14 @@ function ensureHero(state) {
   }
 
   if (assignHeroAccountIdentity(state)) {
+    changed = true;
+  }
+
+  if (applyHeroBaseProfile(state.hero, {
+    race: state.hero.race,
+    classId: state.hero.classId,
+    gender: state.hero.gender
+  })) {
     changed = true;
   }
 
