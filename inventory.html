@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-      const APP_VERSION = '20260423-telegram-53';
+      const APP_VERSION = '20260423-telegram-54';
       const url = new URL(window.location.href);
       if (url.searchParams.get('appv') !== APP_VERSION) {
         url.searchParams.set('appv', APP_VERSION);
@@ -19,7 +19,7 @@
   </script>
   <title>Инвентарь</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <link rel="stylesheet" href="common.css?v=20260423-telegram-53">
+  <link rel="stylesheet" href="common.css?v=20260423-telegram-54">
   <style>
     .inventory-shell {
       min-height: 0;
@@ -507,8 +507,8 @@
   </div>
   <div class="toast" id="toast"></div>
 
-<script src="item-catalog.js?v=20260423-telegram-53"></script>
-<script src="common.js?v=20260423-telegram-53"></script>
+<script src="item-catalog.js?v=20260423-telegram-54"></script>
+<script src="common.js?v=20260423-telegram-54"></script>
   <script>
     (async () => {
     let state = await window.HD_BOOTSTRAP_APP_STATE();
@@ -598,6 +598,17 @@
         return window.HD_RESOLVE_ITEM_BLUEPRINT(baseName);
       }
       return ITEM_LIBRARY[normalizeText(baseName)] || null;
+    }
+
+    function renderInventoryIcon(path) {
+      if (!path) return '';
+      const fallback = path.includes('/presets/') && /\.png$/i.test(path)
+        ? path.replace(/\.png$/i, '.bmp')
+        : '';
+      const onerror = fallback
+        ? ` onerror="if(!this.dataset.fallback){this.dataset.fallback='1';this.src='${fallback}';}else{this.style.display='none';}"`
+        : ` onerror="this.style.display='none';"`;
+      return `<img class="legacy-empty-icon" src="${path}" alt=""${onerror}>`;
     }
 
     function getPrimaryEquipSlotId(family) {
@@ -1009,7 +1020,7 @@
       return `
         <article class="equip-slot-card${isEmpty ? '' : ' has-item'}">
           <div class="equip-slot-icon">
-            ${iconPath ? `<img class="legacy-empty-icon" src="${iconPath}" alt="">` : glyphForSlot(slot?.label || entry.slot)}
+            ${iconPath ? renderInventoryIcon(iconPath) : glyphForSlot(slot?.label || entry.slot)}
           </div>
           <div class="equip-slot-label">${String(slot?.label || entry.slot || '').toUpperCase()}</div>
           <div class="equip-slot-name${isEmpty ? ' empty' : ''}">${isEmpty ? 'Пусто' : escapeHtml(entry.item)}</div>
@@ -1158,12 +1169,12 @@
     function renderIcon(entry, tab) {
       const blueprint = getItemBlueprint(entry);
       if (blueprint?.icon) {
-        return `<img class="legacy-empty-icon" src="${blueprint.icon}" alt="">`;
+        return renderInventoryIcon(blueprint.icon);
       }
       if (tab === 'equipment' && isEmptyItem(entry)) {
         const iconPath = emptyIconPathForSlot(entry.equipSlot || entry.slot);
         if (iconPath) {
-          return `<img class="legacy-empty-icon" src="${iconPath}" alt="">`;
+          return renderInventoryIcon(iconPath);
         }
       }
       return glyphForSlot(entry.slot);
