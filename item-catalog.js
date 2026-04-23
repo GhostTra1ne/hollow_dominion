@@ -199,7 +199,7 @@
     setKey: devotionSetKey,
     setPart: 'body',
     stats: { pdef: 30, mp: 67 },
-    icon: './assets/ui/items/presets/devotion/armor_t55_u_i00_0.bmp'
+    icon: './assets/ui/items/presets/devotion/armor_t55_u_i00_0.png'
   };
 
   const devotionStockings = {
@@ -214,7 +214,7 @@
     setKey: devotionSetKey,
     setPart: 'legs',
     stats: { pdef: 19, mp: 42 },
-    icon: './assets/ui/items/presets/devotion/armor_t55_l_i00_0.bmp'
+    icon: './assets/ui/items/presets/devotion/armor_t55_l_i00_0.png'
   };
 
   const devotionHelmet = {
@@ -229,7 +229,7 @@
     setKey: devotionSetKey,
     setPart: 'head',
     stats: { pdef: 23 },
-    icon: './assets/ui/items/presets/devotion/armor_leather_helmet_i00_0.bmp'
+    icon: './assets/ui/items/presets/devotion/armor_leather_helmet_i00_0.png'
   };
 
   CATALOG[normalizeItemName('Tunic of Devotion')] = devotionTunic;
@@ -264,7 +264,7 @@
     setKey: woodenSetKey,
     setPart: 'body',
     stats: { pdef: 47 },
-    icon: './assets/ui/items/presets/wooden/armor_t06_u_i00_0.bmp'
+    icon: './assets/ui/items/presets/wooden/armor_t06_u_i00_0.png'
   };
 
   const woodenGaiters = {
@@ -279,7 +279,7 @@
     setKey: woodenSetKey,
     setPart: 'legs',
     stats: { pdef: 29 },
-    icon: './assets/ui/items/presets/wooden/armor_t06_l_i00_0.bmp'
+    icon: './assets/ui/items/presets/wooden/armor_t06_l_i00_0.png'
   };
 
   const woodenHelmet = {
@@ -294,7 +294,7 @@
     setKey: woodenSetKey,
     setPart: 'head',
     stats: { pdef: 19 },
-    icon: './assets/ui/items/presets/wooden/armor_leather_helmet_i00_0.bmp'
+    icon: './assets/ui/items/presets/wooden/armor_leather_helmet_i00_0.png'
   };
 
   CATALOG[normalizeItemName('Wooden Breastplate')] = woodenBreastplate;
@@ -314,7 +314,7 @@
       price: 39,
       level: 0,
       stats: { pdef: 47 },
-      icon: './assets/ui/items/presets/ng/shield_leather_shield_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/shield_leather_shield_i00_0.png'
     },
     {
       name: registerPresetItem('Small Shield'),
@@ -328,7 +328,7 @@
       price: 638,
       level: 0,
       stats: { pdef: 56 },
-      icon: './assets/ui/items/presets/ng/shield_small_shield_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/shield_small_shield_i00_0.png'
     },
     {
       name: registerPresetItem('Buckler'),
@@ -342,7 +342,7 @@
       price: 2780,
       level: 0,
       stats: { pdef: 67 },
-      icon: './assets/ui/items/presets/ng/shield_buckler_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/shield_buckler_i00_0.png'
     },
     {
       name: registerPresetItem('Shirt'),
@@ -356,7 +356,7 @@
       price: 147,
       level: 0,
       stats: { pdef: 36 },
-      icon: './assets/ui/items/presets/ng/armor_t02_u_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t02_u_i00_0.png'
     },
     {
       name: registerPresetItem('Leather Shirt'),
@@ -370,7 +370,7 @@
       price: 2430,
       level: 0,
       stats: { pdef: 43 },
-      icon: './assets/ui/items/presets/ng/armor_t04_u_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t04_u_i00_0.png'
     },
     {
       name: registerPresetItem('Wooden Breastplate'),
@@ -386,7 +386,7 @@
       setKey: woodenSetKey,
       setPart: 'body',
       stats: { pdef: 47 },
-      icon: './assets/ui/items/presets/ng/armor_t06_u_i00_0_1.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t06_u_i00_0_1.png'
     },
     {
       name: registerPresetItem('Bone Breastplate'),
@@ -400,7 +400,7 @@
       price: 20300,
       level: 0,
       stats: { pdef: 50 },
-      icon: './assets/ui/items/presets/ng/armor_t32_u_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t32_u_i00_0.png'
     },
     {
       name: registerPresetItem('Piece Bone Breastplate'),
@@ -414,7 +414,7 @@
       price: 31800,
       level: 0,
       stats: { pdef: 62 },
-      icon: './assets/ui/items/presets/ng/armor_t33_u_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t33_u_i00_0.png'
     },
     {
       name: registerPresetItem('Bronze Breastplate'),
@@ -428,7 +428,7 @@
       price: 49200,
       level: 0,
       stats: { pdef: 68 },
-      icon: './assets/ui/items/presets/ng/armor_t34_u_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t34_u_i00_0.png'
     },
     {
       name: registerPresetItem('Hard Leather Shirt'),
@@ -442,7 +442,7 @@
       price: 36900,
       level: 0,
       stats: { pdef: 53 },
-      icon: './assets/ui/items/presets/ng/armor_t30_u_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t30_u_i00_0.png'
     },
     {
       name: registerPresetItem('Pants'),
@@ -456,7 +456,7 @@
       price: 92,
       level: 0,
       stats: { pdef: 22 },
-      icon: './assets/ui/items/presets/ng/armor_t02_l_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t02_l_i00_0.png'
     },
     {
       name: registerPresetItem('Leather Pants'),
@@ -470,7 +470,7 @@
       price: 1520,
       level: 0,
       stats: { pdef: 27 },
-      icon: './assets/ui/items/presets/ng/armor_t04_l_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t04_l_i00_0.png'
     },
     {
       name: registerPresetItem('Hard Leather Pants'),
@@ -484,7 +484,7 @@
       price: 4970,
       level: 0,
       stats: { pdef: 29 },
-      icon: './assets/ui/items/presets/ng/armor_t06_l_i00_0_1.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t06_l_i00_0_1.png'
     },
     {
       name: registerPresetItem('Bone Gaiters'),
@@ -498,7 +498,7 @@
       price: 12700,
       level: 0,
       stats: { pdef: 32 },
-      icon: './assets/ui/items/presets/ng/armor_t32_l_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t32_l_i00_0.png'
     },
     {
       name: registerPresetItem('Piece Bone Gaiters'),
@@ -512,7 +512,7 @@
       price: 19900,
       level: 0,
       stats: { pdef: 39 },
-      icon: './assets/ui/items/presets/ng/armor_t33_l_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t33_l_i00_0.png'
     },
     {
       name: registerPresetItem('Hard Leather Gaiters'),
@@ -526,7 +526,7 @@
       price: 23000,
       level: 0,
       stats: { pdef: 33 },
-      icon: './assets/ui/items/presets/ng/armor_t30_l_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t30_l_i00_0.png'
     },
     {
       name: registerPresetItem('Bronze Gaiters'),
@@ -540,7 +540,7 @@
       price: 30700,
       level: 0,
       stats: { pdef: 43 },
-      icon: './assets/ui/items/presets/ng/armor_t34_l_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t34_l_i00_0.png'
     },
     {
       name: registerPresetItem('Cloth Shoes'),
@@ -554,7 +554,7 @@
       price: 37,
       level: 0,
       stats: { pdef: 9 },
-      icon: './assets/ui/items/presets/ng/armor_t02_b_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t02_b_i00_0.png'
     },
     {
       name: registerPresetItem('Leather Sandals'),
@@ -568,7 +568,7 @@
       price: 37,
       level: 0,
       stats: { pdef: 9 },
-      icon: './assets/ui/items/presets/ng/armor_t03_b_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t03_b_i00_0.png'
     },
     {
       name: registerPresetItem('Leather Shoes'),
@@ -582,7 +582,7 @@
       price: 2650,
       level: 0,
       stats: { pdef: 13 },
-      icon: './assets/ui/items/presets/ng/armor_t05_b_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t05_b_i00_0.png'
     },
     {
       name: registerPresetItem('Low Boots'),
@@ -596,7 +596,7 @@
       price: 6770,
       level: 0,
       stats: { pdef: 15 },
-      icon: './assets/ui/items/presets/ng/armor_t32_b_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t32_b_i00_0.png'
     },
     {
       name: registerPresetItem('Boots'),
@@ -610,7 +610,7 @@
       price: 12300,
       level: 0,
       stats: { pdef: 17 },
-      icon: './assets/ui/items/presets/ng/armor_t30_b_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t30_b_i00_0.png'
     },
     {
       name: registerPresetItem('Cloth Cap'),
@@ -624,7 +624,7 @@
       price: 55,
       level: 0,
       stats: { pdef: 13 },
-      icon: './assets/ui/items/presets/ng/armor_cloth_helmet_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_cloth_helmet_i00_0.png'
     },
     {
       name: registerPresetItem('Leather Cap'),
@@ -638,7 +638,7 @@
       price: 911,
       level: 0,
       stats: { pdef: 16 },
-      icon: './assets/ui/items/presets/ng/armor_leather_helmet_i00_0_1.bmp'
+      icon: './assets/ui/items/presets/ng/armor_leather_helmet_i00_0_1.png'
     },
     {
       name: registerPresetItem('Wooden Helmet'),
@@ -654,7 +654,7 @@
       setKey: woodenSetKey,
       setPart: 'head',
       stats: { pdef: 19 },
-      icon: './assets/ui/items/presets/ng/armor_leather_helmet_i00_0_2.bmp'
+      icon: './assets/ui/items/presets/ng/armor_leather_helmet_i00_0_2.png'
     },
     {
       name: registerPresetItem('Leather Helmet'),
@@ -668,7 +668,7 @@
       price: 10200,
       level: 0,
       stats: { pdef: 23 },
-      icon: './assets/ui/items/presets/ng/armor_leather_helmet_i00_0_3.bmp'
+      icon: './assets/ui/items/presets/ng/armor_leather_helmet_i00_0_3.png'
     },
     {
       name: registerPresetItem('Short Gloves'),
@@ -682,7 +682,7 @@
       price: 37,
       level: 0,
       stats: { pdef: 9 },
-      icon: './assets/ui/items/presets/ng/armor_t02_g_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t02_g_i00_0.png'
     },
     {
       name: registerPresetItem('Gloves'),
@@ -696,7 +696,7 @@
       price: 2650,
       level: 0,
       stats: { pdef: 13 },
-      icon: './assets/ui/items/presets/ng/armor_t06_g_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t06_g_i00_0.png'
     },
     {
       name: registerPresetItem('Leather Gloves'),
@@ -710,7 +710,7 @@
       price: 6770,
       level: 0,
       stats: { pdef: 15 },
-      icon: './assets/ui/items/presets/ng/armor_t32_g_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t32_g_i00_0.png'
     },
     {
       name: registerPresetItem('Bracer'),
@@ -724,7 +724,7 @@
       price: 12300,
       level: 0,
       stats: { pdef: 17 },
-      icon: './assets/ui/items/presets/ng/armor_t30_g_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t30_g_i00_0.png'
     },
     {
       name: registerPresetItem('Round Shield'),
@@ -738,7 +738,7 @@
       price: 7110,
       level: 0,
       stats: { pdef: 79 },
-      icon: './assets/ui/items/presets/ng/shield_round_shield_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/shield_round_shield_i00_0.png'
     },
     {
       name: registerPresetItem('Cotton Shirt'),
@@ -752,7 +752,7 @@
       price: 20300,
       level: 0,
       stats: { pdef: 50 },
-      icon: './assets/ui/items/presets/ng/armor_t07_u_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t07_u_i00_0.png'
     },
     {
       name: registerPresetItem('Cotton Pants'),
@@ -766,7 +766,7 @@
       price: 12700,
       level: 0,
       stats: { pdef: 32 },
-      icon: './assets/ui/items/presets/ng/armor_t07_l_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t07_l_i00_0.png'
     },
     {
       name: registerPresetItem(\"Apprentice's Tunic\"),
@@ -780,7 +780,7 @@
       price: 26,
       level: 0,
       stats: { pdef: 17 },
-      icon: './assets/ui/items/presets/ng/armor_t01_u_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t01_u_i00_0.png'
     },
     {
       name: registerPresetItem('Tunic'),
@@ -794,7 +794,7 @@
       price: 147,
       level: 0,
       stats: { pdef: 18 },
-      icon: './assets/ui/items/presets/ng/armor_t03_u_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t03_u_i00_0.png'
     },
     {
       name: registerPresetItem('Cotton Robe'),
@@ -810,7 +810,7 @@
       fullBody: true,
       description: 'Доспех, закрывающий все тело целиком. Нельзя использовать дополнительно нижнюю часть доспехов.',
       stats: { pdef: 35 },
-      icon: './assets/ui/items/presets/ng/armor_cotton_robe_i02_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_cotton_robe_i02_0.png'
     },
     {
       name: registerPresetItem('Feriotic Tunic'),
@@ -824,7 +824,7 @@
       price: 2430,
       level: 0,
       stats: { pdef: 21 },
-      icon: './assets/ui/items/presets/ng/armor_t52_u_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t52_u_i00_0.png'
     },
     {
       name: registerPresetItem('Leather Tunic'),
@@ -838,7 +838,7 @@
       price: 7960,
       level: 0,
       stats: { pdef: 25 },
-      icon: './assets/ui/items/presets/ng/armor_t04_u_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t04_u_i00_0.png'
     },
     {
       name: registerPresetItem('Robe of Devotion'),
@@ -854,7 +854,7 @@
       fullBody: true,
       description: 'Доспех, закрывающий все тело целиком. Нельзя использовать дополнительно нижнюю часть доспехов.',
       stats: { pdef: 49 },
-      icon: './assets/ui/items/presets/ng/armor_cotton_robe_i02_0_1.bmp'
+      icon: './assets/ui/items/presets/ng/armor_cotton_robe_i02_0_1.png'
     },
     {
       name: registerPresetItem('Robe of Magic'),
@@ -870,7 +870,7 @@
       fullBody: true,
       description: 'Доспех, закрывающий все тело целиком. Нельзя использовать дополнительно нижнюю часть доспехов.',
       stats: { pdef: 56 },
-      icon: './assets/ui/items/presets/ng/armor_cotton_robe_i02_0_2.bmp'
+      icon: './assets/ui/items/presets/ng/armor_cotton_robe_i02_0_2.png'
     },
     {
       name: registerPresetItem("Apprentice's Stockings"),
@@ -884,7 +884,7 @@
       price: 6,
       level: 0,
       stats: { pdef: 10 },
-      icon: './assets/ui/items/presets/ng/armor_t01_l_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t01_l_i00_0.png'
     },
     {
       name: registerPresetItem('Stockings'),
@@ -898,7 +898,7 @@
       price: 92,
       level: 0,
       stats: { pdef: 11 },
-      icon: './assets/ui/items/presets/ng/armor_t05_l_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t05_l_i00_0.png'
     },
     {
       name: registerPresetItem('Feriotic Stockings'),
@@ -912,7 +912,7 @@
       price: 1520,
       level: 0,
       stats: { pdef: 13 },
-      icon: './assets/ui/items/presets/ng/armor_t52_l_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t52_l_i00_0.png'
     },
     {
       name: registerPresetItem('Leather Stockings'),
@@ -926,7 +926,7 @@
       price: 4970,
       level: 0,
       stats: { pdef: 16 },
-      icon: './assets/ui/items/presets/ng/armor_t04_l_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t04_l_i00_0.png'
     },
     {
       name: registerPresetItem('Bone Shield'),
@@ -940,7 +940,7 @@
       price: 12900,
       level: 0,
       stats: { pdef: 90 },
-      icon: './assets/ui/items/presets/ng/shield_bone_shield_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/shield_bone_shield_i00_0.png'
     },
     {
       name: registerPresetItem('Skeleton Buckler'),
@@ -955,7 +955,7 @@
       level: 0,
       description: 'Маленький деревянный щит, используемый созданиями магов.',
       stats: { pdef: 69 },
-      icon: './assets/ui/items/presets/ng/shield_skeleton_buckler_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/shield_skeleton_buckler_i00_0.png'
     },
     {
       name: registerPresetItem('Cotton Tunic'),
@@ -970,7 +970,7 @@
       level: 0,
       description: 'Туника, сшитая из плотного хлопка.',
       stats: { pdef: 21 },
-      icon: './assets/ui/items/presets/ng/armor_t50_u_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t50_u_i00_0.png'
     },
     {
       name: registerPresetItem('Tunic of Devotion'),
@@ -986,7 +986,7 @@
       setKey: devotionSetKey,
       setPart: 'body',
       stats: { pdef: 30, mp: 67 },
-      icon: './assets/ui/items/presets/ng/armor_t55_u_i00_0_1.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t55_u_i00_0_1.png'
     },
     {
       name: registerPresetItem('Tunic of Magic'),
@@ -1001,7 +1001,7 @@
       level: 0,
       description: 'Туника, созданная специально для магов.',
       stats: { pdef: 34 },
-      icon: './assets/ui/items/presets/ng/armor_t58_u_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t58_u_i00_0.png'
     },
     {
       name: registerPresetItem('Cotton Stockings'),
@@ -1016,7 +1016,7 @@
       level: 0,
       description: 'Пара штанов из плотного хлопка.',
       stats: { pdef: 13 },
-      icon: './assets/ui/items/presets/ng/armor_t50_l_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t50_l_i00_0.png'
     },
     {
       name: registerPresetItem('Stockings of Devotion'),
@@ -1033,7 +1033,7 @@
       setPart: 'legs',
       description: 'Часть комплекта Преданности.',
       stats: { pdef: 19, mp: 42 },
-      icon: './assets/ui/items/presets/ng/armor_t55_l_i00_0_1.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t55_l_i00_0_1.png'
     },
     {
       name: registerPresetItem('Stockings of Magic'),
@@ -1048,7 +1048,7 @@
       level: 0,
       description: 'Штаны, сшитые специально для магов.',
       stats: { pdef: 21 },
-      icon: './assets/ui/items/presets/ng/armor_t58_l_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t58_l_i00_0.png'
     },
     {
       name: registerPresetItem('Short Leather Gloves'),
@@ -1062,7 +1062,7 @@
       price: 607,
       level: 0,
       stats: { pdef: 11 },
-      icon: './assets/ui/items/presets/ng/armor_t04_g_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t04_g_i00_0.png'
     },
     {
       name: registerPresetItem("Apprentice's Shoes"),
@@ -1076,7 +1076,7 @@
       price: 7,
       level: 0,
       stats: { pdef: 8 },
-      icon: './assets/ui/items/presets/ng/armor_t01_b_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t01_b_i00_0.png'
     },
     {
       name: registerPresetItem('Cotton Shoes'),
@@ -1090,7 +1090,7 @@
       price: 607,
       level: 0,
       stats: { pdef: 11 },
-      icon: './assets/ui/items/presets/ng/armor_t50_b_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t50_b_i00_0.png'
     },
     {
       name: registerPresetItem('Crude Leather Shoes'),
@@ -1104,7 +1104,7 @@
       price: 607,
       level: 0,
       stats: { pdef: 11 },
-      icon: './assets/ui/items/presets/ng/armor_t04_b_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t04_b_i00_0.png'
     },
     {
       name: registerPresetItem("Squire's Shirt"),
@@ -1118,7 +1118,7 @@
       price: 26,
       level: 0,
       stats: { pdef: 33 },
-      icon: './assets/ui/items/presets/ng/armor_t01_u_i00_0_1.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t01_u_i00_0_1.png'
     },
     {
       name: registerPresetItem("Squire's Pants"),
@@ -1132,7 +1132,7 @@
       price: 6,
       level: 0,
       stats: { pdef: 20 },
-      icon: './assets/ui/items/presets/ng/armor_t01_l_i00_0_1.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t01_l_i00_0_1.png'
     },
     {
       name: registerPresetItem('Hard Leather Helmet'),
@@ -1146,7 +1146,7 @@
       price: 18400,
       level: 0,
       stats: { pdef: 26 },
-      icon: './assets/ui/items/presets/ng/armor_leather_helmet_i00_0_4.bmp'
+      icon: './assets/ui/items/presets/ng/armor_leather_helmet_i00_0_4.png'
     },
     {
       name: registerPresetItem('Wooden Gaiters'),
@@ -1162,7 +1162,7 @@
       setKey: woodenSetKey,
       setPart: 'legs',
       stats: { pdef: 29 },
-      icon: './assets/ui/items/presets/ng/armor_t06_l_i00_0_2.bmp'
+      icon: './assets/ui/items/presets/ng/armor_t06_l_i00_0_2.png'
     },
     {
       name: registerPresetItem('Dream Shield'),
@@ -1176,7 +1176,7 @@
       price: 12900,
       level: 0,
       stats: { pdef: 90 },
-      icon: './assets/ui/items/presets/ng/shield_hoplon_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/shield_hoplon_i00_0.png'
     },
     {
       name: registerPresetItem('Ubiquitous Shield'),
@@ -1190,7 +1190,7 @@
       price: 12900,
       level: 0,
       stats: { pdef: 90 },
-      icon: './assets/ui/items/presets/ng/shield_dwarven_chain_shield_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/shield_dwarven_chain_shield_i00_0.png'
     },
     {
       name: registerPresetItem('Dream Armor'),
@@ -1204,7 +1204,7 @@
       price: 49200,
       level: 0,
       stats: { pdef: 68 },
-      icon: './assets/ui/items/presets/ng/armor_blast_plate_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_blast_plate_i00_0.png'
     },
     {
       name: registerPresetItem('Dream Stockings'),
@@ -1218,7 +1218,7 @@
       price: 30700,
       level: 0,
       stats: { pdef: 43 },
-      icon: './assets/ui/items/presets/ng/armor_mithril_gaiters_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_mithril_gaiters_i00_0.png'
     },
     {
       name: registerPresetItem('Dream Gloves'),
@@ -1232,7 +1232,7 @@
       price: 12300,
       level: 0,
       stats: { pdef: 17 },
-      icon: './assets/ui/items/presets/ng/armor_gauntlet_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_gauntlet_i00_0.png'
     },
     {
       name: registerPresetItem('Dream Boots'),
@@ -1246,7 +1246,7 @@
       price: 12300,
       level: 0,
       stats: { pdef: 17 },
-      icon: './assets/ui/items/presets/ng/armor_chain_boots_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_chain_boots_i00_0.png'
     },
     {
       name: registerPresetItem('Ubiquitous Armor'),
@@ -1260,7 +1260,7 @@
       price: 49200,
       level: 0,
       stats: { pdef: 68 },
-      icon: './assets/ui/items/presets/ng/armor_compound_scale_mail_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_compound_scale_mail_i00_0.png'
     },
     {
       name: registerPresetItem('Ubiquitous Stockings'),
@@ -1274,7 +1274,7 @@
       price: 30700,
       level: 0,
       stats: { pdef: 43 },
-      icon: './assets/ui/items/presets/ng/armor_compound_scale_gaiters_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_compound_scale_gaiters_i00_0.png'
     },
     {
       name: registerPresetItem('Ubiquitous Gloves'),
@@ -1288,7 +1288,7 @@
       price: 12300,
       level: 0,
       stats: { pdef: 17 },
-      icon: './assets/ui/items/presets/ng/armor_manticor_skin_gloves_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_manticor_skin_gloves_i00_0.png'
     },
     {
       name: registerPresetItem('Ubiquitous Boots'),
@@ -1302,7 +1302,7 @@
       price: 12300,
       level: 0,
       stats: { pdef: 17 },
-      icon: './assets/ui/items/presets/ng/armor_iron_boots_i00_0.bmp'
+      icon: './assets/ui/items/presets/ng/armor_iron_boots_i00_0.png'
     }
   ];
 
@@ -1327,3 +1327,4 @@
   window.HD_CANONICAL_ITEM_KEY = canonicalItemKey;
   window.HD_RESOLVE_ITEM_BLUEPRINT = resolveItemBlueprint;
 })();
+
