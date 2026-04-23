@@ -1289,6 +1289,20 @@
       level: 0,
       stats: { pdef: 17 },
       icon: './assets/ui/items/presets/ng/armor_manticor_skin_gloves_i00_0.bmp'
+    },
+    {
+      name: registerPresetItem('Ubiquitous Boots'),
+      source: 'preset',
+      family: 'boots',
+      category: 'wearable',
+      slotLabel: 'Ботинки',
+      grade: 'NG',
+      crystals: 0,
+      weight: 1310,
+      price: 12300,
+      level: 0,
+      stats: { pdef: 17 },
+      icon: './assets/ui/items/presets/ng/armor_iron_boots_i00_0.bmp'
     }
   ];
 
