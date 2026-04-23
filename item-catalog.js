@@ -238,6 +238,69 @@
   ALIASES[normalizeItemName('Robe of Devotion')] = normalizeItemName('Tunic of Devotion');
   delete CATALOG[normalizeItemName('Robe of Devotion')];
 
+  const woodenSetKey = 'wooden_set';
+  window.HD_SET_LIBRARY[woodenSetKey] = {
+    name: 'Wooden Set',
+    thresholds: {
+      3: {
+        pdefPct: 2,
+        hp: 41
+      }
+    },
+    notes: {
+      3: '+2% P.Def, +41 HP'
+    }
+  };
+
+  const woodenBreastplate = {
+    name: registerPresetItem('Wooden Breastplate'),
+    source: 'preset',
+    family: 'body',
+    category: 'wearable',
+    slotLabel: 'Р’РµСЂС…РЅСЏСЏ Р±СЂРѕРЅСЏ',
+    price: 7960,
+    weight: 4820,
+    level: 0,
+    setKey: woodenSetKey,
+    setPart: 'body',
+    stats: { pdef: 47 },
+    icon: './assets/ui/items/presets/wooden/armor_t06_u_i00_0.bmp'
+  };
+
+  const woodenGaiters = {
+    name: registerPresetItem('Wooden Gaiters'),
+    source: 'preset',
+    family: 'legs',
+    category: 'wearable',
+    slotLabel: 'РќРёР¶РЅСЏСЏ Р±СЂРѕРЅСЏ',
+    price: 4970,
+    weight: 1670,
+    level: 0,
+    setKey: woodenSetKey,
+    setPart: 'legs',
+    stats: { pdef: 29 },
+    icon: './assets/ui/items/presets/wooden/armor_t06_l_i00_0.bmp'
+  };
+
+  const woodenHelmet = {
+    name: registerPresetItem('Wooden Helmet'),
+    source: 'preset',
+    family: 'head',
+    category: 'wearable',
+    slotLabel: 'РЁР»РµРјС‹',
+    price: 3980,
+    weight: 660,
+    level: 0,
+    setKey: woodenSetKey,
+    setPart: 'head',
+    stats: { pdef: 19 },
+    icon: './assets/ui/items/presets/wooden/armor_leather_helmet_i00_0.bmp'
+  };
+
+  CATALOG[normalizeItemName('Wooden Breastplate')] = woodenBreastplate;
+  CATALOG[normalizeItemName('Wooden Gaiters')] = woodenGaiters;
+  CATALOG[normalizeItemName('Wooden Helmet')] = woodenHelmet;
+
   function canonicalItemKey(value) {
     const key = normalizeItemName(value);
     return ALIASES[key] || key;
