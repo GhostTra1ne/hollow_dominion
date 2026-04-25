@@ -2,9 +2,15 @@ import argparse
 import math
 import os
 import sys
+from pathlib import Path
 
 import bpy
 from mathutils import Euler, Vector
+
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = SCRIPT_DIR.parent
+OUTER_ROOT = PROJECT_ROOT.parent
 
 
 def parse_args():
@@ -116,6 +122,71 @@ def primitive_cylinder_between(start, end, radius, material=None, vertices=24):
     obj.rotation_quaternion = Vector((0, 0, 1)).rotation_difference(delta.normalized())
     bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
     return finalize_object(obj, material)
+
+
+def find_l2_mfighter_root() -> Path | None:
+    candidates = [
+        OUTER_ROOT / "_l2_mfighter_gltf" / "Fighter" / "SkeletalMesh",
+        OUTER_ROOT / "_l2_mesh_probe_materials" / "Fighter" / "SkeletalMesh",
+    ]
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    return None
+
+
+def import_l2_profile_part(gltf_path: Path, material):
+    before = set(bpy.data.objects)
+    bpy.ops.import_scene.gltf(filepath=str(gltf_path))
+    imported = [obj for obj in bpy.data.objects if obj not in before]
+    for obj in imported:
+        if obj.type == "MESH":
+            obj.data.materials.clear()
+            obj.data.materials.append(material)
+            finalize_object(obj, smooth=True)
+        elif obj.type == "ARMATURE" or obj.name.startswith("Icosphere"):
+            obj.hide_render = True
+            obj.hide_viewport = True
+    return imported
+
+
+def add_l2_fighter_profile(variant: str) -> bool:
+    root = find_l2_mfighter_root()
+    if not root:
+        return False
+
+    required = [
+        root / "MFighter_m004_u.gltf",
+        root / "MFighter_m004_l.gltf",
+        root / "MFighter_m004_g.gltf",
+        root / "MFighter_m004_b.gltf",
+        root / "MFighter_m004_m00_bh.gltf",
+        root / "MFighter_m004_m00_ah.gltf",
+    ]
+    if not all(path.exists() for path in required):
+        return False
+
+    if variant == "leather":
+        armor_mat = make_material("L2ArmorLeather", (0.43, 0.31, 0.20), metallic=0.10, roughness=0.66, specular=0.24)
+        legs_mat = make_material("L2LegsLeather", (0.47, 0.34, 0.22), metallic=0.10, roughness=0.68, specular=0.24)
+        gloves_mat = make_material("L2GlovesLeather", (0.37, 0.27, 0.18), metallic=0.08, roughness=0.70, specular=0.22)
+        boots_mat = make_material("L2BootsLeather", (0.29, 0.21, 0.14), metallic=0.08, roughness=0.72, specular=0.22)
+    else:
+        armor_mat = make_material("L2ArmorBase", (0.60, 0.62, 0.68), metallic=0.22, roughness=0.46, specular=0.34)
+        legs_mat = make_material("L2LegsBase", (0.56, 0.58, 0.64), metallic=0.22, roughness=0.48, specular=0.32)
+        gloves_mat = make_material("L2GlovesBase", (0.52, 0.54, 0.60), metallic=0.24, roughness=0.44, specular=0.32)
+        boots_mat = make_material("L2BootsBase", (0.44, 0.46, 0.52), metallic=0.24, roughness=0.48, specular=0.30)
+
+    skin_mat = make_material("L2Skin", (0.72, 0.60, 0.48), metallic=0.0, roughness=0.58, specular=0.28)
+    hair_mat = make_material("L2Hair", (0.35, 0.26, 0.16), metallic=0.02, roughness=0.76, specular=0.12)
+
+    import_l2_profile_part(root / "MFighter_m004_u.gltf", armor_mat)
+    import_l2_profile_part(root / "MFighter_m004_l.gltf", legs_mat)
+    import_l2_profile_part(root / "MFighter_m004_g.gltf", gloves_mat)
+    import_l2_profile_part(root / "MFighter_m004_b.gltf", boots_mat)
+    import_l2_profile_part(root / "MFighter_m004_m00_bh.gltf", skin_mat)
+    import_l2_profile_part(root / "MFighter_m004_m00_ah.gltf", hair_mat)
+    return True
 
 
 def add_hair(hair_mat):
@@ -232,27 +303,42 @@ def add_camera():
     return camera
 
 
+def add_camera_l2():
+    bpy.ops.object.camera_add(location=(0.0, -0.90, 0.21))
+    camera = bpy.context.object
+    camera.data.lens = 62
+    camera.rotation_euler = Euler((math.radians(88), 0.0, 0.0), "XYZ")
+    bpy.context.scene.camera = camera
+    return camera
+
+
 def build_scene(variant):
     scene = clear_scene()
 
-    skin_mat = make_material("Skin", (0.78, 0.68, 0.60), metallic=0.0, roughness=0.58, specular=0.42)
-    under_mat = make_material("UnderCloth", (0.22, 0.23, 0.27), metallic=0.0, roughness=0.84, specular=0.2)
-    boot_mat = make_material("Boot", (0.19, 0.17, 0.15), metallic=0.06, roughness=0.72, specular=0.22)
-    hair_mat = make_material("Hair", (0.63, 0.53, 0.28), metallic=0.03, roughness=0.74, specular=0.2)
-    face_mat = make_material("Face", (0.09, 0.08, 0.08), metallic=0.0, roughness=0.88, specular=0.1)
+    used_l2 = add_l2_fighter_profile(variant)
 
-    add_base_body(skin_mat, under_mat, boot_mat)
-    add_hair(hair_mat)
-    add_face(face_mat)
+    if not used_l2:
+        skin_mat = make_material("Skin", (0.78, 0.68, 0.60), metallic=0.0, roughness=0.58, specular=0.42)
+        under_mat = make_material("UnderCloth", (0.22, 0.23, 0.27), metallic=0.0, roughness=0.84, specular=0.2)
+        boot_mat = make_material("Boot", (0.19, 0.17, 0.15), metallic=0.06, roughness=0.72, specular=0.22)
+        hair_mat = make_material("Hair", (0.63, 0.53, 0.28), metallic=0.03, roughness=0.74, specular=0.2)
+        face_mat = make_material("Face", (0.09, 0.08, 0.08), metallic=0.0, roughness=0.88, specular=0.1)
 
-    if variant == "leather":
-        leather_mat = make_material("Leather", (0.33, 0.22, 0.14), metallic=0.06, roughness=0.68, specular=0.24)
-        trim_mat = make_material("Trim", (0.73, 0.61, 0.30), metallic=0.88, roughness=0.22, specular=0.56)
-        buckle_mat = make_material("Buckle", (0.77, 0.78, 0.82), metallic=0.76, roughness=0.26, specular=0.62)
-        add_leather_armor(leather_mat, trim_mat, buckle_mat)
+        add_base_body(skin_mat, under_mat, boot_mat)
+        add_hair(hair_mat)
+        add_face(face_mat)
+
+        if variant == "leather":
+            leather_mat = make_material("Leather", (0.33, 0.22, 0.14), metallic=0.06, roughness=0.68, specular=0.24)
+            trim_mat = make_material("Trim", (0.73, 0.61, 0.30), metallic=0.88, roughness=0.22, specular=0.56)
+            buckle_mat = make_material("Buckle", (0.77, 0.78, 0.82), metallic=0.76, roughness=0.26, specular=0.62)
+            add_leather_armor(leather_mat, trim_mat, buckle_mat)
 
     add_lighting()
-    add_camera()
+    if used_l2:
+        add_camera_l2()
+    else:
+        add_camera()
     return scene
 
 
