@@ -304,9 +304,9 @@ def add_camera():
 
 
 def add_camera_l2():
-    bpy.ops.object.camera_add(location=(0.0, -0.90, 0.21))
+    bpy.ops.object.camera_add(location=(0.0, -1.12, 0.16))
     camera = bpy.context.object
-    camera.data.lens = 62
+    camera.data.lens = 58
     camera.rotation_euler = Euler((math.radians(88), 0.0, 0.0), "XYZ")
     bpy.context.scene.camera = camera
     return camera
