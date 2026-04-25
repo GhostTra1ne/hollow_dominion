@@ -86,6 +86,19 @@ def primitive_uv_sphere(location, radius, material=None, segments=48, rings=24):
     return finalize_object(obj, material)
 
 
+def primitive_scaled_sphere(location, scale, material=None, segments=48, rings=24):
+    bpy.ops.mesh.primitive_uv_sphere_add(
+        location=location,
+        radius=1.0,
+        segments=segments,
+        ring_count=rings,
+    )
+    obj = bpy.context.object
+    obj.scale = scale
+    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+    return finalize_object(obj, material)
+
+
 def primitive_cylinder_between(start, end, radius, material=None, vertices=24):
     start_v = Vector(start)
     end_v = Vector(end)
@@ -106,68 +119,75 @@ def primitive_cylinder_between(start, end, radius, material=None, vertices=24):
 
 
 def add_hair(hair_mat):
-    primitive_uv_sphere((0.0, 0.01, 2.12), 0.17, hair_mat)
-    primitive_cube((0.0, -0.03, 1.98), (0.18, 0.06, 0.035), hair_mat)
+    primitive_scaled_sphere((0.0, 0.015, 2.12), (0.152, 0.155, 0.145), hair_mat)
+    primitive_cube((0.0, -0.028, 1.97), (0.16, 0.05, 0.028), hair_mat)
+    primitive_cube((-0.11, -0.01, 2.02), (0.03, 0.025, 0.11), hair_mat)
+    primitive_cube((0.11, -0.01, 2.02), (0.03, 0.025, 0.11), hair_mat)
 
 
 def add_face(face_mat):
-    primitive_cube((0.0, -0.18, 2.06), (0.06, 0.012, 0.012), face_mat)
+    primitive_cube((0.0, -0.162, 2.06), (0.048, 0.01, 0.01), face_mat)
 
 
 def add_base_body(skin_mat, under_mat, boot_mat):
-    primitive_uv_sphere((0.0, 0.0, 2.05), 0.18, skin_mat)
-    primitive_cylinder_between((0.0, 0.0, 1.74), (0.0, 0.0, 1.88), 0.082, skin_mat)
+    primitive_scaled_sphere((0.0, 0.0, 2.03), (0.145, 0.145, 0.165), skin_mat)
+    primitive_cylinder_between((0.0, 0.0, 1.80), (0.0, 0.0, 1.89), 0.054, skin_mat)
 
-    primitive_cube((0.0, 0.0, 1.47), (0.24, 0.15, 0.35), under_mat)
-    primitive_cube((0.0, -0.018, 1.08), (0.18, 0.13, 0.22), under_mat)
+    primitive_scaled_sphere((0.0, 0.0, 1.53), (0.20, 0.14, 0.29), under_mat)
+    primitive_scaled_sphere((0.0, 0.0, 1.20), (0.17, 0.12, 0.20), under_mat)
+    primitive_scaled_sphere((0.0, 0.0, 0.98), (0.18, 0.13, 0.14), under_mat)
 
-    shoulder_l = (-0.30, 0.0, 1.62)
-    elbow_l = (-0.42, 0.02, 1.33)
-    wrist_l = (-0.45, 0.02, 1.02)
-    shoulder_r = (0.30, 0.0, 1.62)
-    elbow_r = (0.42, 0.02, 1.33)
-    wrist_r = (0.45, 0.02, 1.02)
+    shoulder_l = (-0.245, 0.0, 1.61)
+    elbow_l = (-0.37, 0.03, 1.31)
+    wrist_l = (-0.41, 0.035, 1.01)
+    shoulder_r = (0.245, 0.0, 1.61)
+    elbow_r = (0.37, 0.03, 1.31)
+    wrist_r = (0.41, 0.035, 1.01)
 
-    hip_l = (-0.11, 0.0, 0.89)
-    knee_l = (-0.12, 0.0, 0.48)
+    hip_l = (-0.09, 0.0, 0.92)
+    knee_l = (-0.105, 0.0, 0.49)
     ankle_l = (-0.10, 0.0, 0.12)
-    hip_r = (0.11, 0.0, 0.89)
-    knee_r = (0.12, 0.0, 0.48)
+    hip_r = (0.09, 0.0, 0.92)
+    knee_r = (0.105, 0.0, 0.49)
     ankle_r = (0.10, 0.0, 0.12)
 
-    primitive_cylinder_between(shoulder_l, elbow_l, 0.075, skin_mat)
-    primitive_cylinder_between(elbow_l, wrist_l, 0.064, skin_mat)
-    primitive_cylinder_between(shoulder_r, elbow_r, 0.075, skin_mat)
-    primitive_cylinder_between(elbow_r, wrist_r, 0.064, skin_mat)
-    primitive_cube((-0.45, -0.005, 0.96), (0.05, 0.05, 0.11), skin_mat)
-    primitive_cube((0.45, -0.005, 0.96), (0.05, 0.05, 0.11), skin_mat)
+    primitive_scaled_sphere((-0.255, 0.0, 1.60), (0.064, 0.064, 0.072), under_mat)
+    primitive_scaled_sphere((0.255, 0.0, 1.60), (0.064, 0.064, 0.072), under_mat)
+    primitive_cylinder_between(shoulder_l, elbow_l, 0.053, skin_mat)
+    primitive_cylinder_between(elbow_l, wrist_l, 0.042, skin_mat)
+    primitive_cylinder_between(shoulder_r, elbow_r, 0.053, skin_mat)
+    primitive_cylinder_between(elbow_r, wrist_r, 0.042, skin_mat)
+    primitive_scaled_sphere((-0.415, 0.03, 0.97), (0.038, 0.038, 0.065), skin_mat)
+    primitive_scaled_sphere((0.415, 0.03, 0.97), (0.038, 0.038, 0.065), skin_mat)
 
-    primitive_cylinder_between(hip_l, knee_l, 0.092, skin_mat)
-    primitive_cylinder_between(knee_l, ankle_l, 0.078, skin_mat)
-    primitive_cylinder_between(hip_r, knee_r, 0.092, skin_mat)
-    primitive_cylinder_between(knee_r, ankle_r, 0.078, skin_mat)
-    primitive_cube((-0.10, -0.02, 0.05), (0.085, 0.13, 0.05), boot_mat)
-    primitive_cube((0.10, -0.02, 0.05), (0.085, 0.13, 0.05), boot_mat)
+    primitive_cylinder_between(hip_l, knee_l, 0.075, skin_mat)
+    primitive_cylinder_between(knee_l, ankle_l, 0.058, skin_mat)
+    primitive_cylinder_between(hip_r, knee_r, 0.075, skin_mat)
+    primitive_cylinder_between(knee_r, ankle_r, 0.058, skin_mat)
+    primitive_scaled_sphere((-0.096, 0.0, 0.91), (0.074, 0.074, 0.10), under_mat)
+    primitive_scaled_sphere((0.096, 0.0, 0.91), (0.074, 0.074, 0.10), under_mat)
+    primitive_cube((-0.10, -0.01, 0.035), (0.072, 0.115, 0.045), boot_mat)
+    primitive_cube((0.10, -0.01, 0.035), (0.072, 0.115, 0.045), boot_mat)
 
 
 def add_leather_armor(leather_mat, trim_mat, buckle_mat):
-    primitive_cube((0.0, -0.01, 1.49), (0.28, 0.11, 0.30), leather_mat)
-    primitive_cube((0.0, -0.032, 1.52), (0.22, 0.07, 0.21), trim_mat)
-    primitive_cube((0.0, 0.0, 1.12), (0.21, 0.10, 0.17), leather_mat)
-    primitive_cube((0.0, -0.034, 1.12), (0.18, 0.04, 0.04), buckle_mat)
-    primitive_cube((0.0, 0.03, 1.28), (0.18, 0.025, 0.09), buckle_mat)
+    primitive_scaled_sphere((0.0, -0.005, 1.50), (0.215, 0.105, 0.255), leather_mat)
+    primitive_scaled_sphere((0.0, -0.012, 1.17), (0.175, 0.095, 0.17), leather_mat)
+    primitive_cube((0.0, -0.035, 1.45), (0.12, 0.032, 0.26), trim_mat)
+    primitive_cube((0.0, -0.02, 1.14), (0.16, 0.03, 0.03), buckle_mat)
+    primitive_cube((0.0, 0.028, 1.27), (0.14, 0.02, 0.08), buckle_mat)
 
-    primitive_cube((-0.29, -0.005, 1.62), (0.085, 0.07, 0.07), trim_mat)
-    primitive_cube((0.29, -0.005, 1.62), (0.085, 0.07, 0.07), trim_mat)
-    primitive_cube((-0.43, -0.004, 1.18), (0.055, 0.05, 0.11), leather_mat)
-    primitive_cube((0.43, -0.004, 1.18), (0.055, 0.05, 0.11), leather_mat)
+    primitive_scaled_sphere((-0.255, 0.0, 1.60), (0.075, 0.075, 0.085), trim_mat)
+    primitive_scaled_sphere((0.255, 0.0, 1.60), (0.075, 0.075, 0.085), trim_mat)
+    primitive_cube((-0.39, -0.002, 1.16), (0.05, 0.048, 0.10), leather_mat)
+    primitive_cube((0.39, -0.002, 1.16), (0.05, 0.048, 0.10), leather_mat)
 
-    primitive_cube((-0.11, -0.01, 0.67), (0.10, 0.07, 0.25), leather_mat)
-    primitive_cube((0.11, -0.01, 0.67), (0.10, 0.07, 0.25), leather_mat)
-    primitive_cube((-0.10, -0.03, 0.27), (0.09, 0.08, 0.15), trim_mat)
-    primitive_cube((0.10, -0.03, 0.27), (0.09, 0.08, 0.15), trim_mat)
-    primitive_cube((-0.10, -0.03, 0.08), (0.10, 0.14, 0.045), buckle_mat)
-    primitive_cube((0.10, -0.03, 0.08), (0.10, 0.14, 0.045), buckle_mat)
+    primitive_cube((-0.10, -0.008, 0.66), (0.082, 0.06, 0.24), leather_mat)
+    primitive_cube((0.10, -0.008, 0.66), (0.082, 0.06, 0.24), leather_mat)
+    primitive_cube((-0.10, -0.018, 0.24), (0.074, 0.068, 0.12), trim_mat)
+    primitive_cube((0.10, -0.018, 0.24), (0.074, 0.068, 0.12), trim_mat)
+    primitive_cube((-0.10, -0.026, 0.05), (0.084, 0.11, 0.04), buckle_mat)
+    primitive_cube((0.10, -0.026, 0.05), (0.084, 0.11, 0.04), buckle_mat)
 
 
 def add_lighting():
@@ -203,9 +223,9 @@ def add_lighting():
 
 
 def add_camera():
-    bpy.ops.object.camera_add(location=(0.0, -4.8, 1.36))
+    bpy.ops.object.camera_add(location=(0.0, -5.6, 1.34))
     camera = bpy.context.object
-    camera.data.lens = 58
+    camera.data.lens = 46
     camera.rotation_euler = Euler((math.radians(88), 0.0, 0.0), "XYZ")
     bpy.context.scene.camera = camera
     return camera
