@@ -2,38 +2,39 @@
   "human_male_leather_set": {
     "client_family": "FFighter_m001",
     "notes": [
-      "Upper/lower/gloves/boots in classic L2 use shared body-slot meshes with swapped textures.",
+      "Upper/lower/gloves/boots in classic L2 use dedicated armor meshes plus swapped textures.",
       "These mappings are confirmed from the MASTERWORK client at E:/GamePirate/MASTERWORK.",
-      "Helmet visuals are intentionally disabled in the browser paperdoll; the character head/appearance stays visible."
+      "Helmet visuals are intentionally disabled in the browser paperdoll; the character head/appearance stays visible.",
+      "Recent L2 Fighter.ukx meshes require the specific custom UModel build (umodel_materials.exe, 1579-based) to export correctly."
     ],
     "items": {
       "Leather Shirt": {
         "slot": "armorTorso",
-        "mesh": "FFighter_m001_u",
+        "mesh": "FFighter_m004_u",
         "texturePackage": "FFighter.utx",
         "textureObject": "FFighter_m001_t04_u",
         "status": "confirmed"
       },
       "Leather Pants": {
         "slot": "armorPelvis+armorLegL+armorLegR",
-        "mesh": "FFighter_m001_l",
+        "mesh": "FFighter_m004_l",
         "texturePackage": "FFighter.utx",
         "textureObject": "FFighter_m001_t04_l",
         "status": "confirmed"
       },
       "Leather Gloves": {
         "slot": "armorArmL+armorArmR",
-        "mesh": "FFighter_m001_g",
+        "mesh": "FFighter_m004_g",
         "texturePackage": "FFighter.utx",
         "textureObject": "FFighter_m001_t04_g",
         "status": "confirmed"
       },
       "Leather Sandals": {
         "slot": "armorLegL+armorLegR",
-        "mesh": "FFighter_m001_b",
+        "mesh": "FFighter_m003_b",
         "texturePackage": "FFighter.utx",
         "textureObject": "FFighter_m001_t03_b",
-        "status": "provisional_best_match"
+        "status": "confirmed"
       },
       "Leather Helmet": {
         "slot": "armorHead",
@@ -46,7 +47,8 @@
     "probeArtifacts": {
       "bodyProbe": "_l2_leather_probe/FFighter/Texture/_contact_sheet.png",
       "headProbe": "_l2_leather_head_probe/FFighter/_contact_sheet2.png",
-      "accessoryProbe": "_l2_accessory_probe/_contact_sheet.png"
+      "accessoryProbe": "_l2_accessory_probe/_contact_sheet.png",
+      "meshProbe": "_l2_mesh_probe_materials/Fighter/SkeletalMesh"
     }
   }
 }
