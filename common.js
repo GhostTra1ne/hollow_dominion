@@ -859,6 +859,46 @@ function setPreview(root, config) {
   );
 }
 
+let modelViewerSupportPromise = null;
+
+function bootModelViewerSupport() {
+  if (modelViewerSupportPromise) return modelViewerSupportPromise;
+  modelViewerSupportPromise = Promise.resolve().then(() => {
+    if (!window.customElements || typeof window.customElements.whenDefined !== 'function') {
+      return false;
+    }
+    if (window.customElements.get('model-viewer')) {
+      document.documentElement.classList.add('has-model-viewer');
+      return true;
+    }
+    return window.customElements.whenDefined('model-viewer')
+      .then(() => {
+        document.documentElement.classList.add('has-model-viewer');
+        return true;
+      })
+      .catch(() => false);
+  });
+  return modelViewerSupportPromise;
+}
+
+function primeProfile3DViewer(config) {
+  const viewer = q('profileModelViewer');
+  if (!viewer) return;
+
+  if (!viewer.dataset.boundHdViewer) {
+    viewer.dataset.boundHdViewer = '1';
+    viewer.addEventListener('load', () => {
+      document.documentElement.classList.add('has-model-viewer');
+    });
+    viewer.addEventListener('error', () => {
+      document.documentElement.classList.remove('has-model-viewer');
+    });
+  }
+
+  viewer.setAttribute('alt', `${config.nickname || 'Hero'} 3D profile preview`);
+  bootModelViewerSupport();
+}
+
 function setCreatorBg(el, state) {
   safeSetBackground(
     el,
@@ -1271,6 +1311,7 @@ function applyPortrait(state) {
   const fallbackCity = cities.start_village || city;
   const root = q('profilePreviewRoot');
   if (root) setPreview(root, state.hero);
+  primeProfile3DViewer(state.hero);
   const bg = q('portraitBg');
   if (bg) {
     safeSetBackground(
