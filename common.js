@@ -861,6 +861,29 @@ function setPreview(root, config) {
 
 let modelViewerSupportPromise = null;
 
+function getProfile3DVariant(config) {
+  const equipped = getEquippedPaperdollMap(config);
+  const candidateSlots = ['body', 'legs', 'gloves', 'boots'];
+  const leatherHints = ['leather', 'sandals'];
+  const hasLeatherPiece = candidateSlots.some((slotKey) => {
+    const item = equipped[slotKey];
+    if (!item?.name) return false;
+    const normalized = normalizeInventoryItemName(item.name);
+    return leatherHints.some((hint) => normalized.includes(hint));
+  });
+  return hasLeatherPiece ? 'leather' : 'base';
+}
+
+function getProfile3DAsset(config) {
+  const variant = getProfile3DVariant(config);
+  const version = window.__HD_APP_VERSION__ || 'dev';
+  return {
+    variant,
+    src: `./assets/models/profile_${variant}.glb?v=${version}`,
+    poster: `./assets/models/profile_${variant}_poster.png?v=${version}`
+  };
+}
+
 function bootModelViewerSupport() {
   if (modelViewerSupportPromise) return modelViewerSupportPromise;
   modelViewerSupportPromise = Promise.resolve().then(() => {
@@ -884,6 +907,7 @@ function bootModelViewerSupport() {
 function primeProfile3DViewer(config) {
   const viewer = q('profileModelViewer');
   if (!viewer) return;
+  const asset = getProfile3DAsset(config);
 
   if (!viewer.dataset.boundHdViewer) {
     viewer.dataset.boundHdViewer = '1';
@@ -895,6 +919,11 @@ function primeProfile3DViewer(config) {
     });
   }
 
+  if (viewer.dataset.variant !== asset.variant) {
+    viewer.dataset.variant = asset.variant;
+    viewer.setAttribute('src', asset.src);
+    viewer.setAttribute('poster', asset.poster);
+  }
   viewer.setAttribute('alt', `${config.nickname || 'Hero'} 3D profile preview`);
   bootModelViewerSupport();
 }
