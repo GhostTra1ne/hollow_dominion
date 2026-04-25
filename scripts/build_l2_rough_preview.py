@@ -46,6 +46,8 @@ def fit_to_bbox(
     bbox: tuple[int, int, int, int],
     canvas_size=CANVAS_SIZE,
     scale_bias: float = 1.0,
+    offset_x: int = 0,
+    offset_y: int = 0,
 ) -> Image.Image:
     x0, y0, x1, y1 = bbox
     target_w = max(x1 - x0, 1)
@@ -56,8 +58,8 @@ def fit_to_bbox(
     new_size = (max(1, int(sw * scale)), max(1, int(sh * scale)))
     resized = src.resize(new_size, Image.LANCZOS)
     layer = Image.new("RGBA", canvas_size, (0, 0, 0, 0))
-    ox = x0 + (target_w - new_size[0]) // 2
-    oy = y0 + (target_h - new_size[1]) // 2
+    ox = x0 + (target_w - new_size[0]) // 2 + offset_x
+    oy = y0 + (target_h - new_size[1]) // 2 + offset_y
     layer.alpha_composite(resized, (ox, oy))
     return layer
 
@@ -147,14 +149,14 @@ def main() -> None:
     base_body = compose_layers(base_layers)
 
     armor_layers = [
-        fit_to_bbox(split_horizontal(legs_render, 0.52, 1.0), leg_l_mask, scale_bias=0.68),
-        fit_to_bbox(split_horizontal(legs_render, 0.0, 0.48), leg_r_mask, scale_bias=0.68),
-        fit_to_bbox(split_horizontal(boots_render, 0.52, 1.0), boot_l_mask, scale_bias=0.6),
-        fit_to_bbox(split_horizontal(boots_render, 0.0, 0.48), boot_r_mask, scale_bias=0.6),
-        fit_to_bbox(split_horizontal(gloves_render, 0.52, 1.0), arm_l_mask, scale_bias=0.62),
-        fit_to_bbox(split_horizontal(gloves_render, 0.0, 0.48), arm_r_mask, scale_bias=0.62),
-        fit_to_bbox(torso_render, torso_mask, scale_bias=0.86),
-        fit_to_bbox(split_horizontal(legs_render, 0.2, 0.8), pelvis_mask, scale_bias=0.6),
+        fit_to_bbox(split_horizontal(legs_render, 0.52, 1.0), leg_l_mask, scale_bias=0.54, offset_x=-28, offset_y=12),
+        fit_to_bbox(split_horizontal(legs_render, 0.0, 0.48), leg_r_mask, scale_bias=0.54, offset_x=24, offset_y=12),
+        fit_to_bbox(split_horizontal(boots_render, 0.52, 1.0), boot_l_mask, scale_bias=0.46, offset_x=-22, offset_y=58),
+        fit_to_bbox(split_horizontal(boots_render, 0.0, 0.48), boot_r_mask, scale_bias=0.46, offset_x=18, offset_y=54),
+        fit_to_bbox(split_horizontal(gloves_render, 0.52, 1.0), arm_l_mask, scale_bias=0.44, offset_x=-34, offset_y=-18),
+        fit_to_bbox(split_horizontal(gloves_render, 0.0, 0.48), arm_r_mask, scale_bias=0.44, offset_x=32, offset_y=-14),
+        fit_to_bbox(torso_render, torso_mask, scale_bias=0.8, offset_y=10),
+        fit_to_bbox(split_horizontal(legs_render, 0.2, 0.8), pelvis_mask, scale_bias=0.48, offset_y=28),
     ]
     equipped = compose_layers(base_layers + armor_layers)
 
