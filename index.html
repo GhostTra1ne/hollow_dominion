@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-      const APP_VERSION = '20260426-telegram-65';
+      const APP_VERSION = '20260426-telegram-66';
       const url = new URL(window.location.href);
       window.__HD_DEBUG_GRID__ = url.searchParams.get('grid') === '1';
       if (url.searchParams.get('appv') !== APP_VERSION) {
@@ -19,8 +19,8 @@
     })();
   </script>  <title>Hollow Dominion</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script type="module" src="./assets/vendor/model-viewer.min.js?v=20260426-telegram-65"></script>
-  <link rel="stylesheet" href="common.css?v=20260426-telegram-65">
+  <script type="module" src="./assets/vendor/model-viewer.min.js?v=20260426-telegram-66"></script>
+  <link rel="stylesheet" href="common.css?v=20260426-telegram-66">
   <style>
     .screen-page {
       position: relative;
@@ -873,7 +873,7 @@
       height: 100%;
       background: transparent;
       --poster-color: transparent;
-      transform: translateY(-28px) scale(.92);
+      transform: translateY(-40px) scale(.92);
       transform-origin: center bottom;
     }
 
@@ -2200,7 +2200,7 @@
     }
 
     body.env-telegram.platform-desktop-runtime.viewport-compact-desktop .profile-preview-box model-viewer {
-      transform: translateY(-28px) scale(.90);
+      transform: translateY(-40px) scale(.90);
     }
 
     body.env-telegram.platform-desktop-runtime.viewport-compact-desktop .city-portrait-card .shadow {
@@ -2650,8 +2650,8 @@
                       <div class="profile-3d-viewer">
                         <model-viewer
                           id="profileModelViewer"
-                          src="./assets/models/profile_base.glb?v=20260426-telegram-65"
-                          poster="./assets/models/profile_base_poster.png?v=20260426-telegram-65"
+                          src="./assets/models/profile_base.glb?v=20260426-telegram-66"
+                          poster="./assets/models/profile_base_poster.png?v=20260426-telegram-66"
                           camera-controls
                           disable-pan
                           disable-zoom
