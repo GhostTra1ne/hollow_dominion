@@ -119,19 +119,20 @@ def primitive_cylinder_between(start, end, radius, material=None, vertices=24):
 
 
 def add_hair(hair_mat):
-    primitive_scaled_sphere((0.0, 0.015, 2.12), (0.152, 0.155, 0.145), hair_mat)
-    primitive_cube((0.0, -0.028, 1.97), (0.16, 0.05, 0.028), hair_mat)
-    primitive_cube((-0.11, -0.01, 2.02), (0.03, 0.025, 0.11), hair_mat)
-    primitive_cube((0.11, -0.01, 2.02), (0.03, 0.025, 0.11), hair_mat)
+    primitive_scaled_sphere((0.0, 0.015, 2.14), (0.17, 0.17, 0.16), hair_mat)
+    primitive_cube((0.0, -0.03, 1.985), (0.17, 0.05, 0.032), hair_mat)
+    primitive_cube((-0.118, -0.006, 2.03), (0.032, 0.026, 0.12), hair_mat)
+    primitive_cube((0.118, -0.006, 2.03), (0.032, 0.026, 0.12), hair_mat)
 
 
 def add_face(face_mat):
-    primitive_cube((0.0, -0.162, 2.06), (0.048, 0.01, 0.01), face_mat)
+    primitive_cube((0.0, -0.165, 2.075), (0.05, 0.01, 0.01), face_mat)
+    primitive_cube((0.0, -0.156, 2.01), (0.034, 0.008, 0.008), face_mat)
 
 
 def add_base_body(skin_mat, under_mat, boot_mat):
-    primitive_scaled_sphere((0.0, 0.0, 2.03), (0.145, 0.145, 0.165), skin_mat)
-    primitive_cylinder_between((0.0, 0.0, 1.80), (0.0, 0.0, 1.89), 0.054, skin_mat)
+    primitive_scaled_sphere((0.0, 0.0, 2.05), (0.16, 0.16, 0.185), skin_mat)
+    primitive_cylinder_between((0.0, 0.0, 1.81), (0.0, 0.0, 1.91), 0.055, skin_mat)
 
     primitive_scaled_sphere((0.0, 0.0, 1.53), (0.20, 0.14, 0.29), under_mat)
     primitive_scaled_sphere((0.0, 0.0, 1.20), (0.17, 0.12, 0.20), under_mat)
