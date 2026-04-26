@@ -166,6 +166,17 @@ def find_l2_mfighter_root() -> Path | None:
     return None
 
 
+def find_l2_mfighter_clean_root() -> Path | None:
+    candidates = [
+        OUTER_ROOT / "$out" / "Fighter" / "SkeletalMesh",
+        OUTER_ROOT / "_l2_clear_mfighter_m000" / "Fighter" / "SkeletalMesh",
+    ]
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    return None
+
+
 def find_first_existing(*paths: Path) -> Path | None:
     for path in paths:
         if path.exists():
@@ -201,6 +212,42 @@ def import_l2_profile_part(gltf_path: Path, material):
 
 
 def add_l2_fighter_profile(variant: str) -> bool:
+    if variant == "base":
+        clean_root = find_l2_mfighter_clean_root()
+        if clean_root:
+            required_clean = [
+                clean_root / "MFighter_m000_u.gltf",
+                clean_root / "MFighter_m000_l.gltf",
+                clean_root / "MFighter_m000_g.gltf",
+                clean_root / "MFighter_m000_b.gltf",
+                clean_root / "MFighter_m000_h.gltf",
+                clean_root / "MFighter_m000_f.gltf",
+            ]
+            if all(path.exists() for path in required_clean):
+                face_tex = find_first_existing(
+                    OUTER_ROOT / "$out" / "MFighter" / "Texture" / "MFighter_m000_t01_f.png",
+                    OUTER_ROOT / "$out" / "MFighter" / "Texture" / "MFighter_m000_t01_f.tga",
+                )
+                hair_tex = find_first_existing(
+                    OUTER_ROOT / "$out" / "FFighter" / "Texture" / "FFighter_m000_t00_m00_bh_ori.png",
+                    OUTER_ROOT / "$out" / "FFighter" / "Texture" / "FFighter_m000_t00_m00_bh_ori.tga",
+                )
+
+                upper_mat = make_material("L2CleanUpper", (0.42, 0.42, 0.46), metallic=0.02, roughness=0.86, specular=0.08)
+                lower_mat = make_material("L2CleanLower", (0.30, 0.27, 0.24), metallic=0.02, roughness=0.88, specular=0.08)
+                hands_mat = make_material("L2CleanHands", (0.50, 0.43, 0.35), metallic=0.0, roughness=0.72, specular=0.14)
+                boots_mat = make_material("L2CleanBoots", (0.24, 0.22, 0.20), metallic=0.02, roughness=0.86, specular=0.08)
+                hair_mat = make_image_material("L2CleanHairTex", hair_tex, metallic=0.0, roughness=0.84, specular=0.08, alpha_mode="HASHED") if hair_tex and hair_tex.exists() else make_material("L2CleanHair", (0.40, 0.31, 0.20), metallic=0.0, roughness=0.84, specular=0.08)
+                face_mat = make_image_material("L2CleanFaceTex", face_tex, metallic=0.0, roughness=0.68, specular=0.16) if face_tex and face_tex.exists() else make_material("L2CleanFace", (0.74, 0.62, 0.50), metallic=0.0, roughness=0.68, specular=0.16)
+
+                import_l2_profile_part(clean_root / "MFighter_m000_u.gltf", upper_mat)
+                import_l2_profile_part(clean_root / "MFighter_m000_l.gltf", lower_mat)
+                import_l2_profile_part(clean_root / "MFighter_m000_g.gltf", hands_mat)
+                import_l2_profile_part(clean_root / "MFighter_m000_b.gltf", boots_mat)
+                import_l2_profile_part(clean_root / "MFighter_m000_h.gltf", hair_mat)
+                import_l2_profile_part(clean_root / "MFighter_m000_f.gltf", face_mat)
+                return True
+
     root = find_l2_mfighter_root()
     if not root:
         return False
