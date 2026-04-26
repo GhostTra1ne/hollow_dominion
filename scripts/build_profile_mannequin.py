@@ -212,8 +212,8 @@ def import_l2_profile_part(gltf_path: Path, material):
 
 
 def add_l2_fighter_profile(variant: str) -> bool:
+    clean_root = find_l2_mfighter_clean_root()
     if variant == "base":
-        clean_root = find_l2_mfighter_clean_root()
         if clean_root:
             required_clean = [
                 clean_root / "MFighter_m000_u.gltf",
@@ -247,6 +247,44 @@ def add_l2_fighter_profile(variant: str) -> bool:
                 import_l2_profile_part(clean_root / "MFighter_m000_h.gltf", hair_mat)
                 import_l2_profile_part(clean_root / "MFighter_m000_f.gltf", face_mat)
                 return True
+    elif variant == "leather" and clean_root:
+        required_leather_clean = [
+            clean_root / "MFighter_m001_u.gltf",
+            clean_root / "MFighter_m001_l.gltf",
+            clean_root / "MFighter_m001_g.gltf",
+            clean_root / "MFighter_m001_b.gltf",
+            clean_root / "MFighter_m000_h.gltf",
+            clean_root / "MFighter_m000_f.gltf",
+        ]
+        if all(path.exists() for path in required_leather_clean):
+            tex_root = OUTER_ROOT / "$out" / "MFighter" / "Texture"
+            armor_u_tex = find_first_existing(tex_root / "MFighter_m001_t01_u_sp.png", tex_root / "MFighter_m001_t01_u_sp.tga")
+            armor_l_tex = find_first_existing(tex_root / "MFighter_m001_t01_l_sp.png", tex_root / "MFighter_m001_t01_l_sp.tga")
+            armor_g_tex = find_first_existing(tex_root / "MFighter_m001_t01_g_sp.png", tex_root / "MFighter_m001_t01_g_sp.tga")
+            armor_b_tex = find_first_existing(tex_root / "MFighter_m001_t01_b_sp.png", tex_root / "MFighter_m001_t01_b_sp.tga")
+            face_tex = find_first_existing(
+                tex_root / "MFighter_m000_t01_f.png",
+                tex_root / "MFighter_m000_t01_f.tga",
+            )
+            hair_tex = find_first_existing(
+                OUTER_ROOT / "$out" / "FFighter" / "Texture" / "FFighter_m000_t00_m00_bh_ori.png",
+                OUTER_ROOT / "$out" / "FFighter" / "Texture" / "FFighter_m000_t00_m00_bh_ori.tga",
+            )
+
+            armor_mat = make_image_material("L2LeatherM001U", armor_u_tex, metallic=0.02, roughness=0.78, specular=0.18) if armor_u_tex else make_material("L2LeatherM001UFallback", (0.43, 0.31, 0.20), metallic=0.10, roughness=0.66, specular=0.24)
+            legs_mat = make_image_material("L2LeatherM001L", armor_l_tex, metallic=0.02, roughness=0.80, specular=0.16) if armor_l_tex else make_material("L2LeatherM001LFallback", (0.47, 0.34, 0.22), metallic=0.10, roughness=0.68, specular=0.24)
+            gloves_mat = make_image_material("L2LeatherM001G", armor_g_tex, metallic=0.02, roughness=0.80, specular=0.16) if armor_g_tex else make_material("L2LeatherM001GFallback", (0.37, 0.27, 0.18), metallic=0.08, roughness=0.70, specular=0.22)
+            boots_mat = make_image_material("L2LeatherM001B", armor_b_tex, metallic=0.02, roughness=0.82, specular=0.14) if armor_b_tex else make_material("L2LeatherM001BFallback", (0.29, 0.21, 0.14), metallic=0.08, roughness=0.72, specular=0.22)
+            hair_mat = make_image_material("L2LeatherHairTex", hair_tex, metallic=0.0, roughness=0.84, specular=0.08, alpha_mode="HASHED") if hair_tex and hair_tex.exists() else make_material("L2LeatherHair", (0.35, 0.26, 0.16), metallic=0.02, roughness=0.76, specular=0.12)
+            face_mat = make_image_material("L2LeatherFaceTex", face_tex, metallic=0.0, roughness=0.68, specular=0.16) if face_tex and face_tex.exists() else make_material("L2LeatherFace", (0.72, 0.60, 0.48), metallic=0.0, roughness=0.58, specular=0.28)
+
+            import_l2_profile_part(clean_root / "MFighter_m001_u.gltf", armor_mat)
+            import_l2_profile_part(clean_root / "MFighter_m001_l.gltf", legs_mat)
+            import_l2_profile_part(clean_root / "MFighter_m001_g.gltf", gloves_mat)
+            import_l2_profile_part(clean_root / "MFighter_m001_b.gltf", boots_mat)
+            import_l2_profile_part(clean_root / "MFighter_m000_h.gltf", hair_mat)
+            import_l2_profile_part(clean_root / "MFighter_m000_f.gltf", face_mat)
+            return True
 
     root = find_l2_mfighter_root()
     if not root:
