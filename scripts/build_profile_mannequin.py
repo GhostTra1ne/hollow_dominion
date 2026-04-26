@@ -246,6 +246,15 @@ def add_l2_fighter_profile(variant: str) -> bool:
                 import_l2_profile_part(clean_root / "MFighter_m000_b.gltf", boots_mat)
                 import_l2_profile_part(clean_root / "MFighter_m000_h.gltf", hair_mat)
                 import_l2_profile_part(clean_root / "MFighter_m000_f.gltf", face_mat)
+                add_imported_fighter_hair(
+                    make_material(
+                        "L2CleanHairShell",
+                        (0.57, 0.46, 0.25),
+                        metallic=0.0,
+                        roughness=0.86,
+                        specular=0.08,
+                    )
+                )
                 return True
     elif variant == "leather" and clean_root:
         required_leather_clean = [
@@ -284,6 +293,15 @@ def add_l2_fighter_profile(variant: str) -> bool:
             import_l2_profile_part(clean_root / "MFighter_m001_b.gltf", boots_mat)
             import_l2_profile_part(clean_root / "MFighter_m000_h.gltf", hair_mat)
             import_l2_profile_part(clean_root / "MFighter_m000_f.gltf", face_mat)
+            add_imported_fighter_hair(
+                make_material(
+                    "L2LeatherHairShell",
+                    (0.57, 0.46, 0.25),
+                    metallic=0.0,
+                    roughness=0.86,
+                    specular=0.08,
+                )
+            )
             return True
 
     root = find_l2_mfighter_root()
@@ -338,6 +356,17 @@ def add_hair(hair_mat):
     primitive_cube((0.0, -0.03, 1.985), (0.17, 0.05, 0.032), hair_mat)
     primitive_cube((-0.118, -0.006, 2.03), (0.032, 0.026, 0.12), hair_mat)
     primitive_cube((0.118, -0.006, 2.03), (0.032, 0.026, 0.12), hair_mat)
+
+
+def add_imported_fighter_hair(hair_mat):
+    primitive_scaled_sphere((0.0, 0.0, 1.91), (0.17, 0.175, 0.145), hair_mat)
+    primitive_scaled_sphere((0.0, -0.036, 1.84), (0.175, 0.10, 0.152), hair_mat)
+    primitive_cube((0.0, 0.03, 1.95), (0.09, 0.04, 0.045), hair_mat)
+    primitive_cube((0.0, -0.086, 1.73), (0.126, 0.05, 0.12), hair_mat)
+    primitive_cube((-0.114, -0.026, 1.77), (0.034, 0.036, 0.18), hair_mat)
+    primitive_cube((0.114, -0.026, 1.77), (0.034, 0.036, 0.18), hair_mat)
+    primitive_cube((-0.062, -0.074, 1.64), (0.026, 0.028, 0.11), hair_mat)
+    primitive_cube((0.062, -0.074, 1.64), (0.026, 0.028, 0.11), hair_mat)
 
 
 def add_face(face_mat):
