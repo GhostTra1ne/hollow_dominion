@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-      const APP_VERSION = '20260426-telegram-79';
+      const APP_VERSION = '20260426-telegram-80';
       const url = new URL(window.location.href);
       window.__HD_DEBUG_GRID__ = url.searchParams.get('grid') === '1';
       if (url.searchParams.get('appv') !== APP_VERSION) {
@@ -19,8 +19,8 @@
     })();
   </script>  <title>Hollow Dominion</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script type="module" src="./assets/vendor/model-viewer.min.js?v=20260426-telegram-79"></script>
-  <link rel="stylesheet" href="common.css?v=20260426-telegram-79">
+  <script type="module" src="./assets/vendor/model-viewer.min.js?v=20260426-telegram-80"></script>
+  <link rel="stylesheet" href="common.css?v=20260426-telegram-80">
   <style>
     .screen-page {
       position: relative;
@@ -2179,7 +2179,7 @@
 
     body.env-telegram.platform-desktop-runtime.viewport-compact-desktop .city-portrait-card .hero-portrait-bg,
     body.env-telegram.platform-desktop-runtime.viewport-compact-desktop .city-portrait-atmosphere {
-      inset: 18px 8px -16px;
+      inset: 18px 8px 0;
     }
 
     body.env-telegram.platform-desktop-runtime.viewport-compact-desktop .city-portrait-card .character-stage {
@@ -2650,8 +2650,8 @@
                       <div class="profile-3d-viewer">
                         <model-viewer
                           id="profileModelViewer"
-                          src="./assets/models/profile_base.glb?v=20260426-telegram-79"
-                          poster="./assets/models/profile_base_poster.png?v=20260426-telegram-79"
+                          src="./assets/models/profile_base.glb?v=20260426-telegram-80"
+                          poster="./assets/models/profile_base_poster.png?v=20260426-telegram-80"
                           camera-controls
                           disable-pan
                           disable-zoom
