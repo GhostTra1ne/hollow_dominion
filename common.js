@@ -924,6 +924,24 @@ function primeProfile3DViewer(config) {
     viewer.setAttribute('src', asset.src);
     viewer.setAttribute('poster', asset.poster);
   }
+  const isCompactDesktop = !!document.body &&
+    document.body.classList.contains('env-telegram') &&
+    document.body.classList.contains('platform-desktop-runtime') &&
+    document.body.classList.contains('viewport-compact-desktop');
+
+  if (isCompactDesktop) {
+    viewer.setAttribute('camera-target', '0m 0.18m 0m');
+    viewer.setAttribute('camera-orbit', '0deg 78deg 1.34m');
+    viewer.setAttribute('min-camera-orbit', 'auto 78deg 1.34m');
+    viewer.setAttribute('max-camera-orbit', 'auto 78deg 1.34m');
+    viewer.setAttribute('field-of-view', '25deg');
+  } else {
+    viewer.setAttribute('camera-target', '0m 0.28m 0m');
+    viewer.setAttribute('camera-orbit', '0deg 78deg 1.24m');
+    viewer.setAttribute('min-camera-orbit', 'auto 78deg 1.24m');
+    viewer.setAttribute('max-camera-orbit', 'auto 78deg 1.24m');
+    viewer.setAttribute('field-of-view', '23deg');
+  }
   viewer.setAttribute('alt', `${config.nickname || 'Hero'} 3D profile preview`);
   bootModelViewerSupport();
 }
