@@ -58,6 +58,37 @@ def make_material(name, base_color, metallic=0.0, roughness=0.5, specular=0.5):
     return mat
 
 
+def make_image_material(
+    name,
+    image_path: Path,
+    metallic=0.0,
+    roughness=0.6,
+    specular=0.3,
+    alpha_mode: str | None = None,
+):
+    mat = bpy.data.materials.new(name=name)
+    mat.use_nodes = True
+    nodes = mat.node_tree.nodes
+    links = mat.node_tree.links
+    bsdf = nodes["Principled BSDF"]
+    tex = nodes.new("ShaderNodeTexImage")
+    tex.image = bpy.data.images.load(str(image_path), check_existing=True)
+    tex.interpolation = "Linear"
+    tex.extension = "CLIP"
+    tex.location = (-320, 260)
+    links.new(tex.outputs["Color"], bsdf.inputs["Base Color"])
+    if alpha_mode:
+        links.new(tex.outputs["Alpha"], bsdf.inputs["Alpha"])
+        if hasattr(mat, "blend_method"):
+            mat.blend_method = alpha_mode
+        if hasattr(mat, "shadow_method"):
+            mat.shadow_method = alpha_mode
+    bsdf.inputs["Metallic"].default_value = metallic
+    bsdf.inputs["Roughness"].default_value = roughness
+    bsdf.inputs["Specular IOR Level"].default_value = specular
+    return mat
+
+
 def finalize_object(obj, material=None, smooth=True):
     if material:
         obj.data.materials.clear()
@@ -135,6 +166,25 @@ def find_l2_mfighter_root() -> Path | None:
     return None
 
 
+def find_first_existing(*paths: Path) -> Path | None:
+    for path in paths:
+        if path.exists():
+            return path
+    return None
+
+
+def resolve_l2_texture_sets():
+    leather_root = find_first_existing(
+        OUTER_ROOT / "_l2_extract_t04" / "FFighter" / "Texture",
+        OUTER_ROOT / "_l2_leather_probe" / "FFighter" / "Texture",
+    )
+    head_root = find_first_existing(
+        OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture",
+        OUTER_ROOT / "_l2_extract_test2" / "FFighter" / "Texture",
+    )
+    return leather_root, head_root
+
+
 def import_l2_profile_part(gltf_path: Path, material):
     before = set(bpy.data.objects)
     bpy.ops.import_scene.gltf(filepath=str(gltf_path))
@@ -166,19 +216,28 @@ def add_l2_fighter_profile(variant: str) -> bool:
     if not all(path.exists() for path in required):
         return False
 
-    if variant == "leather":
-        armor_mat = make_material("L2ArmorLeather", (0.43, 0.31, 0.20), metallic=0.10, roughness=0.66, specular=0.24)
-        legs_mat = make_material("L2LegsLeather", (0.47, 0.34, 0.22), metallic=0.10, roughness=0.68, specular=0.24)
-        gloves_mat = make_material("L2GlovesLeather", (0.37, 0.27, 0.18), metallic=0.08, roughness=0.70, specular=0.22)
-        boots_mat = make_material("L2BootsLeather", (0.29, 0.21, 0.14), metallic=0.08, roughness=0.72, specular=0.22)
-    else:
-        armor_mat = make_material("L2ArmorBase", (0.60, 0.62, 0.68), metallic=0.22, roughness=0.46, specular=0.34)
-        legs_mat = make_material("L2LegsBase", (0.56, 0.58, 0.64), metallic=0.22, roughness=0.48, specular=0.32)
-        gloves_mat = make_material("L2GlovesBase", (0.52, 0.54, 0.60), metallic=0.24, roughness=0.44, specular=0.32)
-        boots_mat = make_material("L2BootsBase", (0.44, 0.46, 0.52), metallic=0.24, roughness=0.48, specular=0.30)
+    leather_root, head_root = resolve_l2_texture_sets()
 
-    skin_mat = make_material("L2Skin", (0.72, 0.60, 0.48), metallic=0.0, roughness=0.58, specular=0.28)
-    hair_mat = make_material("L2Hair", (0.35, 0.26, 0.16), metallic=0.02, roughness=0.76, specular=0.12)
+    armor_u_tex = leather_root / "FFighter_m001_t04_u.png" if leather_root else None
+    armor_l_tex = leather_root / "FFighter_m001_t04_l.png" if leather_root else None
+    armor_g_tex = leather_root / "FFighter_m001_t04_g.png" if leather_root else None
+    armor_b_tex = (leather_root / "FFighter_m001_t03_b.png") if leather_root and (leather_root / "FFighter_m001_t03_b.png").exists() else (leather_root / "FFighter_m001_t04_b_sp.png" if leather_root else None)
+    skin_tex = head_root / "FFighter_m001_t03_m00_bh_ori.png" if head_root and (head_root / "FFighter_m001_t03_m00_bh_ori.png").exists() else None
+    hair_tex = head_root / "FFighter_m001_t03_m00_ah_ori.png" if head_root and (head_root / "FFighter_m001_t03_m00_ah_ori.png").exists() else None
+
+    if variant == "leather" and armor_u_tex and armor_u_tex.exists():
+        armor_mat = make_image_material("L2ArmorLeatherTex", armor_u_tex, metallic=0.02, roughness=0.78, specular=0.18)
+        legs_mat = make_image_material("L2LegsLeatherTex", armor_l_tex, metallic=0.02, roughness=0.80, specular=0.16) if armor_l_tex and armor_l_tex.exists() else make_material("L2LegsLeather", (0.47, 0.34, 0.22), metallic=0.10, roughness=0.68, specular=0.24)
+        gloves_mat = make_image_material("L2GlovesLeatherTex", armor_g_tex, metallic=0.02, roughness=0.80, specular=0.16) if armor_g_tex and armor_g_tex.exists() else make_material("L2GlovesLeather", (0.37, 0.27, 0.18), metallic=0.08, roughness=0.70, specular=0.22)
+        boots_mat = make_image_material("L2BootsLeatherTex", armor_b_tex, metallic=0.02, roughness=0.82, specular=0.14) if armor_b_tex and armor_b_tex.exists() else make_material("L2BootsLeather", (0.29, 0.21, 0.14), metallic=0.08, roughness=0.72, specular=0.22)
+    else:
+        armor_mat = make_material("L2ArmorBase", (0.56, 0.57, 0.62), metallic=0.14, roughness=0.66, specular=0.18)
+        legs_mat = make_material("L2LegsBase", (0.50, 0.51, 0.57), metallic=0.14, roughness=0.68, specular=0.16)
+        gloves_mat = make_material("L2GlovesBase", (0.45, 0.46, 0.52), metallic=0.14, roughness=0.70, specular=0.15)
+        boots_mat = make_material("L2BootsBase", (0.38, 0.39, 0.45), metallic=0.14, roughness=0.72, specular=0.14)
+
+    skin_mat = make_image_material("L2SkinTex", skin_tex, metallic=0.0, roughness=0.68, specular=0.18) if skin_tex and skin_tex.exists() else make_material("L2Skin", (0.72, 0.60, 0.48), metallic=0.0, roughness=0.58, specular=0.28)
+    hair_mat = make_image_material("L2HairTex", hair_tex, metallic=0.0, roughness=0.84, specular=0.08, alpha_mode="HASHED") if hair_tex and hair_tex.exists() else make_material("L2Hair", (0.35, 0.26, 0.16), metallic=0.02, roughness=0.76, specular=0.12)
 
     import_l2_profile_part(root / "MFighter_m004_u.gltf", armor_mat)
     import_l2_profile_part(root / "MFighter_m004_l.gltf", legs_mat)
