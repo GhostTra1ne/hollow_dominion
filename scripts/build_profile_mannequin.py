@@ -47,14 +47,22 @@ def clear_scene():
     return scene
 
 
+def _set_socket(node_inputs, socket_name, value):
+    socket = node_inputs.get(socket_name)
+    if socket is not None:
+        socket.default_value = value
+
+
 def make_material(name, base_color, metallic=0.0, roughness=0.5, specular=0.5):
     mat = bpy.data.materials.new(name=name)
     mat.use_nodes = True
     bsdf = mat.node_tree.nodes["Principled BSDF"]
     bsdf.inputs["Base Color"].default_value = (*base_color, 1.0)
     bsdf.inputs["Metallic"].default_value = metallic
-    bsdf.inputs["Roughness"].default_value = roughness
-    bsdf.inputs["Specular IOR Level"].default_value = specular
+    bsdf.inputs["Roughness"].default_value = max(roughness, 0.82)
+    bsdf.inputs["Specular IOR Level"].default_value = min(specular, 0.12)
+    _set_socket(bsdf.inputs, "Emission Color", (*[min(1.0, channel * 0.24) for channel in base_color], 1.0))
+    _set_socket(bsdf.inputs, "Emission Strength", 0.04)
     return mat
 
 
@@ -77,6 +85,9 @@ def make_image_material(
     tex.extension = "CLIP"
     tex.location = (-320, 260)
     links.new(tex.outputs["Color"], bsdf.inputs["Base Color"])
+    emission_color = bsdf.inputs.get("Emission Color")
+    if emission_color is not None:
+        links.new(tex.outputs["Color"], emission_color)
     if alpha_mode:
         links.new(tex.outputs["Alpha"], bsdf.inputs["Alpha"])
         if hasattr(mat, "blend_method"):
@@ -84,8 +95,9 @@ def make_image_material(
         if hasattr(mat, "shadow_method"):
             mat.shadow_method = alpha_mode
     bsdf.inputs["Metallic"].default_value = metallic
-    bsdf.inputs["Roughness"].default_value = roughness
-    bsdf.inputs["Specular IOR Level"].default_value = specular
+    bsdf.inputs["Roughness"].default_value = max(roughness, 0.8)
+    bsdf.inputs["Specular IOR Level"].default_value = min(specular, 0.12)
+    _set_socket(bsdf.inputs, "Emission Strength", 0.03)
     return mat
 
 
