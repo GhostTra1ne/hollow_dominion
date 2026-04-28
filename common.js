@@ -388,6 +388,17 @@ const bottomNavItems = [
   {id: 'chat', href: 'chat.html', icon: './assets/ui/menu/chat.png', label: 'Чат'}
 ];
 
+const bottomNavPsdItems = [
+  {id: 'profile', href: 'index.html', label: 'Персонаж', asset: 'profile', x: 24, y: 19, w: 131, h: 178},
+  {id: 'inventory', href: 'inventory.html', label: 'Инвентарь', asset: 'inventory', x: 164, y: 20, w: 131, h: 177},
+  {id: 'map', href: 'map.html', label: 'Карта', asset: 'map', x: 304, y: 18, w: 131, h: 178},
+  {id: 'journey', href: 'journey.html', label: 'Бои', asset: 'fight', x: 428, y: 18, w: 124, h: 179},
+  {id: 'clan', href: 'clan.html', label: 'Клан', asset: 'clan', x: 552, y: 19, w: 125, h: 177},
+  {id: 'quest', href: '', label: 'Квесты', asset: 'quest', x: 684, y: 21, w: 126, h: 178, disabled: true},
+  {id: 'status', href: 'status.html', label: 'Статус', asset: 'status', x: 819, y: 21, w: 129, h: 178},
+  {id: 'chat', href: 'chat.html', label: 'Чат', asset: 'chat', x: 957, y: 19, w: 124, h: 178}
+];
+
 function withAppParams(href) {
   try {
     const url = new URL(href, window.location.href);
@@ -404,6 +415,11 @@ function withAppParams(href) {
   } catch {
     return href;
   }
+}
+
+function withAssetVersion(path) {
+  const version = window.__HD_APP_VERSION__;
+  return version ? `${path}?v=${encodeURIComponent(version)}` : path;
 }
 
 function q(id) { return document.getElementById(id); }
@@ -906,8 +922,15 @@ function bootModelViewerSupport() {
 
 function primeProfile3DViewer(config) {
   const viewer = q('profileModelViewer');
-  if (!viewer) return;
   const asset = getProfile3DAsset(config);
+  const posterFallback = q('profileModelPosterFallback');
+
+  if (posterFallback) {
+    posterFallback.setAttribute('src', asset.poster);
+    posterFallback.setAttribute('alt', `${config.nickname || 'Hero'} profile poster`);
+  }
+
+  if (!viewer) return;
 
   if (!viewer.dataset.boundHdViewer) {
     viewer.dataset.boundHdViewer = '1';
@@ -1316,6 +1339,44 @@ function renderBottomNav(active) {
         <img src="./assets/ui/menu/adventure.png" alt="Отправиться в путешествие">
       </a>
     </div>
+  </div>`;
+}
+
+function renderSideMenu(active) { return renderBottomNav(active); }
+
+function renderBottomNav(active) {
+  const buttonBoxWidth = 1100;
+  const buttonBoxHeight = 215;
+  const pct = (value, total) => `${((value / total) * 100).toFixed(3)}%`;
+
+  const links = bottomNavPsdItems.map((item) => {
+    const src = withAssetVersion(`./assets/ui/profile_redesign/btn_${item.asset}_${active === item.id ? 'use' : 'idle'}.png`);
+    const style = [
+      `left:${pct(item.x, buttonBoxWidth)}`,
+      `top:${pct(item.y, buttonBoxHeight)}`,
+      `width:${pct(item.w, buttonBoxWidth)}`,
+      `height:${pct(item.h, buttonBoxHeight)}`
+    ].join(';');
+
+    if (item.disabled) {
+      return `
+        <span class="psd-bottom-nav-button disabled" style="${style}" aria-label="${item.label}">
+          <img src="${src}" alt="">
+        </span>
+      `;
+    }
+
+    return `
+      <a class="psd-bottom-nav-button" href="${withAppParams(item.href)}" style="${style}" aria-label="${item.label}"${active === item.id ? ' aria-current="page"' : ''}>
+        <img src="${src}" alt="">
+      </a>
+    `;
+  }).join('');
+
+  return `
+  <div class="psd-bottom-nav-shell" aria-label="Навигация по разделам персонажа">
+    <img class="psd-bottom-nav-art" src="${withAssetVersion('./assets/ui/profile_redesign/art_profile_bottom.png')}" alt="">
+    ${links}
   </div>`;
 }
 

@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-      const APP_VERSION = '20260428-telegram-96';
+      const APP_VERSION = '20260428-telegram-97';
       const url = new URL(window.location.href);
       window.__HD_DEBUG_GRID__ = url.searchParams.get('grid') === '1';
       if (url.searchParams.get('appv') !== APP_VERSION) {
@@ -19,8 +19,8 @@
     })();
   </script>  <title>Hollow Dominion</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script type="module" src="./assets/vendor/model-viewer.min.js?v=20260428-telegram-96"></script>
-  <link rel="stylesheet" href="common.css?v=20260428-telegram-96">
+  <script type="module" src="./assets/vendor/model-viewer.min.js?v=20260428-telegram-97"></script>
+  <link rel="stylesheet" href="common.css?v=20260428-telegram-97">
   <style>
     .screen-page {
       position: relative;
@@ -2556,6 +2556,36 @@
       transition: opacity .24s ease;
     }
 
+    .profile-psd-poster-fallback {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      pointer-events: none;
+      animation: hd-profile-idle 4.8s ease-in-out infinite;
+    }
+
+    .profile-psd-poster-fallback img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center bottom;
+      transform: scale(1.2);
+      transform-origin: center bottom;
+      filter:
+        saturate(.82)
+        contrast(1.12)
+        brightness(1.04)
+        drop-shadow(1px 0 0 rgba(22, 13, 5, .72))
+        drop-shadow(-1px 0 0 rgba(22, 13, 5, .72))
+        drop-shadow(0 1px 0 rgba(22, 13, 5, .72))
+        drop-shadow(0 -1px 0 rgba(22, 13, 5, .72))
+        drop-shadow(0 6px 14px rgba(0, 0, 0, .26));
+    }
+
     .profile-psd-3d-viewer model-viewer {
       display: block;
       width: 100%;
@@ -2608,7 +2638,7 @@
     .profile-psd-frame-art {
       position: absolute;
       inset: 0;
-      z-index: 3;
+      z-index: 30;
       pointer-events: none;
     }
 
@@ -2669,6 +2699,49 @@
         width: 78%;
       }
     }
+
+    body.env-telegram.device-mobile .profile-psd-host,
+    body.env-browser.device-mobile .profile-psd-host {
+      min-height: calc(100dvh - var(--safe-top, 0px) - var(--safe-bottom, 0px) - 2px);
+      place-items: start stretch;
+    }
+
+    body.env-telegram.device-mobile .profile-psd-shell,
+    body.env-browser.device-mobile .profile-psd-shell {
+      --psd-width: calc(100vw - var(--safe-left, 0px) - var(--safe-right, 0px));
+      width: var(--psd-width);
+      max-width: none;
+    }
+
+    body.env-telegram.device-mobile .profile-psd-shell-bg,
+    body.env-browser.device-mobile .profile-psd-shell-bg {
+      position: fixed;
+      inset: 0;
+      left: 0;
+      top: 0;
+      width: 100vw;
+      height: 100dvh;
+      object-fit: fill;
+    }
+
+    body.env-telegram.device-mobile .profile-psd-3d-viewer,
+    body.env-browser.device-mobile .profile-psd-3d-viewer,
+    body.env-telegram.device-mobile .profile-psd-2d-fallback,
+    body.env-browser.device-mobile .profile-psd-2d-fallback {
+      display: none;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    body.env-telegram.device-mobile .profile-psd-poster-fallback,
+    body.env-browser.device-mobile .profile-psd-poster-fallback {
+      display: flex;
+    }
+
+    body.env-telegram.device-mobile .profile-psd-poster-fallback img,
+    body.env-browser.device-mobile .profile-psd-poster-fallback img {
+      transform: scale(1);
+    }
   </style>
 </head>
   <body>
@@ -2685,8 +2758,8 @@
   </div>
   <div class="toast" id="toast"></div>
 
-<script src="item-catalog.js?v=20260428-telegram-96"></script>
-<script src="common.js?v=20260428-telegram-96"></script>
+<script src="item-catalog.js?v=20260428-telegram-97"></script>
+<script src="common.js?v=20260428-telegram-97"></script>
     <script>
       (async () => {
       const screenPage = document.querySelector('.screen-page');
@@ -3059,7 +3132,7 @@
 
     function renderCityScreen() {
       const hero = state.hero;
-      const assetVersion = window.__HD_APP_VERSION__ || '20260428-telegram-96';
+      const assetVersion = window.__HD_APP_VERSION__ || '20260428-telegram-97';
 
       q('app').innerHTML = `
         <div class="single-page-layout profile-psd-host">
@@ -3093,6 +3166,9 @@
                           field-of-view="23deg">
                         </model-viewer>
                       </div>
+                      <div class="profile-psd-poster-fallback" aria-hidden="true">
+                        <img id="profileModelPosterFallback" src="./assets/models/profile_base_poster.png?v=${assetVersion}" alt="">
+                      </div>
                       <div class="profile-psd-2d-fallback" id="profilePreviewRoot">
                         ${characterMarkup()}
                       </div>
@@ -3102,11 +3178,8 @@
               </div>
               <img class="profile-psd-art profile-psd-frame-art" src="${assetWithVersion('./assets/ui/profile_redesign/art_profile_frame.png')}" alt="">
             </div>
-            <div class="profile-psd-bottom-shell" aria-label="Навигация по разделам персонажа">
-              <img class="profile-psd-art" src="${assetWithVersion('./assets/ui/profile_redesign/art_profile_bottom.png')}" alt="">
-              ${renderProfileBottomNav('profile')}
-            </div>
           </div>
+          ${renderBottomNav('profile')}
         </div>
       `;
 
