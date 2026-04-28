@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-      const APP_VERSION = '20260429-telegram-107';
+      const APP_VERSION = '20260429-telegram-108';
       const url = new URL(window.location.href);
       window.__HD_DEBUG_GRID__ = url.searchParams.get('grid') === '1';
       if (url.searchParams.get('appv') !== APP_VERSION) {
@@ -19,8 +19,8 @@
     })();
   </script>  <title>Hollow Dominion</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script type="module" src="./assets/vendor/model-viewer.min.js?v=20260429-telegram-107"></script>
-  <link rel="stylesheet" href="common.css?v=20260429-telegram-107">
+  <script type="module" src="./assets/vendor/model-viewer.min.js?v=20260429-telegram-108"></script>
+  <link rel="stylesheet" href="common.css?v=20260429-telegram-108">
   <style>
     .screen-page {
       position: relative;
@@ -2793,6 +2793,64 @@
       height: 67.736%;
     }
 
+    body.env-telegram.platform-desktop-runtime.viewport-compact-desktop .profile-psd-hud,
+    body.env-browser.device-desktop .profile-psd-hud {
+      left: 0.779%;
+      top: 0;
+      width: 98.442%;
+      height: 18.6%;
+    }
+
+    body.env-telegram.platform-desktop-runtime.viewport-compact-desktop .profile-psd-level-value,
+    body.env-browser.device-desktop .profile-psd-level-value {
+      top: 48.2%;
+      font-size: calc(var(--psd-width, 385px) * 0.043);
+    }
+
+    body.env-telegram.platform-desktop-runtime.viewport-compact-desktop .profile-psd-nickname,
+    body.env-browser.device-desktop .profile-psd-nickname {
+      left: 28.7%;
+      top: 15.9%;
+      width: 19.8%;
+      font-size: calc(var(--psd-width, 385px) * 0.0375);
+      letter-spacing: .03em;
+    }
+
+    body.env-telegram.platform-desktop-runtime.viewport-compact-desktop .profile-psd-class,
+    body.env-browser.device-desktop .profile-psd-class {
+      left: 34.1%;
+      top: 34.1%;
+      width: 18.6%;
+      font-size: calc(var(--psd-width, 385px) * 0.0305);
+      letter-spacing: .028em;
+    }
+
+    body.env-telegram.platform-desktop-runtime.viewport-compact-desktop .profile-psd-bar,
+    body.env-browser.device-desktop .profile-psd-bar {
+      left: 39.45%;
+      width: 55.15%;
+      height: 7.15%;
+    }
+
+    body.env-telegram.platform-desktop-runtime.viewport-compact-desktop .profile-psd-bar.cp,
+    body.env-browser.device-desktop .profile-psd-bar.cp { top: 50.15%; }
+
+    body.env-telegram.platform-desktop-runtime.viewport-compact-desktop .profile-psd-bar.hp,
+    body.env-browser.device-desktop .profile-psd-bar.hp { top: 62.25%; }
+
+    body.env-telegram.platform-desktop-runtime.viewport-compact-desktop .profile-psd-bar.mp,
+    body.env-browser.device-desktop .profile-psd-bar.mp { top: 74.25%; }
+
+    body.env-telegram.platform-desktop-runtime.viewport-compact-desktop .profile-psd-bar.exp,
+    body.env-browser.device-desktop .profile-psd-bar.exp { top: 84.95%; }
+
+    body.env-telegram.platform-desktop-runtime.viewport-compact-desktop .profile-psd-bar-text,
+    body.env-browser.device-desktop .profile-psd-bar-text {
+      font-size: calc(var(--psd-width, 385px) * 0.023);
+      letter-spacing: .018em;
+      transform: translateY(-1%);
+    }
+
     body.env-telegram.device-mobile .profile-psd-hud,
     body.env-browser.device-mobile .profile-psd-hud {
       left: 0.779%;
@@ -2885,8 +2943,8 @@
   </div>
   <div class="toast" id="toast"></div>
 
-<script src="item-catalog.js?v=20260429-telegram-107"></script>
-<script src="common.js?v=20260429-telegram-107"></script>
+<script src="item-catalog.js?v=20260429-telegram-108"></script>
+<script src="common.js?v=20260429-telegram-108"></script>
     <script>
       (async () => {
       const screenPage = document.querySelector('.screen-page');
@@ -3266,7 +3324,7 @@
     function renderCityScreen() {
       setProfileScreenMode(true);
       const hero = state.hero;
-      const assetVersion = window.__HD_APP_VERSION__ || '20260429-telegram-107';
+      const assetVersion = window.__HD_APP_VERSION__ || '20260429-telegram-108';
 
       q('app').innerHTML = `
         <div class="single-page-layout profile-psd-host">
