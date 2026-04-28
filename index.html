@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-      const APP_VERSION = '20260428-telegram-88';
+      const APP_VERSION = '20260428-telegram-89';
       const url = new URL(window.location.href);
       window.__HD_DEBUG_GRID__ = url.searchParams.get('grid') === '1';
       if (url.searchParams.get('appv') !== APP_VERSION) {
@@ -19,8 +19,8 @@
     })();
   </script>  <title>Hollow Dominion</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script type="module" src="./assets/vendor/model-viewer.min.js?v=20260428-telegram-88"></script>
-  <link rel="stylesheet" href="common.css?v=20260428-telegram-88">
+  <script type="module" src="./assets/vendor/model-viewer.min.js?v=20260428-telegram-89"></script>
+  <link rel="stylesheet" href="common.css?v=20260428-telegram-89">
   <style>
     .screen-page {
       position: relative;
@@ -2291,6 +2291,311 @@
         transform: none;
       }
     }
+
+    .profile-psd-host {
+      width: 100%;
+      min-height: 100%;
+      display: grid;
+      place-items: start center;
+      padding-bottom: 0;
+    }
+
+    .profile-psd-shell {
+      --psd-width: min(
+        calc(100vw - var(--safe-left, 0px) - var(--safe-right, 0px) - 4px),
+        calc((100vh - var(--safe-top, 0px) - var(--safe-bottom, 0px) - 6px) * 1155 / 1776),
+        385px
+      );
+      position: relative;
+      width: var(--psd-width);
+      aspect-ratio: 1155 / 1776;
+      margin: 0 auto;
+      overflow: visible;
+      isolation: isolate;
+      pointer-events: auto;
+    }
+
+    .profile-psd-art {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      user-select: none;
+      -webkit-user-drag: none;
+      pointer-events: none;
+    }
+
+    .profile-psd-hud {
+      position: absolute;
+      left: 0.779%;
+      top: 0;
+      width: 98.442%;
+      height: 21.059%;
+      z-index: 20;
+    }
+
+    .profile-psd-hud-system {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .profile-psd-level-value,
+    .profile-psd-nickname,
+    .profile-psd-class,
+    .profile-psd-bar-text {
+      font-family: "Georgia", "Times New Roman", serif;
+      color: #f6f1e5;
+      text-shadow:
+        0 1px 0 rgba(15, 9, 4, .92),
+        0 0 6px rgba(0, 0, 0, .5);
+      letter-spacing: .02em;
+      line-height: 1;
+    }
+
+    .profile-psd-level-value {
+      position: absolute;
+      left: 13.19%;
+      top: 47.86%;
+      width: 5.02%;
+      height: 13.37%;
+      display: grid;
+      place-items: center;
+      font-size: clamp(16px, 4vw, 22px);
+      font-weight: 700;
+    }
+
+    .profile-psd-nickname {
+      position: absolute;
+      left: 28.85%;
+      top: 14.97%;
+      width: 17.24%;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: clamp(13px, 3.2vw, 18px);
+      font-weight: 500;
+    }
+
+    .profile-psd-class {
+      position: absolute;
+      left: 34.22%;
+      top: 32.62%;
+      width: 14.42%;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: clamp(11px, 2.7vw, 16px);
+      font-weight: 500;
+    }
+
+    .profile-psd-bar {
+      --fill: 0%;
+      --bar-color: #ffffff;
+      --bar-color-top: #ffffff;
+      position: absolute;
+      left: 39.23%;
+      width: 55.76%;
+      height: 7.75%;
+      border-radius: 2px;
+      overflow: hidden;
+      background:
+        linear-gradient(180deg, rgba(28, 28, 28, .82), rgba(10, 10, 10, .95));
+      box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, .05),
+        inset 0 2px 3px rgba(255, 255, 255, .03),
+        inset 0 -2px 3px rgba(0, 0, 0, .28);
+    }
+
+    .profile-psd-bar.cp { top: 48.66%; }
+    .profile-psd-bar.hp { top: 60.70%; }
+    .profile-psd-bar.mp { top: 72.73%; }
+    .profile-psd-bar.exp { top: 82.89%; }
+
+    .profile-psd-bar-fill {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: var(--fill);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, .12), rgba(255, 255, 255, 0) 42%),
+        linear-gradient(180deg, var(--bar-color-top), var(--bar-color));
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, .14),
+        0 0 8px rgba(0, 0, 0, .18);
+    }
+
+    .profile-psd-bar-text {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      font-size: clamp(8px, 1.95vw, 11px);
+      font-weight: 700;
+      letter-spacing: .04em;
+    }
+
+    .profile-psd-portrait-shell {
+      position: absolute;
+      left: 12.987%;
+      top: 18.975%;
+      width: 74.459%;
+      height: 67.736%;
+      z-index: 10;
+    }
+
+    .profile-psd-portrait-viewport {
+      position: absolute;
+      left: 1.63%;
+      right: 2.21%;
+      top: 3.66%;
+      bottom: 1.66%;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .profile-psd-portrait-viewport .hero-portrait-bg {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background-position: center center;
+      background-size: cover;
+      background-repeat: no-repeat;
+    }
+
+    .profile-psd-portrait-viewport .hero-portrait-bg::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(12, 10, 6, .05), rgba(12, 10, 6, .16));
+      pointer-events: none;
+    }
+
+    .profile-psd-stage {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+    }
+
+    .profile-psd-shadow {
+      position: absolute;
+      left: 50%;
+      bottom: 5%;
+      width: 46%;
+      height: 7%;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0, 0, 0, .34) 0%, rgba(0, 0, 0, .18) 42%, rgba(0, 0, 0, 0) 74%);
+      filter: blur(8px);
+      opacity: .72;
+      pointer-events: none;
+    }
+
+    .profile-psd-character-box {
+      position: absolute;
+      inset: 0;
+    }
+
+    .profile-psd-3d-viewer,
+    .profile-psd-2d-fallback {
+      position: absolute;
+      inset: 0;
+    }
+
+    .profile-psd-3d-viewer {
+      z-index: 2;
+      inset: -2% -10% -16%;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      animation: hd-profile-idle 4.8s ease-in-out infinite;
+      will-change: transform;
+    }
+
+    .profile-psd-2d-fallback {
+      z-index: 1;
+      transition: opacity .24s ease;
+    }
+
+    .profile-psd-3d-viewer model-viewer {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      --poster-color: transparent;
+      transform: translateY(-38%) scale(.83);
+      transform-origin: center bottom;
+      filter:
+        saturate(.82)
+        contrast(1.12)
+        brightness(1.04)
+        drop-shadow(1px 0 0 rgba(22, 13, 5, .72))
+        drop-shadow(-1px 0 0 rgba(22, 13, 5, .72))
+        drop-shadow(0 1px 0 rgba(22, 13, 5, .72))
+        drop-shadow(0 -1px 0 rgba(22, 13, 5, .72))
+        drop-shadow(0 6px 14px rgba(0, 0, 0, .26));
+    }
+
+    html.has-model-viewer .profile-psd-3d-viewer {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    html.has-model-viewer .profile-psd-2d-fallback {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .profile-psd-frame-art {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    .profile-psd-bottom-shell {
+      position: absolute;
+      left: 2.424%;
+      top: 87.106%;
+      width: 95.238%;
+      height: 12.106%;
+      z-index: 25;
+    }
+
+    .profile-psd-bottom-shell > .profile-psd-art {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+    }
+
+    .profile-psd-bottom-button {
+      position: absolute;
+      display: block;
+      text-decoration: none;
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
+      z-index: 2;
+    }
+
+    .profile-psd-bottom-button.disabled {
+      pointer-events: none;
+      opacity: .92;
+    }
+
+    .profile-psd-bottom-button img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-drag: none;
+      filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .28));
+    }
   </style>
 </head>
   <body>
@@ -2307,8 +2612,8 @@
   </div>
   <div class="toast" id="toast"></div>
 
-<script src="item-catalog.js?v=20260426-telegram-62"></script>
-<script src="common.js?v=20260428-telegram-88"></script>
+<script src="item-catalog.js?v=20260428-telegram-89"></script>
+<script src="common.js?v=20260428-telegram-89"></script>
     <script>
       (async () => {
       const screenPage = document.querySelector('.screen-page');
@@ -2583,34 +2888,25 @@
       return Number.isFinite(Number(value)) ? Number(value) : 0;
     }
 
-    function renderProfileHud(hero) {
-      const cp = `${hudNumber(hero.cp)} / ${hudNumber(hero.maxCp)}`;
-      const hp = `${hudNumber(hero.hp)} / ${hudNumber(hero.maxHp)}`;
-      const mp = `${hudNumber(hero.mp)} / ${hudNumber(hero.maxMp)}`;
-      const exp = `${hero.xpPercent || '0.00'}%`;
-
-      return `
-        <div class="portrait-overlay-ui" aria-label="РџР°РЅРµР»СЊ С…Р°СЂР°РєС‚РµСЂРёСЃС‚РёРє">
-          <div class="portrait-overlay-head">
-            <div class="hud-level-box" aria-label="РЈСЂРѕРІРµРЅСЊ РїРµСЂСЃРѕРЅР°Р¶Р°"><span>${hudNumber(hero.level)}</span></div>
-            <div class="portrait-nickname">${escapeHtml(hero.nickname)}</div>
-          </div>
-          <div class="portrait-bars">
-            <div class="hud-bar cp"><div class="hud-bar-value cp">${cp}</div></div>
-            <div class="hud-bar hp"><div class="hud-bar-value hp">${hp}</div></div>
-            <div class="hud-bar mp"><div class="hud-bar-value mp">${mp}</div></div>
-            <div class="hud-bar exp"><div class="hud-bar-value exp">${exp}</div></div>
-          </div>
-        </div>
-      `;
-    }
-
     function hudPercent(current, max) {
       if (!Number.isFinite(Number(max)) || Number(max) <= 0) {
         return 0;
       }
       const percent = (hudNumber(current) / hudNumber(max)) * 100;
       return Math.max(0, Math.min(100, percent));
+    }
+
+    function assetWithVersion(path) {
+      const version = window.__HD_APP_VERSION__;
+      return version ? `${path}?v=${encodeURIComponent(version)}` : path;
+    }
+
+    function getProfileClassLabel(classId) {
+      const labels = {
+        warrior: 'Warrior',
+        mage: 'Mage'
+      };
+      return labels[classId] || getClassName(classId) || 'Adventurer';
     }
 
     function renderProfileHud(hero) {
@@ -2623,28 +2919,23 @@
       const expPercent = Math.max(0, Math.min(100, parseFloat(hero.xpPercent || '0') || 0));
 
       const bars = [
-        { key: 'cp', value: `${cpValue} / ${maxCpValue}`, icon: './assets/ui/hud/new/cp.png', fill: `${hudPercent(cpValue, maxCpValue)}%` },
-        { key: 'hp', value: `${hpValue} / ${maxHpValue}`, icon: './assets/ui/hud/new/hp.png', fill: `${hudPercent(hpValue, maxHpValue)}%` },
-        { key: 'mp', value: `${mpValue} / ${maxMpValue}`, icon: './assets/ui/hud/new/mp.png', fill: `${hudPercent(mpValue, maxMpValue)}%` },
-        { key: 'exp', value: `${expPercent.toFixed(2)}%`, icon: './assets/ui/hud/new/exp.png', fill: `${expPercent}%` }
+        { key: 'cp', value: `${cpValue} / ${maxCpValue}`, fill: `${hudPercent(cpValue, maxCpValue)}%`, top: '#fff09a', base: '#f4d83a' },
+        { key: 'hp', value: `${hpValue} / ${maxHpValue}`, fill: `${hudPercent(hpValue, maxHpValue)}%`, top: '#ff897f', base: '#ef4242' },
+        { key: 'mp', value: `${mpValue} / ${maxMpValue}`, fill: `${hudPercent(mpValue, maxMpValue)}%`, top: '#78c5ff', base: '#2b87ee' },
+        { key: 'exp', value: `${expPercent.toFixed(2)}%`, fill: `${expPercent}%`, top: '#f2f2f2', base: '#aeb2b7' }
       ];
 
       return `
-        <div class="portrait-overlay-ui" aria-label="РџР°РЅРµР»СЊ С…Р°СЂР°РєС‚РµСЂРёСЃС‚РёРє">
-          <div class="portrait-overlay-head">
-            <div class="hud-level-box" aria-label="РЈСЂРѕРІРµРЅСЊ РїРµСЂСЃРѕРЅР°Р¶Р°"><span>${hudNumber(hero.level)}</span></div>
-            <div class="portrait-nickname">${escapeHtml(hero.nickname)}</div>
-          </div>
-          <div class="portrait-bars">
+        <div class="profile-psd-hud" aria-label="Панель характеристик персонажа">
+          <img class="profile-psd-art" src="${assetWithVersion('./assets/ui/profile_redesign/art_hud_frame.png')}" alt="">
+          <div class="profile-psd-hud-system">
+            <div class="profile-psd-level-value">${hudNumber(hero.level)}</div>
+            <div class="profile-psd-nickname">${escapeHtml(hero.nickname)}</div>
+            <div class="profile-psd-class">${escapeHtml(getProfileClassLabel(hero.classId))}</div>
             ${bars.map((bar) => `
-              <div class="hud-bar ${bar.key}">
-                <div class="hud-bar-icon ${bar.key}">
-                  <img src="${bar.icon}" alt="${bar.key.toUpperCase()}">
-                </div>
-                <div class="hud-bar-track ${bar.key}">
-                  <div class="hud-bar-fill ${bar.key}" style="--fill:${bar.fill};"></div>
-                  <div class="hud-bar-value ${bar.key}">${bar.value}</div>
-                </div>
+              <div class="profile-psd-bar ${bar.key}" style="--fill:${bar.fill};--bar-color:${bar.base};--bar-color-top:${bar.top};">
+                <div class="profile-psd-bar-fill"></div>
+                <div class="profile-psd-bar-text">${bar.value}</div>
               </div>
             `).join('')}
           </div>
@@ -2652,71 +2943,94 @@
       `;
     }
 
+    function renderProfileBottomNav(active = 'profile') {
+      const buttonBoxWidth = 1100;
+      const buttonBoxHeight = 215;
+      const buttons = [
+        { id: 'profile', href: 'index.html', label: 'Персонаж', idle: 'btn_profile_idle.png', use: 'btn_profile_use.png', x: 24, y: 19, w: 131, h: 178 },
+        { id: 'inventory', href: 'inventory.html', label: 'Инвентарь', idle: 'btn_inventory_idle.png', use: 'btn_inventory_use.png', x: 164, y: 20, w: 131, h: 177 },
+        { id: 'map', href: 'map.html', label: 'Карта', idle: 'btn_map_idle.png', use: 'btn_map_use.png', x: 304, y: 18, w: 131, h: 178 },
+        { id: 'fight', href: 'journey.html', label: 'Бои', idle: 'btn_fight_idle.png', use: 'btn_fight_use.png', x: 428, y: 18, w: 124, h: 179 },
+        { id: 'clan', href: 'clan.html', label: 'Клан', idle: 'btn_clan_idle.png', use: 'btn_clan_use.png', x: 552, y: 19, w: 125, h: 177 },
+        { id: 'quest', href: '', label: 'Квесты', idle: 'btn_quest_idle.png', use: 'btn_quest_use.png', x: 684, y: 21, w: 126, h: 178, disabled: true },
+        { id: 'status', href: 'status.html', label: 'Статус', idle: 'btn_status_idle.png', use: 'btn_status_use.png', x: 819, y: 21, w: 129, h: 178 },
+        { id: 'chat', href: 'chat.html', label: 'Чат', idle: 'btn_chat_idle.png', use: 'btn_chat_use.png', x: 957, y: 19, w: 124, h: 178 }
+      ];
+
+      const pct = (value, total) => `${((value / total) * 100).toFixed(3)}%`;
+
+      return buttons.map((item) => {
+        const src = assetWithVersion(`./assets/ui/profile_redesign/${active === item.id ? item.use : item.idle}`);
+        const style = [
+          `left:${pct(item.x, buttonBoxWidth)}`,
+          `top:${pct(item.y, buttonBoxHeight)}`,
+          `width:${pct(item.w, buttonBoxWidth)}`,
+          `height:${pct(item.h, buttonBoxHeight)}`
+        ].join(';');
+
+        if (item.disabled) {
+          return `
+            <span class="profile-psd-bottom-button disabled" style="${style}" aria-label="${item.label}">
+              <img src="${src}" alt="">
+            </span>
+          `;
+        }
+
+        return `
+          <a class="profile-psd-bottom-button" href="${withAppParams(item.href)}" style="${style}" aria-label="${item.label}"${active === item.id ? ' aria-current="page"' : ''}>
+            <img src="${src}" alt="">
+          </a>
+        `;
+      }).join('');
+    }
+
     function renderCityScreen() {
-      const locationBannerSrc = './assets/ui/location/gludin-location-banner.png';
+      const hero = state.hero;
+      const assetVersion = window.__HD_APP_VERSION__ || '20260428-telegram-89';
 
       q('app').innerHTML = `
-        <div class="single-page-layout city-profile-shell">
-          <div class="profile-fixed-block">
-            <div class="city-screen bannerless">
-              <div class="city-home-layout">
-                <div class="panel city-portrait-card">
-                  <div class="hero-portrait-bg" id="portraitBg"></div>
-                  <div class="profile-location-banner" aria-hidden="true">
-                    <img src="${locationBannerSrc}" alt="">
-                  </div>
-                  <div class="city-portrait-atmosphere" aria-hidden="true">
-                    <span class="city-portrait-mist m1"></span>
-                    <span class="city-portrait-mist m2"></span>
-                    <span class="city-portrait-spark s1"></span>
-                    <span class="city-portrait-spark s2"></span>
-                    <span class="city-portrait-spark s3"></span>
-                    <span class="city-portrait-spark s4"></span>
-                  </div>
-                  <div class="character-stage">
-                    <div class="profile-overhead-name">${escapeHtml(state.hero.nickname)}</div>
-                    <div class="shadow"></div>
-                    <div class="character-box profile-preview-box">
-                      <div class="profile-3d-viewer">
-                        <model-viewer
-                          id="profileModelViewer"
-                src="./assets/models/profile_base.glb?v=20260428-telegram-88"
-                poster="./assets/models/profile_base_poster.png?v=20260428-telegram-88"
-                          camera-controls
-                          disable-pan
-                          disable-zoom
-                          interaction-prompt="none"
-                          shadow-intensity="0.65"
-                          exposure="1.05"
-                          scale="1 1 1"
-                          camera-target="0m 0.28m 0m"
-                          camera-orbit="0deg 78deg 1.24m"
-                          min-camera-orbit="auto 78deg 1.24m"
-                          max-camera-orbit="auto 78deg 1.24m"
-                          field-of-view="23deg">
-                        </model-viewer>
-                      </div>
-                      <div class="profile-2d-fallback" id="profilePreviewRoot">
-                        ${characterMarkup()}
-                      </div>
+        <div class="single-page-layout profile-psd-host">
+          <div class="profile-psd-shell">
+            ${renderProfileHud(hero)}
+            <div class="profile-psd-portrait-shell">
+              <div class="profile-psd-portrait-viewport">
+                <div class="hero-portrait-bg" id="portraitBg"></div>
+                <div class="profile-psd-stage">
+                  <div class="profile-psd-shadow" aria-hidden="true"></div>
+                  <div class="profile-psd-character-box profile-preview-box">
+                    <div class="profile-psd-3d-viewer">
+                      <model-viewer
+                        id="profileModelViewer"
+                        src="./assets/models/profile_base.glb?v=${assetVersion}"
+                        poster="./assets/models/profile_base_poster.png?v=${assetVersion}"
+                        camera-controls
+                        disable-pan
+                        disable-zoom
+                        interaction-prompt="none"
+                        shadow-intensity="0.65"
+                        exposure="1.05"
+                        scale="1 1 1"
+                        camera-target="0m 0.28m 0m"
+                        camera-orbit="0deg 78deg 1.24m"
+                        min-camera-orbit="auto 78deg 1.24m"
+                        max-camera-orbit="auto 78deg 1.24m"
+                        field-of-view="23deg">
+                      </model-viewer>
                     </div>
-                  </div>
-                  <div class="city-portrait-frame" aria-hidden="true">
-                    <img src="./assets/ui/frames/profile_frame.png" alt="">
-                  </div>
-                  <div class="portrait-footer">
-                    <div class="profile-name">${escapeHtml(state.hero.nickname)}</div>
+                    <div class="profile-psd-2d-fallback" id="profilePreviewRoot">
+                      ${characterMarkup()}
+                    </div>
                   </div>
                 </div>
               </div>
+              <img class="profile-psd-art profile-psd-frame-art" src="${assetWithVersion('./assets/ui/profile_redesign/art_profile_frame.png')}" alt="">
+            </div>
+            <div class="profile-psd-bottom-shell" aria-label="Навигация по разделам персонажа">
+              <img class="profile-psd-art" src="${assetWithVersion('./assets/ui/profile_redesign/art_profile_bottom.png')}" alt="">
+              ${renderProfileBottomNav('profile')}
             </div>
           </div>
-
-          <div class="profile-hud-panel">
-            ${renderProfileHud(state.hero)}
-          </div>
         </div>
-        ${renderBottomNav('profile')}
       `;
 
       applyPortrait(state);
