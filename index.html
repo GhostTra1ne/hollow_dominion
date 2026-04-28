@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-      const APP_VERSION = '20260428-telegram-104';
+      const APP_VERSION = '20260429-telegram-105';
       const url = new URL(window.location.href);
       window.__HD_DEBUG_GRID__ = url.searchParams.get('grid') === '1';
       if (url.searchParams.get('appv') !== APP_VERSION) {
@@ -19,8 +19,8 @@
     })();
   </script>  <title>Hollow Dominion</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script type="module" src="./assets/vendor/model-viewer.min.js?v=20260428-telegram-104"></script>
-  <link rel="stylesheet" href="common.css?v=20260428-telegram-104">
+  <script type="module" src="./assets/vendor/model-viewer.min.js?v=20260429-telegram-105"></script>
+  <link rel="stylesheet" href="common.css?v=20260429-telegram-105">
   <style>
     .screen-page {
       position: relative;
@@ -2651,14 +2651,31 @@
       pointer-events: none;
     }
 
-    .profile-psd-frame-art {
+    .profile-psd-frame-shell {
       position: absolute;
-      left: -25.4%;
-      top: 0;
-      width: 200.8%;
-      height: 100%;
+      left: 0;
+      top: 19.032%;
+      width: 100%;
+      height: 67.736%;
       z-index: 41;
       pointer-events: none;
+    }
+
+    .profile-psd-frame-art {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      pointer-events: none;
+    }
+
+    body.env-telegram.platform-desktop-runtime.viewport-compact-desktop .profile-psd-frame-shell,
+    body.env-browser.device-desktop .profile-psd-frame-shell {
+      left: 0;
+      top: 19.032%;
+      width: 100%;
+      height: 67.736%;
     }
 
     .profile-psd-bottom-shell {
@@ -2773,10 +2790,12 @@
       bottom: 1.66%;
     }
 
-    body.env-telegram.device-mobile .profile-psd-frame-art,
-    body.env-browser.device-mobile .profile-psd-frame-art {
-      left: -8.2%;
-      width: 116.4%;
+    body.env-telegram.device-mobile .profile-psd-frame-shell,
+    body.env-browser.device-mobile .profile-psd-frame-shell {
+      left: 0;
+      top: 19.032%;
+      width: 100%;
+      height: 67.736%;
     }
 
     body.env-telegram.device-mobile .profile-psd-3d-viewer,
@@ -2813,8 +2832,8 @@
   </div>
   <div class="toast" id="toast"></div>
 
-<script src="item-catalog.js?v=20260428-telegram-104"></script>
-<script src="common.js?v=20260428-telegram-104"></script>
+<script src="item-catalog.js?v=20260429-telegram-105"></script>
+<script src="common.js?v=20260429-telegram-105"></script>
     <script>
       (async () => {
       const screenPage = document.querySelector('.screen-page');
@@ -3194,13 +3213,16 @@
     function renderCityScreen() {
       setProfileScreenMode(true);
       const hero = state.hero;
-      const assetVersion = window.__HD_APP_VERSION__ || '20260428-telegram-104';
+      const assetVersion = window.__HD_APP_VERSION__ || '20260429-telegram-105';
 
       q('app').innerHTML = `
         <div class="single-page-layout profile-psd-host">
           <div class="profile-psd-shell">
             <img class="profile-psd-art profile-psd-shell-bg" src="${assetWithVersion('./assets/ui/profile_redesign/art_background.png')}" alt="">
             ${renderProfileHud(hero)}
+            <div class="profile-psd-frame-shell">
+              <img class="profile-psd-art profile-psd-frame-art" src="${assetWithVersion('./assets/ui/profile_redesign/art_profile_frame.png')}" alt="">
+            </div>
             <div class="profile-psd-portrait-shell">
               <div class="profile-psd-portrait-viewport">
                 <div class="hero-portrait-bg" id="portraitBg"></div>
@@ -3238,7 +3260,6 @@
                   </div>
                 </div>
               </div>
-              <img class="profile-psd-art profile-psd-frame-art" src="${assetWithVersion('./assets/ui/profile_redesign/art_profile_frame.png')}" alt="">
             </div>
             <div class="profile-psd-bottom-shell">
               <img class="profile-psd-art" src="${assetWithVersion('./assets/ui/profile_redesign/art_profile_bottom.png')}" alt="">
