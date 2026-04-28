@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-      const APP_VERSION = '20260428-telegram-98';
+      const APP_VERSION = '20260428-telegram-99';
       const url = new URL(window.location.href);
       window.__HD_DEBUG_GRID__ = url.searchParams.get('grid') === '1';
       if (url.searchParams.get('appv') !== APP_VERSION) {
@@ -19,8 +19,8 @@
     })();
   </script>  <title>Hollow Dominion</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script type="module" src="./assets/vendor/model-viewer.min.js?v=20260428-telegram-98"></script>
-  <link rel="stylesheet" href="common.css?v=20260428-telegram-98">
+  <script type="module" src="./assets/vendor/model-viewer.min.js?v=20260428-telegram-99"></script>
+  <link rel="stylesheet" href="common.css?v=20260428-telegram-99">
   <style>
     .screen-page {
       position: relative;
@@ -2320,7 +2320,7 @@
       left: -1.299%;
       top: -0.901%;
       width: 103.030%;
-      height: 104.500%;
+      height: 102.027%;
       z-index: 0;
       object-fit: fill;
       pointer-events: none;
@@ -2451,11 +2451,11 @@
 
     .profile-psd-portrait-shell {
       position: absolute;
-      left: 12.987%;
-      top: 18.975%;
-      width: 74.459%;
+      left: 2.944%;
+      top: 19.032%;
+      width: 94.892%;
       height: 67.736%;
-      z-index: 30;
+      z-index: 40;
     }
 
     .profile-psd-portrait-viewport {
@@ -2507,9 +2507,9 @@
 
     .profile-psd-model-anchor {
       position: absolute;
-      left: 27.329%;
-      top: 32.221%;
-      width: 45.466%;
+      left: 32.068%;
+      top: 32.133%;
+      width: 35.674%;
       height: 52.327%;
       z-index: 2;
     }
@@ -2573,7 +2573,7 @@
       height: 100%;
       object-fit: contain;
       object-position: center bottom;
-      transform: scale(1.2);
+      transform: scale(1);
       transform-origin: center bottom;
       filter:
         saturate(.82)
@@ -2626,7 +2626,7 @@
     }
 
     body.env-telegram.platform-desktop-runtime.viewport-compact-desktop .profile-psd-model-anchor .profile-psd-3d-viewer model-viewer {
-      transform: translateY(20%) scale(1.24);
+      transform: scale(1);
     }
 
     html.has-model-viewer .profile-psd-3d-viewer {
@@ -2642,7 +2642,7 @@
     .profile-psd-frame-art {
       position: absolute;
       inset: 0;
-      z-index: 30;
+      z-index: 41;
       pointer-events: none;
     }
 
@@ -2704,6 +2704,17 @@
       }
     }
 
+    body.env-telegram.platform-desktop-runtime.viewport-compact-desktop .profile-psd-3d-viewer,
+    body.env-telegram.platform-desktop-runtime.viewport-compact-desktop .profile-psd-2d-fallback {
+      display: none;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    body.env-telegram.platform-desktop-runtime.viewport-compact-desktop .profile-psd-poster-fallback {
+      display: flex;
+    }
+
     body.env-telegram.device-mobile .profile-psd-host,
     body.env-browser.device-mobile .profile-psd-host {
       min-height: calc(100dvh - var(--safe-top, 0px) - var(--safe-bottom, 0px) - 2px);
@@ -2729,6 +2740,14 @@
       height: 100dvh;
       object-fit: cover;
       object-position: center top;
+    }
+
+    body.env-telegram.device-mobile .profile-psd-portrait-shell,
+    body.env-browser.device-mobile .profile-psd-portrait-shell {
+      left: 2.944%;
+      top: 19.032%;
+      width: 94.892%;
+      height: 67.736%;
     }
 
     body.env-telegram.device-mobile .profile-psd-3d-viewer,
@@ -2765,8 +2784,8 @@
   </div>
   <div class="toast" id="toast"></div>
 
-<script src="item-catalog.js?v=20260428-telegram-98"></script>
-<script src="common.js?v=20260428-telegram-98"></script>
+<script src="item-catalog.js?v=20260428-telegram-99"></script>
+<script src="common.js?v=20260428-telegram-99"></script>
     <script>
       (async () => {
       const screenPage = document.querySelector('.screen-page');
@@ -3139,7 +3158,7 @@
 
     function renderCityScreen() {
       const hero = state.hero;
-      const assetVersion = window.__HD_APP_VERSION__ || '20260428-telegram-98';
+      const assetVersion = window.__HD_APP_VERSION__ || '20260428-telegram-99';
 
       q('app').innerHTML = `
         <div class="single-page-layout profile-psd-host">
