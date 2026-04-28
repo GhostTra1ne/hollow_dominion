@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-      const APP_VERSION = '20260428-telegram-91';
+      const APP_VERSION = '20260428-telegram-92';
       const url = new URL(window.location.href);
       window.__HD_DEBUG_GRID__ = url.searchParams.get('grid') === '1';
       if (url.searchParams.get('appv') !== APP_VERSION) {
@@ -19,8 +19,8 @@
     })();
   </script>  <title>Hollow Dominion</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script type="module" src="./assets/vendor/model-viewer.min.js?v=20260428-telegram-91"></script>
-  <link rel="stylesheet" href="common.css?v=20260428-telegram-91">
+  <script type="module" src="./assets/vendor/model-viewer.min.js?v=20260428-telegram-92"></script>
+  <link rel="stylesheet" href="common.css?v=20260428-telegram-92">
   <style>
     .screen-page {
       position: relative;
@@ -2315,6 +2315,17 @@
       pointer-events: auto;
     }
 
+    .profile-psd-shell-bg {
+      position: absolute;
+      left: -1.299%;
+      top: -0.901%;
+      width: 103.030%;
+      height: 102.027%;
+      z-index: 0;
+      object-fit: fill;
+      pointer-events: none;
+    }
+
     .profile-psd-art {
       display: block;
       width: 100%;
@@ -2464,6 +2475,7 @@
       background-position: center center;
       background-size: cover;
       background-repeat: no-repeat;
+      opacity: 0;
     }
 
     .profile-psd-portrait-viewport .hero-portrait-bg::after {
@@ -2477,6 +2489,28 @@
     .profile-psd-stage {
       position: absolute;
       inset: 0;
+      z-index: 2;
+    }
+
+    .profile-psd-portrait-art {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    .profile-psd-model-anchor {
+      position: absolute;
+      left: 27.329%;
+      top: 32.221%;
+      width: 45.466%;
+      height: 52.327%;
       z-index: 2;
     }
 
@@ -2541,6 +2575,26 @@
         drop-shadow(0 6px 14px rgba(0, 0, 0, .26));
     }
 
+    .profile-psd-model-anchor .profile-psd-shadow {
+      bottom: 3%;
+      width: 74%;
+      height: 10%;
+      opacity: .62;
+    }
+
+    .profile-psd-model-anchor .profile-psd-character-box {
+      inset: 0;
+    }
+
+    .profile-psd-model-anchor .profile-psd-3d-viewer,
+    .profile-psd-model-anchor .profile-psd-2d-fallback {
+      inset: 0;
+    }
+
+    .profile-psd-model-anchor .profile-psd-3d-viewer model-viewer {
+      transform: scale(1);
+    }
+
     html.has-model-viewer .profile-psd-3d-viewer {
       opacity: 1;
       pointer-events: auto;
@@ -2599,14 +2653,6 @@
     }
 
     @media (max-width: 560px) {
-      .profile-psd-3d-viewer {
-        inset: -1% -8% -14%;
-      }
-
-      .profile-psd-3d-viewer model-viewer {
-        transform: translateY(-27%) scale(.83);
-      }
-
       .profile-psd-nickname {
         font-size: clamp(12px, 3.8vw, 17px);
       }
@@ -2617,6 +2663,10 @@
 
       .profile-psd-bar-text {
         font-size: clamp(8px, 2.5vw, 11px);
+      }
+
+      .profile-psd-model-anchor .profile-psd-shadow {
+        width: 78%;
       }
     }
   </style>
@@ -2635,8 +2685,8 @@
   </div>
   <div class="toast" id="toast"></div>
 
-<script src="item-catalog.js?v=20260428-telegram-91"></script>
-<script src="common.js?v=20260428-telegram-91"></script>
+<script src="item-catalog.js?v=20260428-telegram-92"></script>
+<script src="common.js?v=20260428-telegram-92"></script>
     <script>
       (async () => {
       const screenPage = document.querySelector('.screen-page');
@@ -3009,39 +3059,43 @@
 
     function renderCityScreen() {
       const hero = state.hero;
-      const assetVersion = window.__HD_APP_VERSION__ || '20260428-telegram-91';
+      const assetVersion = window.__HD_APP_VERSION__ || '20260428-telegram-92';
 
       q('app').innerHTML = `
         <div class="single-page-layout profile-psd-host">
           <div class="profile-psd-shell">
+            <img class="profile-psd-art profile-psd-shell-bg" src="${assetWithVersion('./assets/ui/profile_redesign/art_background.png')}" alt="">
             ${renderProfileHud(hero)}
             <div class="profile-psd-portrait-shell">
               <div class="profile-psd-portrait-viewport">
                 <div class="hero-portrait-bg" id="portraitBg"></div>
+                <img class="profile-psd-portrait-art" src="${assetWithVersion('./assets/ui/profile_redesign/art_portrait.png')}" alt="">
                 <div class="profile-psd-stage">
-                  <div class="profile-psd-shadow" aria-hidden="true"></div>
-                  <div class="profile-psd-character-box profile-preview-box">
-                    <div class="profile-psd-3d-viewer">
-                      <model-viewer
-                        id="profileModelViewer"
-                        src="./assets/models/profile_base.glb?v=${assetVersion}"
-                        poster="./assets/models/profile_base_poster.png?v=${assetVersion}"
-                        camera-controls
-                        disable-pan
-                        disable-zoom
-                        interaction-prompt="none"
-                        shadow-intensity="0.65"
-                        exposure="1.05"
-                        scale="1 1 1"
-                        camera-target="0m 0.28m 0m"
-                        camera-orbit="0deg 78deg 1.24m"
-                        min-camera-orbit="auto 78deg 1.24m"
-                        max-camera-orbit="auto 78deg 1.24m"
-                        field-of-view="23deg">
-                      </model-viewer>
-                    </div>
-                    <div class="profile-psd-2d-fallback" id="profilePreviewRoot">
-                      ${characterMarkup()}
+                  <div class="profile-psd-model-anchor">
+                    <div class="profile-psd-shadow" aria-hidden="true"></div>
+                    <div class="profile-psd-character-box profile-preview-box">
+                      <div class="profile-psd-3d-viewer">
+                        <model-viewer
+                          id="profileModelViewer"
+                          src="./assets/models/profile_base.glb?v=${assetVersion}"
+                          poster="./assets/models/profile_base_poster.png?v=${assetVersion}"
+                          camera-controls
+                          disable-pan
+                          disable-zoom
+                          interaction-prompt="none"
+                          shadow-intensity="0.65"
+                          exposure="1.05"
+                          scale="1 1 1"
+                          camera-target="0m 0.28m 0m"
+                          camera-orbit="0deg 78deg 1.24m"
+                          min-camera-orbit="auto 78deg 1.24m"
+                          max-camera-orbit="auto 78deg 1.24m"
+                          field-of-view="23deg">
+                        </model-viewer>
+                      </div>
+                      <div class="profile-psd-2d-fallback" id="profilePreviewRoot">
+                        ${characterMarkup()}
+                      </div>
                     </div>
                   </div>
                 </div>
