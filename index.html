@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-      const APP_VERSION = '20260428-telegram-100';
+      const APP_VERSION = '20260428-telegram-101';
       const url = new URL(window.location.href);
       window.__HD_DEBUG_GRID__ = url.searchParams.get('grid') === '1';
       if (url.searchParams.get('appv') !== APP_VERSION) {
@@ -19,8 +19,8 @@
     })();
   </script>  <title>Hollow Dominion</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script type="module" src="./assets/vendor/model-viewer.min.js?v=20260428-telegram-100"></script>
-  <link rel="stylesheet" href="common.css?v=20260428-telegram-100">
+  <script type="module" src="./assets/vendor/model-viewer.min.js?v=20260428-telegram-101"></script>
+  <link rel="stylesheet" href="common.css?v=20260428-telegram-101">
   <style>
     .screen-page {
       position: relative;
@@ -2463,19 +2463,19 @@
 
     .profile-psd-portrait-shell {
       position: absolute;
-      left: 2.944%;
+      left: 1.342%;
       top: 19.032%;
-      width: 94.892%;
+      width: 97.316%;
       height: 67.736%;
       z-index: 40;
     }
 
     .profile-psd-portrait-viewport {
       position: absolute;
-      left: 1.63%;
-      right: 2.21%;
-      top: 3.66%;
-      bottom: 1.66%;
+      left: 1.08%;
+      right: 1.42%;
+      top: 3.46%;
+      bottom: 1.48%;
       overflow: hidden;
       z-index: 1;
     }
@@ -2756,10 +2756,18 @@
 
     body.env-telegram.device-mobile .profile-psd-portrait-shell,
     body.env-browser.device-mobile .profile-psd-portrait-shell {
-      left: 2.944%;
+      left: 0.346%;
       top: 19.032%;
-      width: 94.892%;
+      width: 99.308%;
       height: 67.736%;
+    }
+
+    body.env-telegram.device-mobile .profile-psd-portrait-viewport,
+    body.env-browser.device-mobile .profile-psd-portrait-viewport {
+      left: 0.86%;
+      right: 1.14%;
+      top: 3.32%;
+      bottom: 1.42%;
     }
 
     body.env-telegram.device-mobile .profile-psd-3d-viewer,
@@ -2796,8 +2804,8 @@
   </div>
   <div class="toast" id="toast"></div>
 
-<script src="item-catalog.js?v=20260428-telegram-100"></script>
-<script src="common.js?v=20260428-telegram-100"></script>
+<script src="item-catalog.js?v=20260428-telegram-101"></script>
+<script src="common.js?v=20260428-telegram-101"></script>
     <script>
       (async () => {
       const screenPage = document.querySelector('.screen-page');
@@ -3177,7 +3185,7 @@
     function renderCityScreen() {
       setProfileScreenMode(true);
       const hero = state.hero;
-      const assetVersion = window.__HD_APP_VERSION__ || '20260428-telegram-100';
+      const assetVersion = window.__HD_APP_VERSION__ || '20260428-telegram-101';
 
       q('app').innerHTML = `
         <div class="single-page-layout profile-psd-host">
