@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-      const APP_VERSION = '20260429-telegram-105';
+      const APP_VERSION = '20260429-telegram-106';
       const url = new URL(window.location.href);
       window.__HD_DEBUG_GRID__ = url.searchParams.get('grid') === '1';
       if (url.searchParams.get('appv') !== APP_VERSION) {
@@ -19,8 +19,8 @@
     })();
   </script>  <title>Hollow Dominion</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script type="module" src="./assets/vendor/model-viewer.min.js?v=20260429-telegram-105"></script>
-  <link rel="stylesheet" href="common.css?v=20260429-telegram-105">
+  <script type="module" src="./assets/vendor/model-viewer.min.js?v=20260429-telegram-106"></script>
+  <link rel="stylesheet" href="common.css?v=20260429-telegram-106">
   <style>
     .screen-page {
       position: relative;
@@ -2368,7 +2368,7 @@
     .profile-psd-nickname,
     .profile-psd-class,
     .profile-psd-bar-text {
-      font-family: "Georgia", "Times New Roman", serif;
+      font-family: "Agency FB", "Bahnschrift SemiCondensed", "Arial Narrow", sans-serif;
       color: #f6f1e5;
       text-shadow:
         0 1px 0 rgba(15, 9, 4, .92),
@@ -2380,39 +2380,42 @@
     .profile-psd-level-value {
       position: absolute;
       left: 13.19%;
-      top: 47.86%;
+      top: 47.62%;
       width: 5.02%;
       height: 13.37%;
       display: grid;
       place-items: center;
-      font-size: clamp(16px, 4vw, 22px);
+      font-size: calc(var(--psd-width, 385px) * 0.053);
       font-weight: 700;
+      letter-spacing: .04em;
     }
 
     .profile-psd-nickname {
       position: absolute;
-      left: 28.85%;
-      top: 14.97%;
-      width: 17.24%;
+      left: 28.76%;
+      top: 13.90%;
+      width: 19.10%;
       min-width: 0;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      font-size: clamp(13px, 3.2vw, 18px);
-      font-weight: 500;
+      font-size: calc(var(--psd-width, 385px) * 0.061);
+      font-weight: 400;
+      letter-spacing: .045em;
     }
 
     .profile-psd-class {
       position: absolute;
-      left: 34.22%;
-      top: 32.62%;
-      width: 14.42%;
+      left: 34.05%;
+      top: 31.82%;
+      width: 17.40%;
       min-width: 0;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      font-size: clamp(11px, 2.7vw, 16px);
-      font-weight: 500;
+      font-size: calc(var(--psd-width, 385px) * 0.048);
+      font-weight: 400;
+      letter-spacing: .04em;
     }
 
     .profile-psd-bar {
@@ -2422,7 +2425,7 @@
       position: absolute;
       left: 39.23%;
       width: 55.76%;
-      height: 7.75%;
+      height: 7.48%;
       border-radius: 2px;
       overflow: hidden;
       background:
@@ -2433,10 +2436,10 @@
         inset 0 -2px 3px rgba(0, 0, 0, .28);
     }
 
-    .profile-psd-bar.cp { top: 48.66%; }
-    .profile-psd-bar.hp { top: 60.70%; }
-    .profile-psd-bar.mp { top: 72.73%; }
-    .profile-psd-bar.exp { top: 82.89%; }
+    .profile-psd-bar.cp { top: 48.80%; }
+    .profile-psd-bar.hp { top: 60.83%; }
+    .profile-psd-bar.mp { top: 72.86%; }
+    .profile-psd-bar.exp { top: 83.02%; }
 
     .profile-psd-bar-fill {
       position: absolute;
@@ -2455,10 +2458,10 @@
       inset: 0;
       display: grid;
       place-items: center;
-      font-family: "Agency FB", "Bahnschrift SemiCondensed", "Arial Narrow", sans-serif;
-      font-size: clamp(9px, 2.05vw, 12px);
+      font-size: calc(var(--psd-width, 385px) * 0.0295);
       font-weight: 700;
-      letter-spacing: .05em;
+      letter-spacing: .025em;
+      transform: translateY(-3%);
     }
 
     .profile-psd-portrait-shell {
@@ -2719,18 +2722,6 @@
     }
 
     @media (max-width: 560px) {
-      .profile-psd-nickname {
-        font-size: clamp(12px, 3.8vw, 17px);
-      }
-
-      .profile-psd-class {
-        font-size: clamp(10px, 3vw, 15px);
-      }
-
-      .profile-psd-bar-text {
-        font-size: clamp(8px, 2.5vw, 11px);
-      }
-
       .profile-psd-model-anchor .profile-psd-shadow {
         width: 78%;
       }
@@ -2832,8 +2823,8 @@
   </div>
   <div class="toast" id="toast"></div>
 
-<script src="item-catalog.js?v=20260429-telegram-105"></script>
-<script src="common.js?v=20260429-telegram-105"></script>
+<script src="item-catalog.js?v=20260429-telegram-106"></script>
+<script src="common.js?v=20260429-telegram-106"></script>
     <script>
       (async () => {
       const screenPage = document.querySelector('.screen-page');
@@ -3213,7 +3204,7 @@
     function renderCityScreen() {
       setProfileScreenMode(true);
       const hero = state.hero;
-      const assetVersion = window.__HD_APP_VERSION__ || '20260429-telegram-105';
+      const assetVersion = window.__HD_APP_VERSION__ || '20260429-telegram-106';
 
       q('app').innerHTML = `
         <div class="single-page-layout profile-psd-host">
