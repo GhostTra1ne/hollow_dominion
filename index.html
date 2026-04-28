@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-      const APP_VERSION = '20260428-telegram-103';
+      const APP_VERSION = '20260428-telegram-104';
       const url = new URL(window.location.href);
       window.__HD_DEBUG_GRID__ = url.searchParams.get('grid') === '1';
       if (url.searchParams.get('appv') !== APP_VERSION) {
@@ -19,8 +19,8 @@
     })();
   </script>  <title>Hollow Dominion</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script type="module" src="./assets/vendor/model-viewer.min.js?v=20260428-telegram-103"></script>
-  <link rel="stylesheet" href="common.css?v=20260428-telegram-103">
+  <script type="module" src="./assets/vendor/model-viewer.min.js?v=20260428-telegram-104"></script>
+  <link rel="stylesheet" href="common.css?v=20260428-telegram-104">
   <style>
     .screen-page {
       position: relative;
@@ -2653,9 +2653,9 @@
 
     .profile-psd-frame-art {
       position: absolute;
-      left: -2.35%;
+      left: -6.4%;
       top: 0;
-      width: 104.7%;
+      width: 112.8%;
       height: 100%;
       z-index: 41;
       pointer-events: none;
@@ -2775,8 +2775,8 @@
 
     body.env-telegram.device-mobile .profile-psd-frame-art,
     body.env-browser.device-mobile .profile-psd-frame-art {
-      left: -3.1%;
-      width: 106.2%;
+      left: -8.2%;
+      width: 116.4%;
     }
 
     body.env-telegram.device-mobile .profile-psd-3d-viewer,
@@ -2813,8 +2813,8 @@
   </div>
   <div class="toast" id="toast"></div>
 
-<script src="item-catalog.js?v=20260428-telegram-103"></script>
-<script src="common.js?v=20260428-telegram-103"></script>
+<script src="item-catalog.js?v=20260428-telegram-104"></script>
+<script src="common.js?v=20260428-telegram-104"></script>
     <script>
       (async () => {
       const screenPage = document.querySelector('.screen-page');
@@ -3194,7 +3194,7 @@
     function renderCityScreen() {
       setProfileScreenMode(true);
       const hero = state.hero;
-      const assetVersion = window.__HD_APP_VERSION__ || '20260428-telegram-103';
+      const assetVersion = window.__HD_APP_VERSION__ || '20260428-telegram-104';
 
       q('app').innerHTML = `
         <div class="single-page-layout profile-psd-host">
