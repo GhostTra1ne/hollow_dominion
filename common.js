@@ -881,12 +881,18 @@ function getProfile3DVariant(config) {
   const equipped = getEquippedPaperdollMap(config);
   const candidateSlots = ['body', 'legs', 'gloves', 'boots'];
   const leatherHints = ['leather', 'sandals'];
+  const hasVisibleArmorPiece = candidateSlots.some((slotKey) => {
+    const item = equipped[slotKey];
+    return Boolean(item?.name && normalizeInventoryItemName(item.name) !== 'пусто');
+  });
   const hasLeatherPiece = candidateSlots.some((slotKey) => {
     const item = equipped[slotKey];
     if (!item?.name) return false;
     const normalized = normalizeInventoryItemName(item.name);
     return leatherHints.some((hint) => normalized.includes(hint));
   });
+  const shouldUseStarterWarriorLook = !hasVisibleArmorPiece && config?.classId !== 'mage';
+  if (shouldUseStarterWarriorLook) return 'leather';
   return hasLeatherPiece ? 'leather' : 'base';
 }
 
