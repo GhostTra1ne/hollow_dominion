@@ -896,7 +896,8 @@ function getProfile3DAsset(config) {
   return {
     variant,
     src: `./assets/models/profile_${variant}.glb?v=${version}`,
-    poster: `./assets/models/profile_${variant}_poster.png?v=${version}`
+    poster: `./assets/models/profile_${variant}_poster.png?v=${version}`,
+    cutout: `./assets/models/profile_${variant}_cutout.png?v=${version}`
   };
 }
 
@@ -926,7 +927,7 @@ function primeProfile3DViewer(config) {
   const posterFallback = q('profileModelPosterFallback');
 
   if (posterFallback) {
-    posterFallback.setAttribute('src', asset.poster);
+    posterFallback.setAttribute('src', asset.cutout || asset.poster);
     posterFallback.setAttribute('alt', `${config.nickname || 'Hero'} profile poster`);
   }
 
