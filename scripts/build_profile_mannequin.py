@@ -642,8 +642,17 @@ def add_l2_fighter_profile_animated(variant: str) -> bool:
         texture_root / "MFighter_m000_t01_f.png",
         texture_root / "MFighter_m000_t01_f.tga",
     )
+    hair_tex = find_first_existing(
+        OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m001_t03_m00_bh_ori.png",
+        OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m001_t03_m00_bh_ori.tga",
+        OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m002_t03_m00_bh_ori.png",
+        OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m002_t03_m00_bh_ori.tga",
+        OUTER_ROOT / "$out" / "FFighter" / "Texture" / "FFighter_m000_t00_m00_bh_ori.png",
+        OUTER_ROOT / "$out" / "FFighter" / "Texture" / "FFighter_m000_t00_m00_bh_ori.tga",
+    )
     face_mat = make_image_material("AnimFace", face_tex, metallic=0.0, roughness=0.68, specular=0.16) if face_tex else make_material("AnimFaceFallback", (0.74, 0.62, 0.50), metallic=0.0, roughness=0.68, specular=0.16)
-    hair_mat = make_material("AnimHair", (0.57, 0.46, 0.25), metallic=0.0, roughness=0.86, specular=0.08)
+    hair_mat = make_image_material("AnimHairTex", hair_tex, metallic=0.0, roughness=0.84, specular=0.08) if hair_tex else make_material("AnimHairFallback", (0.33, 0.23, 0.14), metallic=0.0, roughness=0.84, specular=0.08)
+    hair_volume_mat = make_material("AnimHairVolume", (0.20, 0.13, 0.09), metallic=0.0, roughness=0.88, specular=0.06)
 
     _, hair_head_meshes = import_psk_part(pskimport, exported["MFighter_m000_h"], with_bones=False, armature_obj=armature_obj)
     _, face_meshes = import_psk_part(pskimport, exported["MFighter_m000_f"], with_bones=False, armature_obj=armature_obj)
@@ -654,7 +663,7 @@ def add_l2_fighter_profile_animated(variant: str) -> bool:
     # Remap it to the head bone so it follows the skull naturally.
     rename_vertex_group(face_meshes, "Bip01", "Bip01_head")
     join_mesh_objects([*hair_head_meshes, *face_meshes])
-    add_imported_fighter_hair(hair_mat)
+    add_imported_fighter_hair(hair_volume_mat)
 
     psaimport(str(exported["MFighter_anim"]), context=bpy.context, oArmature=armature_obj)
     stand_action = bpy.data.actions.get("Stand_MFighter")
@@ -719,6 +728,10 @@ def add_l2_fighter_profile(variant: str) -> bool:
                     OUTER_ROOT / "$out" / "MFighter" / "Texture" / "MFighter_m000_t01_f.tga",
                 )
                 hair_tex = find_first_existing(
+                    OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m001_t03_m00_bh_ori.png",
+                    OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m001_t03_m00_bh_ori.tga",
+                    OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m002_t03_m00_bh_ori.png",
+                    OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m002_t03_m00_bh_ori.tga",
                     OUTER_ROOT / "$out" / "FFighter" / "Texture" / "FFighter_m000_t00_m00_bh_ori.png",
                     OUTER_ROOT / "$out" / "FFighter" / "Texture" / "FFighter_m000_t00_m00_bh_ori.tga",
                 )
@@ -727,7 +740,7 @@ def add_l2_fighter_profile(variant: str) -> bool:
                 lower_mat = make_material("L2CleanLower", (0.30, 0.27, 0.24), metallic=0.02, roughness=0.88, specular=0.08)
                 hands_mat = make_material("L2CleanHands", (0.50, 0.43, 0.35), metallic=0.0, roughness=0.72, specular=0.14)
                 boots_mat = make_material("L2CleanBoots", (0.24, 0.22, 0.20), metallic=0.02, roughness=0.86, specular=0.08)
-                hair_mat = make_material("L2CleanHair", (0.58, 0.47, 0.26), metallic=0.0, roughness=0.84, specular=0.08)
+                hair_mat = make_image_material("L2CleanHairTex", hair_tex, metallic=0.0, roughness=0.84, specular=0.08) if hair_tex and hair_tex.exists() else make_material("L2CleanHair", (0.33, 0.23, 0.14), metallic=0.0, roughness=0.84, specular=0.08)
                 face_mat = make_image_material("L2CleanFaceTex", face_tex, metallic=0.0, roughness=0.68, specular=0.16) if face_tex and face_tex.exists() else make_material("L2CleanFace", (0.74, 0.62, 0.50), metallic=0.0, roughness=0.68, specular=0.16)
 
                 import_l2_profile_part(clean_root / "MFighter_m000_u.gltf", upper_mat)
@@ -739,10 +752,10 @@ def add_l2_fighter_profile(variant: str) -> bool:
                 add_imported_fighter_hair(
                     make_material(
                         "L2CleanHairShell",
-                        (0.57, 0.46, 0.25),
+                        (0.20, 0.13, 0.09),
                         metallic=0.0,
-                        roughness=0.86,
-                        specular=0.08,
+                        roughness=0.88,
+                        specular=0.06,
                     )
                 )
                 return True
@@ -766,6 +779,10 @@ def add_l2_fighter_profile(variant: str) -> bool:
                 tex_root / "MFighter_m000_t01_f.tga",
             )
             hair_tex = find_first_existing(
+                OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m001_t03_m00_bh_ori.png",
+                OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m001_t03_m00_bh_ori.tga",
+                OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m002_t03_m00_bh_ori.png",
+                OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m002_t03_m00_bh_ori.tga",
                 OUTER_ROOT / "$out" / "FFighter" / "Texture" / "FFighter_m000_t00_m00_bh_ori.png",
                 OUTER_ROOT / "$out" / "FFighter" / "Texture" / "FFighter_m000_t00_m00_bh_ori.tga",
             )
@@ -774,7 +791,7 @@ def add_l2_fighter_profile(variant: str) -> bool:
             legs_mat = make_image_material("L2LeatherM001L", armor_l_tex, metallic=0.02, roughness=0.80, specular=0.16) if armor_l_tex else make_material("L2LeatherM001LFallback", (0.47, 0.34, 0.22), metallic=0.10, roughness=0.68, specular=0.24)
             gloves_mat = make_image_material("L2LeatherM001G", armor_g_tex, metallic=0.02, roughness=0.80, specular=0.16) if armor_g_tex else make_material("L2LeatherM001GFallback", (0.37, 0.27, 0.18), metallic=0.08, roughness=0.70, specular=0.22)
             boots_mat = make_image_material("L2LeatherM001B", armor_b_tex, metallic=0.02, roughness=0.82, specular=0.14) if armor_b_tex else make_material("L2LeatherM001BFallback", (0.29, 0.21, 0.14), metallic=0.08, roughness=0.72, specular=0.22)
-            hair_mat = make_material("L2LeatherHair", (0.58, 0.47, 0.26), metallic=0.0, roughness=0.84, specular=0.08)
+            hair_mat = make_image_material("L2LeatherHairTex", hair_tex, metallic=0.0, roughness=0.84, specular=0.08) if hair_tex and hair_tex.exists() else make_material("L2LeatherHair", (0.33, 0.23, 0.14), metallic=0.0, roughness=0.84, specular=0.08)
             face_mat = make_image_material("L2LeatherFaceTex", face_tex, metallic=0.0, roughness=0.68, specular=0.16) if face_tex and face_tex.exists() else make_material("L2LeatherFace", (0.72, 0.60, 0.48), metallic=0.0, roughness=0.58, specular=0.28)
 
             import_l2_profile_part(clean_root / "MFighter_m001_u.gltf", armor_mat)
@@ -786,10 +803,10 @@ def add_l2_fighter_profile(variant: str) -> bool:
             add_imported_fighter_hair(
                 make_material(
                     "L2LeatherHairShell",
-                    (0.57, 0.46, 0.25),
+                    (0.20, 0.13, 0.09),
                     metallic=0.0,
-                    roughness=0.86,
-                    specular=0.08,
+                    roughness=0.88,
+                    specular=0.06,
                 )
             )
             return True
