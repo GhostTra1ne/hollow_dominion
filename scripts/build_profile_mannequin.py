@@ -465,6 +465,15 @@ def offset_meshes(meshes, *, x=0.0, y=0.0, z=0.0):
     bpy.context.view_layer.update()
 
 
+def rename_vertex_group(meshes, old_name: str, new_name: str):
+    if not meshes or not old_name or not new_name or old_name == new_name:
+        return
+    for obj in meshes:
+        group = obj.vertex_groups.get(old_name)
+        if group is not None:
+            group.name = new_name
+
+
 def retime_action(action, factor=1.0, anchor_frame=1.0):
     if not action or factor == 1.0:
         return
@@ -640,10 +649,10 @@ def add_l2_fighter_profile_animated(variant: str) -> bool:
     _, face_meshes = import_psk_part(pskimport, exported["MFighter_m000_f"], with_bones=False, armature_obj=armature_obj)
     apply_material(hair_head_meshes, hair_mat)
     apply_material(face_meshes, face_mat)
-    # The standalone face mesh sits a bit too low versus the animated
-    # head/hair shell in the original exports. Keep its natural forward depth
-    # and only lift it slightly so it doesn't sink into the face plate.
-    offset_meshes(face_meshes, y=0.0, z=0.011)
+    # In the original exports the face mesh is weighted to the root bone while
+    # the head shell uses Bip01_head, which makes the face drift under motion.
+    # Remap it to the head bone so it follows the skull naturally.
+    rename_vertex_group(face_meshes, "Bip01", "Bip01_head")
     join_mesh_objects([*hair_head_meshes, *face_meshes])
     add_imported_fighter_hair(hair_mat)
 
@@ -659,7 +668,7 @@ def add_l2_fighter_profile_animated(variant: str) -> bool:
         return False
 
     if idle_action and idle_action is not stand_action:
-        retime_action(idle_action, factor=1.75)
+        retime_action(idle_action, factor=2.35)
 
     keep_actions = {action for action in (stand_action, idle_action) if action is not None}
     for action in list(bpy.data.actions):
