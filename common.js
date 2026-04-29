@@ -944,6 +944,14 @@ function primeProfile3DViewer(config) {
     viewer.dataset.boundHdViewer = '1';
     viewer.addEventListener('load', () => {
       document.documentElement.classList.add('has-model-viewer');
+      viewer.setAttribute('animation-name', 'Stand_MFighter');
+      if (typeof viewer.play === 'function') {
+        try {
+          viewer.play();
+        } catch (error) {
+          console.warn('Unable to start profile idle animation:', error);
+        }
+      }
     });
     viewer.addEventListener('error', () => {
       document.documentElement.classList.remove('has-model-viewer');
@@ -955,6 +963,8 @@ function primeProfile3DViewer(config) {
     viewer.setAttribute('src', asset.src);
     viewer.removeAttribute('poster');
   }
+  viewer.setAttribute('autoplay', '');
+  viewer.setAttribute('animation-name', 'Stand_MFighter');
   viewer.removeAttribute('poster');
   const isCompactDesktop = !!document.body &&
     document.body.classList.contains('env-telegram') &&

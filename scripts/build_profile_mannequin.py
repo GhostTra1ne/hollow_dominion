@@ -1,6 +1,8 @@
 import argparse
+import importlib.util
 import math
 import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -206,6 +208,296 @@ def resolve_l2_texture_sets():
         OUTER_ROOT / "_l2_extract_test2" / "FFighter" / "Texture",
     )
     return leather_root, head_root
+
+
+def find_l2_game_root() -> Path | None:
+    candidates = [
+        Path("E:/l2 clear"),
+        Path("E:/GamePirate/MASTERWORK"),
+    ]
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    return None
+
+
+def find_umodel_materials_exe() -> Path | None:
+    candidates = [
+        OUTER_ROOT / "tools" / "umodel_materials" / "umodel_materials.exe",
+        OUTER_ROOT / "tools" / "umodel.exe",
+    ]
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    return None
+
+
+def ensure_profile_animation_exports(variant: str) -> dict[str, Path] | None:
+    game_root = find_l2_game_root()
+    umodel = find_umodel_materials_exe()
+    if not game_root or not umodel:
+        return None
+
+    export_root = PROJECT_ROOT / "_profile_anim_src"
+    export_root.mkdir(parents=True, exist_ok=True)
+
+    variant_parts = {
+        "base": [
+            "MFighter_m000_u",
+            "MFighter_m000_l",
+            "MFighter_m000_g",
+            "MFighter_m000_b",
+            "MFighter_m000_h",
+            "MFighter_m000_f",
+        ],
+        "leather": [
+            "MFighter_m001_u",
+            "MFighter_m001_l",
+            "MFighter_m001_g",
+            "MFighter_m001_b",
+            "MFighter_m000_h",
+            "MFighter_m000_f",
+        ],
+    }
+
+    def run_export(object_name: str, export_anims: bool = False) -> None:
+        cmd = [
+            str(umodel),
+            f"-path={game_root}",
+            f"-out={export_root}",
+            "-export",
+        ]
+        if export_anims:
+            cmd.append("-anims")
+        cmd.extend(["Fighter", object_name])
+        subprocess.run(cmd, check=True)
+
+    part_paths: dict[str, Path] = {}
+    for object_name in variant_parts[variant]:
+        psk_path = export_root / "Fighter" / "SkeletalMesh" / f"{object_name}.psk"
+        if not psk_path.exists():
+            run_export(object_name, export_anims=False)
+        if not psk_path.exists():
+            return None
+        part_paths[object_name] = psk_path
+
+    psa_path = export_root / "Fighter" / "MeshAnimation" / "MFighter_anim.psa"
+    if not psa_path.exists():
+        run_export("MFighter_anim", export_anims=True)
+    if not psa_path.exists():
+        return None
+
+    part_paths["MFighter_anim"] = psa_path
+    part_paths["texture_root"] = export_root / "MFighter" / "Texture"
+    return part_paths
+
+
+def load_pskpsa_importer():
+    addon_path = (
+        Path(os.environ.get("APPDATA", ""))
+        / "Blender Foundation"
+        / "Blender"
+        / "5.1"
+        / "scripts"
+        / "addons"
+        / "umodel_tools-main"
+        / "umodel_tools"
+        / "third_party"
+        / "io_import_scene_unreal_psa_psk_280.py"
+    )
+    if not addon_path.exists():
+        return None, None
+
+    source = addon_path.read_text(encoding="utf-8")
+
+    if "mesh_data.use_auto_smooth = True" in source and "if hasattr(mesh_data, 'use_auto_smooth')" not in source:
+        source = source.replace(
+            "            mesh_data.use_auto_smooth = True",
+            "            if hasattr(mesh_data, 'use_auto_smooth'):\n                mesh_data.use_auto_smooth = True",
+        )
+
+    if "armature_obj.pose.bone_groups.new" in source and "bone_group_unused = None" not in source:
+        source = source.replace(
+            "        bone_group_unused = armature_obj.pose.bone_groups.new(name = \"Unused bones\")\n"
+            "        bone_group_unused.color_set = 'THEME14'\n\n"
+            "        bone_group_nochild = armature_obj.pose.bone_groups.new(name = \"No children\")\n"
+            "        bone_group_nochild.color_set = 'THEME03'\n\n"
+            "        armature_data.show_group_colors = True\n",
+            "        bone_group_unused = None\n"
+            "        bone_group_nochild = None\n"
+            "        if hasattr(armature_obj.pose, 'bone_groups'):\n"
+            "            bone_group_unused = armature_obj.pose.bone_groups.new(name = \"Unused bones\")\n"
+            "            bone_group_unused.color_set = 'THEME14'\n"
+            "            bone_group_nochild = armature_obj.pose.bone_groups.new(name = \"No children\")\n"
+            "            bone_group_nochild.color_set = 'THEME03'\n"
+            "            if hasattr(armature_data, 'show_group_colors'):\n"
+            "                armature_data.show_group_colors = True\n",
+        )
+
+    if "if bone_group_nochild is not None:\n                        pose_bone.bone_group = bone_group_nochild" not in source:
+        source = source.replace(
+            "                    pose_bone.bone_group = bone_group_nochild",
+            "                    if bone_group_nochild is not None:\n                        pose_bone.bone_group = bone_group_nochild",
+        )
+    if "if bone_group_unused is not None:\n                    pose_bone.bone_group = bone_group_unused" not in source:
+        source = source.replace(
+            "                pose_bone.bone_group = bone_group_unused",
+            "                if bone_group_unused is not None:\n                    pose_bone.bone_group = bone_group_unused",
+        )
+
+    if "armature_obj.animation_data.action = action" not in source:
+        source = source.replace(
+            "        action = bpy.data.actions.new(name = Name)\n",
+            "        action = bpy.data.actions.new(name = Name)\n        armature_obj.animation_data.action = action\n",
+        )
+
+    source = source.replace(
+        "action.fcurves.new(data_path, index = 0)",
+        "action.fcurve_ensure_for_datablock(armature_obj, data_path, index = 0)",
+    )
+    source = source.replace(
+        "action.fcurves.new(data_path, index = 1)",
+        "action.fcurve_ensure_for_datablock(armature_obj, data_path, index = 1)",
+    )
+    source = source.replace(
+        "action.fcurves.new(data_path, index = 2)",
+        "action.fcurve_ensure_for_datablock(armature_obj, data_path, index = 2)",
+    )
+    source = source.replace(
+        "action.fcurves.new(data_path, index = 3)",
+        "action.fcurve_ensure_for_datablock(armature_obj, data_path, index = 3)",
+    )
+
+    if "if psa_bone is None:" not in source:
+        source = source.replace(
+            "                psa_bone = PsaBonesToProcess[j]\n                # pose_bone = psa_bone.pose_bone\n",
+            "                psa_bone = PsaBonesToProcess[j]\n"
+            "                if psa_bone is None:\n"
+            "                    raw_key_index += 1\n"
+            "                    continue\n"
+            "                # pose_bone = psa_bone.pose_bone\n",
+        )
+
+    module = importlib.util.module_from_spec(importlib.util.spec_from_loader("pskpsa_compat", loader=None))
+    exec(compile(source, str(addon_path), "exec"), module.__dict__)
+    return module.pskimport, module.psaimport
+
+
+def bind_mesh_to_armature(mesh_obj, armature_obj):
+    mesh_obj.parent = armature_obj
+    mesh_obj.parent_type = "OBJECT"
+    modifier = mesh_obj.modifiers.new(armature_obj.data.name, type="ARMATURE")
+    modifier.show_expanded = False
+    modifier.use_vertex_groups = True
+    modifier.use_bone_envelopes = False
+    modifier.object = armature_obj
+
+
+def import_psk_part(pskimport, filepath: Path, with_bones: bool, armature_obj=None):
+    before = set(bpy.data.objects)
+    if armature_obj is not None:
+        for obj in bpy.data.objects:
+            obj.select_set(False)
+        armature_obj.select_set(True)
+        bpy.context.view_layer.objects.active = armature_obj
+
+    pskimport(
+        str(filepath),
+        context=bpy.context,
+        bImportmesh=True,
+        bImportbone=with_bones,
+    )
+    imported = [obj for obj in bpy.data.objects if obj not in before]
+    meshes = [obj for obj in imported if obj.type == "MESH"]
+    armatures = [obj for obj in imported if obj.type == "ARMATURE"]
+
+    if with_bones:
+        return armatures[0] if armatures else None, meshes
+
+    for mesh in meshes:
+        bind_mesh_to_armature(mesh, armature_obj)
+    return armature_obj, meshes
+
+
+def apply_material(meshes, material):
+    for obj in meshes:
+        obj.data.materials.clear()
+        obj.data.materials.append(material)
+        finalize_object(obj, smooth=True)
+
+
+def add_l2_fighter_profile_animated(variant: str) -> bool:
+    exported = ensure_profile_animation_exports(variant)
+    if not exported:
+        return False
+
+    pskimport, psaimport = load_pskpsa_importer()
+    if not pskimport or not psaimport:
+        return False
+
+    texture_root = exported["texture_root"]
+    armature_obj = None
+
+    if variant == "leather":
+        upper_tex = find_first_existing(texture_root / "MFighter_m001_t01_u_sp_rgb.png", texture_root / "MFighter_m001_t01_u_sp.png", texture_root / "MFighter_m001_t01_u_sp.tga")
+        lower_tex = find_first_existing(texture_root / "MFighter_m001_t01_l_sp_rgb.png", texture_root / "MFighter_m001_t01_l_sp.png", texture_root / "MFighter_m001_t01_l_sp.tga")
+        gloves_tex = find_first_existing(texture_root / "MFighter_m001_t01_g_sp_rgb.png", texture_root / "MFighter_m001_t01_g_sp.png", texture_root / "MFighter_m001_t01_g_sp.tga")
+        boots_tex = find_first_existing(texture_root / "MFighter_m001_t01_b_sp_rgb.png", texture_root / "MFighter_m001_t01_b_sp.png", texture_root / "MFighter_m001_t01_b_sp.tga")
+        upper_mat = make_image_material("AnimLeatherUpper", upper_tex, metallic=0.02, roughness=0.78, specular=0.18) if upper_tex else make_material("AnimLeatherUpperFallback", (0.43, 0.31, 0.20), metallic=0.10, roughness=0.66, specular=0.24)
+        lower_mat = make_image_material("AnimLeatherLower", lower_tex, metallic=0.02, roughness=0.80, specular=0.16) if lower_tex else make_material("AnimLeatherLowerFallback", (0.47, 0.34, 0.22), metallic=0.10, roughness=0.68, specular=0.24)
+        gloves_mat = make_image_material("AnimLeatherGloves", gloves_tex, metallic=0.02, roughness=0.80, specular=0.16) if gloves_tex else make_material("AnimLeatherGlovesFallback", (0.37, 0.27, 0.18), metallic=0.08, roughness=0.70, specular=0.22)
+        boots_mat = make_image_material("AnimLeatherBoots", boots_tex, metallic=0.02, roughness=0.82, specular=0.14) if boots_tex else make_material("AnimLeatherBootsFallback", (0.29, 0.21, 0.14), metallic=0.08, roughness=0.72, specular=0.22)
+
+        armature_obj, upper_meshes = import_psk_part(pskimport, exported["MFighter_m001_u"], with_bones=True)
+        _, lower_meshes = import_psk_part(pskimport, exported["MFighter_m001_l"], with_bones=False, armature_obj=armature_obj)
+        _, gloves_meshes = import_psk_part(pskimport, exported["MFighter_m001_g"], with_bones=False, armature_obj=armature_obj)
+        _, boots_meshes = import_psk_part(pskimport, exported["MFighter_m001_b"], with_bones=False, armature_obj=armature_obj)
+        apply_material(upper_meshes, upper_mat)
+        apply_material(lower_meshes, lower_mat)
+        apply_material(gloves_meshes, gloves_mat)
+        apply_material(boots_meshes, boots_mat)
+    else:
+        upper_tex = find_first_existing(texture_root / "MFighter_m000_t01_u_sp_rgb.png", texture_root / "MFighter_m000_t01_u_sp.png", texture_root / "MFighter_m000_t01_u_sp.tga")
+        lower_tex = find_first_existing(texture_root / "MFighter_m000_t01_l_sp_rgb.png", texture_root / "MFighter_m000_t01_l_sp.png", texture_root / "MFighter_m000_t01_l_sp.tga")
+        gloves_tex = find_first_existing(texture_root / "MFighter_m000_t01_g_sp_rgb.png", texture_root / "MFighter_m000_t01_g_sp.png", texture_root / "MFighter_m000_t01_g_sp.tga")
+        boots_tex = find_first_existing(texture_root / "MFighter_m000_t01_b_sp_rgb.png", texture_root / "MFighter_m000_t01_b_sp.png", texture_root / "MFighter_m000_t01_b_sp.tga")
+        upper_mat = make_image_material("AnimBaseUpper", upper_tex, metallic=0.02, roughness=0.82, specular=0.12) if upper_tex else make_material("AnimBaseUpperFallback", (0.42, 0.42, 0.46), metallic=0.02, roughness=0.86, specular=0.08)
+        lower_mat = make_image_material("AnimBaseLower", lower_tex, metallic=0.02, roughness=0.84, specular=0.10) if lower_tex else make_material("AnimBaseLowerFallback", (0.30, 0.27, 0.24), metallic=0.02, roughness=0.88, specular=0.08)
+        gloves_mat = make_image_material("AnimBaseGloves", gloves_tex, metallic=0.02, roughness=0.80, specular=0.12) if gloves_tex else make_material("AnimBaseHandsFallback", (0.50, 0.43, 0.35), metallic=0.0, roughness=0.72, specular=0.14)
+        boots_mat = make_image_material("AnimBaseBoots", boots_tex, metallic=0.02, roughness=0.82, specular=0.10) if boots_tex else make_material("AnimBaseBootsFallback", (0.24, 0.22, 0.20), metallic=0.02, roughness=0.86, specular=0.08)
+
+        armature_obj, upper_meshes = import_psk_part(pskimport, exported["MFighter_m000_u"], with_bones=True)
+        _, lower_meshes = import_psk_part(pskimport, exported["MFighter_m000_l"], with_bones=False, armature_obj=armature_obj)
+        _, gloves_meshes = import_psk_part(pskimport, exported["MFighter_m000_g"], with_bones=False, armature_obj=armature_obj)
+        _, boots_meshes = import_psk_part(pskimport, exported["MFighter_m000_b"], with_bones=False, armature_obj=armature_obj)
+        apply_material(upper_meshes, upper_mat)
+        apply_material(lower_meshes, lower_mat)
+        apply_material(gloves_meshes, gloves_mat)
+        apply_material(boots_meshes, boots_mat)
+
+    face_tex = find_first_existing(texture_root / "MFighter_m000_t01_f.png", texture_root / "MFighter_m000_t01_f.tga")
+    face_mat = make_image_material("AnimFace", face_tex, metallic=0.0, roughness=0.68, specular=0.16) if face_tex else make_material("AnimFaceFallback", (0.74, 0.62, 0.50), metallic=0.0, roughness=0.68, specular=0.16)
+    hair_mat = make_material("AnimHair", (0.57, 0.46, 0.25), metallic=0.0, roughness=0.86, specular=0.08)
+
+    _, hair_meshes = import_psk_part(pskimport, exported["MFighter_m000_h"], with_bones=False, armature_obj=armature_obj)
+    _, face_meshes = import_psk_part(pskimport, exported["MFighter_m000_f"], with_bones=False, armature_obj=armature_obj)
+    apply_material(hair_meshes, hair_mat)
+    apply_material(face_meshes, face_mat)
+
+    psaimport(str(exported["MFighter_anim"]), context=bpy.context, oArmature=armature_obj)
+    stand_action = bpy.data.actions.get("Stand_MFighter") or bpy.data.actions.get("Wait_1HS_MFighter") or bpy.data.actions.get("Wait_Shield_MFighter")
+    if not stand_action:
+        return False
+
+    for action in list(bpy.data.actions):
+        if action != stand_action:
+            bpy.data.actions.remove(action)
+
+    armature_obj.animation_data.action = stand_action
+    bpy.context.scene.frame_start = 1
+    bpy.context.scene.frame_end = max(2, int(round(stand_action.frame_range[1])))
+    bpy.context.scene.frame_set(1)
+    return True
 
 
 def import_l2_profile_part(gltf_path: Path, material):
@@ -500,7 +792,9 @@ def add_camera_l2():
 def build_scene(variant):
     scene = clear_scene()
 
-    used_l2 = add_l2_fighter_profile(variant)
+    used_l2 = add_l2_fighter_profile_animated(variant)
+    if not used_l2:
+        used_l2 = add_l2_fighter_profile(variant)
 
     if not used_l2:
         skin_mat = make_material("Skin", (0.78, 0.68, 0.60), metallic=0.0, roughness=0.58, specular=0.42)
@@ -535,6 +829,9 @@ def export_glb(output_glb):
         export_texcoords=True,
         export_normals=True,
         export_materials="EXPORT",
+        export_animations=True,
+        export_animation_mode="ACTIONS",
+        export_force_sampling=True,
         use_selection=False,
         export_yup=True,
     )
