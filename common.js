@@ -943,6 +943,7 @@ function primeProfile3DViewer(config) {
     viewer.dataset.boundHdViewer = '1';
     viewer.addEventListener('load', () => {
       document.documentElement.classList.add('has-model-viewer');
+      scheduleProfileViewerToonFilter(viewer);
     });
     viewer.addEventListener('error', () => {
       document.documentElement.classList.remove('has-model-viewer');
@@ -985,7 +986,67 @@ function primeProfile3DViewer(config) {
     viewer.setAttribute('field-of-view', '23deg');
   }
   viewer.setAttribute('alt', `${config.nickname || 'Hero'} 3D profile preview`);
+  scheduleProfileViewerToonFilter(viewer);
   bootModelViewerSupport();
+}
+
+function getProfileViewerToonFilter(isMobileProfile) {
+  return isMobileProfile
+    ? 'saturate(1.72) contrast(1.34) brightness(.86) sepia(.08) drop-shadow(2px 0 0 rgba(22, 13, 5, .88)) drop-shadow(-2px 0 0 rgba(22, 13, 5, .88)) drop-shadow(0 2px 0 rgba(22, 13, 5, .88)) drop-shadow(0 -2px 0 rgba(22, 13, 5, .88)) drop-shadow(0 10px 22px rgba(0, 0, 0, .34))'
+    : 'saturate(1.36) contrast(1.20) brightness(.84) sepia(.05) drop-shadow(2px 0 0 rgba(22, 13, 5, .80)) drop-shadow(-2px 0 0 rgba(22, 13, 5, .80)) drop-shadow(0 2px 0 rgba(22, 13, 5, .80)) drop-shadow(0 -2px 0 rgba(22, 13, 5, .80)) drop-shadow(0 8px 18px rgba(0, 0, 0, .28))';
+}
+
+function applyProfileViewerToonFilter(viewer) {
+  if (!viewer) return false;
+  const root = viewer.shadowRoot || viewer.renderRoot;
+  if (!root) return false;
+
+  const isMobileProfile = !!document.body &&
+    (
+      document.body.classList.contains('device-mobile') ||
+      document.body.classList.contains('platform-mobile')
+    );
+  const filterValue = getProfileViewerToonFilter(isMobileProfile);
+  const selectors = [
+    'canvas',
+    '.slot.canvas canvas',
+    '.slot.canvas',
+    '#default-viewer',
+    '.container',
+    '.scene'
+  ];
+  const seen = new Set();
+  const targets = [];
+  selectors.forEach((selector) => {
+    root.querySelectorAll(selector).forEach((node) => {
+      if (!seen.has(node)) {
+        seen.add(node);
+        targets.push(node);
+      }
+    });
+  });
+
+  if (!targets.length) return false;
+
+  targets.forEach((node) => {
+    node.style.filter = filterValue;
+    node.style.webkitFilter = filterValue;
+  });
+  return true;
+}
+
+function scheduleProfileViewerToonFilter(viewer) {
+  if (!viewer) return;
+  let attempt = 0;
+  const maxAttempts = 10;
+  const tick = () => {
+    attempt += 1;
+    const applied = applyProfileViewerToonFilter(viewer);
+    if (!applied && attempt < maxAttempts) {
+      window.setTimeout(tick, 120);
+    }
+  };
+  tick();
 }
 
 function setCreatorBg(el, state) {
