@@ -435,8 +435,10 @@ def import_psk_part(pskimport, filepath: Path, with_bones: bool, armature_obj=No
 
 def apply_material(meshes, material):
     for obj in meshes:
+        slot_count = max(1, len(obj.data.materials))
         obj.data.materials.clear()
-        obj.data.materials.append(material)
+        for _ in range(slot_count):
+            obj.data.materials.append(material)
         finalize_object(obj, smooth=True)
 
 
