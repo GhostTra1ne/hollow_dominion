@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-      const APP_VERSION = '20260429-telegram-132';
+      const APP_VERSION = '20260429-telegram-133';
       const url = new URL(window.location.href);
       window.__HD_DEBUG_GRID__ = url.searchParams.get('grid') === '1';
       if (url.searchParams.get('appv') !== APP_VERSION) {
@@ -19,8 +19,8 @@
     })();
   </script>  <title>Hollow Dominion</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script type="module" src="./assets/vendor/model-viewer.min.js?v=20260429-telegram-132"></script>
-  <link rel="stylesheet" href="common.css?v=20260429-telegram-132">
+  <script type="module" src="./assets/vendor/model-viewer.min.js?v=20260429-telegram-133"></script>
+  <link rel="stylesheet" href="common.css?v=20260429-telegram-133">
   <style>
     .screen-page {
       position: relative;
@@ -2568,26 +2568,6 @@
       pointer-events: auto;
       animation: none;
       will-change: transform;
-      filter:
-        saturate(1.24)
-        contrast(1.16)
-        brightness(.84)
-        sepia(.04)
-        drop-shadow(2px 0 0 rgba(22, 13, 5, .78))
-        drop-shadow(-2px 0 0 rgba(22, 13, 5, .78))
-        drop-shadow(0 2px 0 rgba(22, 13, 5, .78))
-        drop-shadow(0 -2px 0 rgba(22, 13, 5, .78))
-        drop-shadow(0 8px 18px rgba(0, 0, 0, .26));
-      -webkit-filter:
-        saturate(1.24)
-        contrast(1.16)
-        brightness(.84)
-        sepia(.04)
-        drop-shadow(2px 0 0 rgba(22, 13, 5, .78))
-        drop-shadow(-2px 0 0 rgba(22, 13, 5, .78))
-        drop-shadow(0 2px 0 rgba(22, 13, 5, .78))
-        drop-shadow(0 -2px 0 rgba(22, 13, 5, .78))
-        drop-shadow(0 8px 18px rgba(0, 0, 0, .26));
     }
 
     .profile-psd-2d-fallback {
@@ -2949,26 +2929,6 @@
       opacity: 1;
       pointer-events: auto;
       inset: -28% -18% -24%;
-      filter:
-        saturate(1.42)
-        contrast(1.26)
-        brightness(.78)
-        sepia(.08)
-        drop-shadow(2px 0 0 rgba(22, 13, 5, .86))
-        drop-shadow(-2px 0 0 rgba(22, 13, 5, .86))
-        drop-shadow(0 2px 0 rgba(22, 13, 5, .86))
-        drop-shadow(0 -2px 0 rgba(22, 13, 5, .86))
-        drop-shadow(0 10px 20px rgba(0, 0, 0, .34));
-      -webkit-filter:
-        saturate(1.42)
-        contrast(1.26)
-        brightness(.78)
-        sepia(.08)
-        drop-shadow(2px 0 0 rgba(22, 13, 5, .86))
-        drop-shadow(-2px 0 0 rgba(22, 13, 5, .86))
-        drop-shadow(0 2px 0 rgba(22, 13, 5, .86))
-        drop-shadow(0 -2px 0 rgba(22, 13, 5, .86))
-        drop-shadow(0 10px 20px rgba(0, 0, 0, .34));
     }
 
     body.env-telegram.device-mobile .profile-psd-poster-fallback,
@@ -3000,8 +2960,8 @@
   </div>
   <div class="toast" id="toast"></div>
 
-<script src="item-catalog.js?v=20260429-telegram-132"></script>
-<script src="common.js?v=20260429-telegram-132"></script>
+<script src="item-catalog.js?v=20260429-telegram-133"></script>
+<script src="common.js?v=20260429-telegram-133"></script>
     <script>
       (async () => {
       const screenPage = document.querySelector('.screen-page');
@@ -3381,7 +3341,7 @@
     function renderCityScreen() {
       setProfileScreenMode(true);
       const hero = state.hero;
-      const assetVersion = window.__HD_APP_VERSION__ || '20260429-telegram-132';
+      const assetVersion = window.__HD_APP_VERSION__ || '20260429-telegram-133';
 
       q('app').innerHTML = `
         <div class="single-page-layout profile-psd-host">
