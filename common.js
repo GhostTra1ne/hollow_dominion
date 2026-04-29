@@ -127,6 +127,7 @@ function applyAdaptiveViewportMetrics() {
 function syncRuntimeViewport() {
   applyRuntimeEnvironment();
   applyAdaptiveViewportMetrics();
+  syncProfileDesktopShellScale();
 }
 
 syncRuntimeViewport();
@@ -985,7 +986,60 @@ function primeProfile3DViewer(config) {
     viewer.setAttribute('field-of-view', '23deg');
   }
   viewer.setAttribute('alt', `${config.nickname || 'Hero'} 3D profile preview`);
+  scheduleProfileDesktopShellScale();
   bootModelViewerSupport();
+}
+
+function syncProfileDesktopShellScale() {
+  const body = document.body;
+  const root = document.documentElement;
+  const shell = document.querySelector('.profile-psd-shell');
+  if (!body || !root || !shell) return;
+
+  const isDesktopProfile =
+    body.classList.contains('device-desktop') &&
+    shell.closest('.profile-psd-host');
+  if (!isDesktopProfile) return;
+
+  const baseWidthKey = '--hd-profile-desktop-base-width';
+  const baseHeightKey = '--hd-profile-desktop-base-height';
+  const baseViewportWidthKey = '--hd-profile-desktop-base-viewport-width';
+  const baseViewportHeightKey = '--hd-profile-desktop-base-viewport-height';
+  const scaleKey = '--hd-profile-desktop-scale';
+
+  let baseWidth = parseFloat(root.style.getPropertyValue(baseWidthKey));
+  let baseHeight = parseFloat(root.style.getPropertyValue(baseHeightKey));
+  let baseViewportWidth = parseFloat(root.style.getPropertyValue(baseViewportWidthKey));
+  let baseViewportHeight = parseFloat(root.style.getPropertyValue(baseViewportHeightKey));
+
+  if (!baseWidth || !baseHeight || !baseViewportWidth || !baseViewportHeight) {
+    const rect = shell.getBoundingClientRect();
+    baseWidth = rect.width || 385;
+    baseHeight = rect.height || 592;
+    baseViewportWidth = Math.max(window.innerWidth || 0, document.documentElement.clientWidth || 0);
+    baseViewportHeight = Math.max(window.innerHeight || 0, document.documentElement.clientHeight || 0);
+    root.style.setProperty(baseWidthKey, `${baseWidth}px`);
+    root.style.setProperty(baseHeightKey, `${baseHeight}px`);
+    root.style.setProperty(baseViewportWidthKey, `${baseViewportWidth}px`);
+    root.style.setProperty(baseViewportHeightKey, `${baseViewportHeight}px`);
+  }
+
+  const currentViewportWidth = Math.max(window.innerWidth || 0, document.documentElement.clientWidth || 0);
+  const currentViewportHeight = Math.max(window.innerHeight || 0, document.documentElement.clientHeight || 0);
+  const scale = Math.max(
+    1,
+    Math.min(
+      currentViewportWidth / Math.max(baseViewportWidth, 1),
+      currentViewportHeight / Math.max(baseViewportHeight, 1)
+    )
+  );
+  root.style.setProperty(scaleKey, scale.toFixed(4));
+}
+
+function scheduleProfileDesktopShellScale() {
+  window.requestAnimationFrame(() => {
+    syncProfileDesktopShellScale();
+  });
 }
 
 function setCreatorBg(el, state) {

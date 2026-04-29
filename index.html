@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-      const APP_VERSION = '20260429-telegram-134';
+      const APP_VERSION = '20260429-telegram-135';
       const url = new URL(window.location.href);
       window.__HD_DEBUG_GRID__ = url.searchParams.get('grid') === '1';
       if (url.searchParams.get('appv') !== APP_VERSION) {
@@ -19,8 +19,8 @@
     })();
   </script>  <title>Hollow Dominion</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script type="module" src="./assets/vendor/model-viewer.min.js?v=20260429-telegram-134"></script>
-  <link rel="stylesheet" href="common.css?v=20260429-telegram-134">
+  <script type="module" src="./assets/vendor/model-viewer.min.js?v=20260429-telegram-135"></script>
+  <link rel="stylesheet" href="common.css?v=20260429-telegram-135">
   <style>
     .screen-page {
       position: relative;
@@ -2757,12 +2757,8 @@
 
     body.env-telegram.platform-desktop-runtime.viewport-compact-desktop .profile-psd-shell,
     body.env-browser.device-desktop .profile-psd-shell {
-      --psd-height: calc(100dvh - var(--safe-top, 0px) - var(--safe-bottom, 0px));
-      width: min(
-        calc(var(--psd-height) * 1155 / 1776),
-        calc(100vw - var(--safe-left, 0px) - var(--safe-right, 0px) - 4px)
-      );
-      height: var(--psd-height);
+      width: calc(var(--hd-profile-desktop-base-width, 385px) * var(--hd-profile-desktop-scale, 1));
+      height: calc(var(--hd-profile-desktop-base-height, 592px) * var(--hd-profile-desktop-scale, 1));
       aspect-ratio: auto;
       max-width: none;
     }
@@ -2978,8 +2974,8 @@
   </div>
   <div class="toast" id="toast"></div>
 
-<script src="item-catalog.js?v=20260429-telegram-134"></script>
-<script src="common.js?v=20260429-telegram-134"></script>
+<script src="item-catalog.js?v=20260429-telegram-135"></script>
+<script src="common.js?v=20260429-telegram-135"></script>
     <script>
       (async () => {
       const screenPage = document.querySelector('.screen-page');
@@ -3359,7 +3355,7 @@
     function renderCityScreen() {
       setProfileScreenMode(true);
       const hero = state.hero;
-      const assetVersion = window.__HD_APP_VERSION__ || '20260429-telegram-134';
+      const assetVersion = window.__HD_APP_VERSION__ || '20260429-telegram-135';
 
       q('app').innerHTML = `
         <div class="single-page-layout profile-psd-host">
