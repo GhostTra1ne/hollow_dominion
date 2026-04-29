@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-      const APP_VERSION = '20260429-telegram-113';
+      const APP_VERSION = '20260429-telegram-114';
       const url = new URL(window.location.href);
       window.__HD_DEBUG_GRID__ = url.searchParams.get('grid') === '1';
       if (url.searchParams.get('appv') !== APP_VERSION) {
@@ -19,8 +19,8 @@
     })();
   </script>  <title>Hollow Dominion</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script type="module" src="./assets/vendor/model-viewer.min.js?v=20260429-telegram-113"></script>
-  <link rel="stylesheet" href="common.css?v=20260429-telegram-113">
+  <script type="module" src="./assets/vendor/model-viewer.min.js?v=20260429-telegram-114"></script>
+  <link rel="stylesheet" href="common.css?v=20260429-telegram-114">
   <style>
     .screen-page {
       position: relative;
@@ -873,7 +873,7 @@
       align-items: flex-end;
       justify-content: center;
       will-change: transform;
-      animation: hd-profile-idle 4.8s ease-in-out infinite;
+      animation: none;
     }
 
     .profile-preview-box .profile-2d-fallback {
@@ -2566,7 +2566,7 @@
       justify-content: center;
       opacity: 0;
       pointer-events: none;
-      animation: hd-profile-idle 4.8s ease-in-out infinite;
+      animation: none;
       will-change: transform;
     }
 
@@ -2592,12 +2592,12 @@
       height: 100%;
       object-fit: contain;
       object-position: center center;
-      transform: none;
+      transform: scale(2);
       transform-origin: center center;
       filter:
-        saturate(.82)
-        contrast(1.12)
-        brightness(1.04)
+        saturate(.94)
+        contrast(1.04)
+        brightness(.88)
         drop-shadow(1px 0 0 rgba(22, 13, 5, .72))
         drop-shadow(-1px 0 0 rgba(22, 13, 5, .72))
         drop-shadow(0 1px 0 rgba(22, 13, 5, .72))
@@ -2611,12 +2611,12 @@
       height: 100%;
       background: transparent;
       --poster-color: transparent;
-      transform: translateY(-30%) scale(.83);
+      transform: translateY(-18%) scale(2);
       transform-origin: center bottom;
       filter:
-        saturate(.82)
-        contrast(1.12)
-        brightness(1.04)
+        saturate(.94)
+        contrast(1.04)
+        brightness(.88)
         drop-shadow(1px 0 0 rgba(22, 13, 5, .72))
         drop-shadow(-1px 0 0 rgba(22, 13, 5, .72))
         drop-shadow(0 1px 0 rgba(22, 13, 5, .72))
@@ -2641,11 +2641,11 @@
     }
 
     .profile-psd-model-anchor .profile-psd-3d-viewer model-viewer {
-      transform: scale(1.2);
+      transform: translateY(-18%) scale(2);
     }
 
     body.env-telegram.platform-desktop-runtime.viewport-compact-desktop .profile-psd-model-anchor .profile-psd-3d-viewer model-viewer {
-      transform: scale(1);
+      transform: translateY(-18%) scale(2);
     }
 
     html.has-model-viewer .profile-psd-3d-viewer {
@@ -2925,7 +2925,7 @@
 
     body.env-telegram.device-mobile .profile-psd-poster-fallback img,
     body.env-browser.device-mobile .profile-psd-poster-fallback img {
-      transform: none;
+      transform: scale(2);
     }
   </style>
 </head>
@@ -2943,8 +2943,8 @@
   </div>
   <div class="toast" id="toast"></div>
 
-<script src="item-catalog.js?v=20260429-telegram-113"></script>
-<script src="common.js?v=20260429-telegram-113"></script>
+<script src="item-catalog.js?v=20260429-telegram-114"></script>
+<script src="common.js?v=20260429-telegram-114"></script>
     <script>
       (async () => {
       const screenPage = document.querySelector('.screen-page');
@@ -3324,7 +3324,7 @@
     function renderCityScreen() {
       setProfileScreenMode(true);
       const hero = state.hero;
-      const assetVersion = window.__HD_APP_VERSION__ || '20260429-telegram-113';
+      const assetVersion = window.__HD_APP_VERSION__ || '20260429-telegram-114';
 
       q('app').innerHTML = `
         <div class="single-page-layout profile-psd-host">
