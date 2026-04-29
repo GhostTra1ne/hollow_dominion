@@ -958,6 +958,11 @@ function primeProfile3DViewer(config) {
     document.body.classList.contains('env-telegram') &&
     document.body.classList.contains('platform-desktop-runtime') &&
     document.body.classList.contains('viewport-compact-desktop');
+  const isMobileProfile = !!document.body &&
+    (
+      document.body.classList.contains('device-mobile') ||
+      document.body.classList.contains('platform-mobile')
+    );
 
   if (isCompactDesktop) {
     viewer.setAttribute('camera-target', '0m 0.18m 0m');
@@ -965,6 +970,12 @@ function primeProfile3DViewer(config) {
     viewer.setAttribute('min-camera-orbit', 'auto 78deg 1.34m');
     viewer.setAttribute('max-camera-orbit', 'auto 78deg 1.34m');
     viewer.setAttribute('field-of-view', '25deg');
+  } else if (isMobileProfile) {
+    viewer.setAttribute('camera-target', '0m 0.16m 0m');
+    viewer.setAttribute('camera-orbit', '0deg 78deg 1.30m');
+    viewer.setAttribute('min-camera-orbit', 'auto 78deg 1.30m');
+    viewer.setAttribute('max-camera-orbit', 'auto 78deg 1.30m');
+    viewer.setAttribute('field-of-view', '24deg');
   } else {
     viewer.setAttribute('camera-target', '0m 0.28m 0m');
     viewer.setAttribute('camera-orbit', '0deg 78deg 1.24m');
