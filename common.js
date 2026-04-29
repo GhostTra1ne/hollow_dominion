@@ -883,6 +883,7 @@ const PROFILE_IDLE_ANIMATIONS = [
   'Wait_1HS_MFighter',
   'Wait_Shield_MFighter'
 ];
+const PROFILE_INTRO_FALLBACK_MS = 1600;
 
 function getProfileIntroStorageKey(config) {
   const rawIdentity = String(
@@ -910,10 +911,28 @@ function markProfileIntroPlayed(config) {
   }
 }
 
+function hasProfileIntroPlayedInSession(viewer) {
+  return viewer?.dataset?.hdProfileIntroPlayed === '1';
+}
+
+function markProfileIntroPlayedInSession(viewer, config) {
+  if (viewer?.dataset) {
+    viewer.dataset.hdProfileIntroPlayed = '1';
+  }
+  markProfileIntroPlayed(config);
+}
+
 function clearProfileIntroHandler(viewer) {
   if (viewer?._hdProfileFinishedHandler) {
     viewer.removeEventListener('finished', viewer._hdProfileFinishedHandler);
     viewer._hdProfileFinishedHandler = null;
+  }
+}
+
+function clearProfileIntroTimer(viewer) {
+  if (viewer?._hdProfileIntroTimer) {
+    window.clearTimeout(viewer._hdProfileIntroTimer);
+    viewer._hdProfileIntroTimer = null;
   }
 }
 
@@ -957,6 +976,7 @@ function playProfileAnimation(viewer, animationName, playOptions) {
 function configureProfileViewerAnimation(viewer, config) {
   if (!viewer) return;
   clearProfileIntroHandler(viewer);
+  clearProfileIntroTimer(viewer);
 
   const idleAnimation = pickProfileIdleAnimation(viewer);
   if (!idleAnimation) return;
@@ -966,15 +986,17 @@ function configureProfileViewerAnimation(viewer, config) {
     ? PROFILE_INTRO_ANIMATION
     : idleAnimation;
 
-  if (!hasProfileIntroPlayed(config) && introAnimation !== idleAnimation) {
-    const onFinished = () => {
-      clearProfileIntroHandler(viewer);
-      markProfileIntroPlayed(config);
-      playProfileAnimation(viewer, idleAnimation);
-    };
-    viewer._hdProfileFinishedHandler = onFinished;
-    viewer.addEventListener('finished', onFinished, { once: true });
+  if (!hasProfileIntroPlayed(config) && !hasProfileIntroPlayedInSession(viewer) && introAnimation !== idleAnimation) {
+    markProfileIntroPlayedInSession(viewer, config);
     playProfileAnimation(viewer, introAnimation, { repetitions: 1 });
+    const introDurationMs = Math.max(
+      PROFILE_INTRO_FALLBACK_MS,
+      Math.round((Number(viewer.duration) || 0) * 1000) + 140
+    );
+    viewer._hdProfileIntroTimer = window.setTimeout(() => {
+      viewer._hdProfileIntroTimer = null;
+      playProfileAnimation(viewer, idleAnimation);
+    }, introDurationMs);
     return;
   }
 
@@ -1043,6 +1065,9 @@ function primeProfile3DViewer(config) {
 
   if (!viewer) return;
   viewer._hdProfileConfig = config;
+  if (viewer.dataset.variant !== asset.variant) {
+    viewer.dataset.hdProfileIntroPlayed = hasProfileIntroPlayed(config) ? '1' : '';
+  }
 
   if (!viewer.dataset.boundHdViewer) {
     viewer.dataset.boundHdViewer = '1';

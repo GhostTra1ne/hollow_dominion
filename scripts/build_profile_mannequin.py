@@ -488,14 +488,12 @@ def add_l2_fighter_profile_animated(variant: str) -> bool:
         apply_material(gloves_meshes, gloves_mat)
         apply_material(boots_meshes, boots_mat)
 
-    face_tex = find_first_existing(texture_root / "MFighter_m000_t01_f.png", texture_root / "MFighter_m000_t01_f.tga")
-    face_mat = make_image_material("AnimFace", face_tex, metallic=0.0, roughness=0.68, specular=0.16) if face_tex else make_material("AnimFaceFallback", (0.74, 0.62, 0.50), metallic=0.0, roughness=0.68, specular=0.16)
+    head_mat = make_material("AnimHead", (0.74, 0.62, 0.50), metallic=0.0, roughness=0.68, specular=0.16)
     hair_mat = make_material("AnimHair", (0.57, 0.46, 0.25), metallic=0.0, roughness=0.86, specular=0.08)
 
-    _, hair_meshes = import_psk_part(pskimport, exported["MFighter_m000_h"], with_bones=False, armature_obj=armature_obj)
-    _, face_meshes = import_psk_part(pskimport, exported["MFighter_m000_f"], with_bones=False, armature_obj=armature_obj)
-    apply_material(hair_meshes, hair_mat)
-    apply_material(face_meshes, face_mat)
+    _, head_meshes = import_psk_part(pskimport, exported["MFighter_m000_h"], with_bones=False, armature_obj=armature_obj)
+    apply_material(head_meshes, head_mat)
+    add_imported_fighter_hair(hair_mat)
 
     psaimport(str(exported["MFighter_anim"]), context=bpy.context, oArmature=armature_obj)
     stand_action = bpy.data.actions.get("Stand_MFighter")
