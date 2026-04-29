@@ -877,6 +877,109 @@ function setPreview(root, config) {
 }
 
 let modelViewerSupportPromise = null;
+const PROFILE_INTRO_ANIMATION = 'Stand_MFighter';
+const PROFILE_IDLE_ANIMATIONS = [
+  'Wait_Hand_MFighter',
+  'Wait_1HS_MFighter',
+  'Wait_Shield_MFighter'
+];
+
+function getProfileIntroStorageKey(config) {
+  const rawIdentity = String(
+    config?.accountId ||
+    config?.nickname ||
+    config?.name ||
+    'hero'
+  ).trim().toLowerCase();
+  return `hd_profile_intro_v2:${rawIdentity}`;
+}
+
+function hasProfileIntroPlayed(config) {
+  try {
+    return window.localStorage?.getItem(getProfileIntroStorageKey(config)) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function markProfileIntroPlayed(config) {
+  try {
+    window.localStorage?.setItem(getProfileIntroStorageKey(config), '1');
+  } catch {
+    /* ignore storage issues */
+  }
+}
+
+function clearProfileIntroHandler(viewer) {
+  if (viewer?._hdProfileFinishedHandler) {
+    viewer.removeEventListener('finished', viewer._hdProfileFinishedHandler);
+    viewer._hdProfileFinishedHandler = null;
+  }
+}
+
+function pickProfileIdleAnimation(viewer) {
+  const available = Array.isArray(viewer?.availableAnimations) ? viewer.availableAnimations : [];
+  for (const animation of PROFILE_IDLE_ANIMATIONS) {
+    if (available.includes(animation)) return animation;
+  }
+  if (available.includes(PROFILE_INTRO_ANIMATION)) return PROFILE_INTRO_ANIMATION;
+  return '';
+}
+
+function playProfileAnimation(viewer, animationName, playOptions) {
+  if (!viewer || !animationName) return;
+  try {
+    if (typeof viewer.pause === 'function') {
+      viewer.pause();
+    }
+    if ('currentTime' in viewer) {
+      viewer.currentTime = 0;
+    }
+  } catch (error) {
+    console.warn('Unable to reset profile animation state:', error);
+  }
+
+  viewer.setAttribute('animation-name', animationName);
+
+  if (typeof viewer.play === 'function') {
+    try {
+      if (playOptions) {
+        viewer.play(playOptions);
+      } else {
+        viewer.play();
+      }
+    } catch (error) {
+      console.warn(`Unable to play profile animation "${animationName}":`, error);
+    }
+  }
+}
+
+function configureProfileViewerAnimation(viewer, config) {
+  if (!viewer) return;
+  clearProfileIntroHandler(viewer);
+
+  const idleAnimation = pickProfileIdleAnimation(viewer);
+  if (!idleAnimation) return;
+
+  const available = Array.isArray(viewer.availableAnimations) ? viewer.availableAnimations : [];
+  const introAnimation = available.includes(PROFILE_INTRO_ANIMATION)
+    ? PROFILE_INTRO_ANIMATION
+    : idleAnimation;
+
+  if (!hasProfileIntroPlayed(config) && introAnimation !== idleAnimation) {
+    const onFinished = () => {
+      clearProfileIntroHandler(viewer);
+      markProfileIntroPlayed(config);
+      playProfileAnimation(viewer, idleAnimation);
+    };
+    viewer._hdProfileFinishedHandler = onFinished;
+    viewer.addEventListener('finished', onFinished, { once: true });
+    playProfileAnimation(viewer, introAnimation, { repetitions: 1 });
+    return;
+  }
+
+  playProfileAnimation(viewer, idleAnimation);
+}
 
 function getProfile3DVariant(config) {
   const equipped = getEquippedPaperdollMap(config);
@@ -939,19 +1042,13 @@ function primeProfile3DViewer(config) {
   }
 
   if (!viewer) return;
+  viewer._hdProfileConfig = config;
 
   if (!viewer.dataset.boundHdViewer) {
     viewer.dataset.boundHdViewer = '1';
     viewer.addEventListener('load', () => {
       document.documentElement.classList.add('has-model-viewer');
-      viewer.setAttribute('animation-name', 'Stand_MFighter');
-      if (typeof viewer.play === 'function') {
-        try {
-          viewer.play();
-        } catch (error) {
-          console.warn('Unable to start profile idle animation:', error);
-        }
-      }
+      configureProfileViewerAnimation(viewer, viewer._hdProfileConfig || config);
     });
     viewer.addEventListener('error', () => {
       document.documentElement.classList.remove('has-model-viewer');
@@ -963,8 +1060,7 @@ function primeProfile3DViewer(config) {
     viewer.setAttribute('src', asset.src);
     viewer.removeAttribute('poster');
   }
-  viewer.setAttribute('autoplay', '');
-  viewer.setAttribute('animation-name', 'Stand_MFighter');
+  viewer.removeAttribute('autoplay');
   viewer.removeAttribute('poster');
   const isCompactDesktop = !!document.body &&
     document.body.classList.contains('env-telegram') &&
@@ -996,6 +1092,9 @@ function primeProfile3DViewer(config) {
     viewer.setAttribute('field-of-view', '23deg');
   }
   viewer.setAttribute('alt', `${config.nickname || 'Hero'} 3D profile preview`);
+  if (Array.isArray(viewer.availableAnimations) && viewer.availableAnimations.length) {
+    configureProfileViewerAnimation(viewer, config);
+  }
   scheduleProfileDesktopShellScale();
   bootModelViewerSupport();
 }

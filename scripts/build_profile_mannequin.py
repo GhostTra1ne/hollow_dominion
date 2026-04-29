@@ -83,6 +83,15 @@ def make_image_material(
     bsdf = nodes["Principled BSDF"]
     tex = nodes.new("ShaderNodeTexImage")
     tex.image = bpy.data.images.load(str(image_path), check_existing=True)
+    if tex.image:
+        try:
+            tex.image.colorspace_settings.name = "sRGB"
+        except Exception:
+            pass
+        try:
+            tex.image.alpha_mode = "CHANNEL_PACKED" if alpha_mode else "NONE"
+        except Exception:
+            pass
     tex.interpolation = "Linear"
     tex.extension = "CLIP"
     tex.location = (-320, 260)
@@ -90,6 +99,10 @@ def make_image_material(
     emission_color = bsdf.inputs.get("Emission Color")
     if emission_color is not None:
         links.new(tex.outputs["Color"], emission_color)
+    if hasattr(mat, "blend_method"):
+        mat.blend_method = "OPAQUE"
+    if hasattr(mat, "shadow_method"):
+        mat.shadow_method = "OPAQUE"
     if alpha_mode:
         links.new(tex.outputs["Alpha"], bsdf.inputs["Alpha"])
         if hasattr(mat, "blend_method"):
@@ -485,17 +498,27 @@ def add_l2_fighter_profile_animated(variant: str) -> bool:
     apply_material(face_meshes, face_mat)
 
     psaimport(str(exported["MFighter_anim"]), context=bpy.context, oArmature=armature_obj)
-    stand_action = bpy.data.actions.get("Stand_MFighter") or bpy.data.actions.get("Wait_1HS_MFighter") or bpy.data.actions.get("Wait_Shield_MFighter")
-    if not stand_action:
+    stand_action = bpy.data.actions.get("Stand_MFighter")
+    idle_action = (
+        bpy.data.actions.get("Wait_Hand_MFighter")
+        or bpy.data.actions.get("Wait_1HS_MFighter")
+        or bpy.data.actions.get("Wait_Shield_MFighter")
+        or stand_action
+    )
+    if not stand_action and not idle_action:
         return False
 
+    keep_actions = {action for action in (stand_action, idle_action) if action is not None}
     for action in list(bpy.data.actions):
-        if action != stand_action:
+        if action not in keep_actions:
             bpy.data.actions.remove(action)
 
-    armature_obj.animation_data.action = stand_action
+    armature_obj.animation_data.action = idle_action or stand_action
     bpy.context.scene.frame_start = 1
-    bpy.context.scene.frame_end = max(2, int(round(stand_action.frame_range[1])))
+    bpy.context.scene.frame_end = max(
+        2,
+        int(round(max(action.frame_range[1] for action in keep_actions))),
+    )
     bpy.context.scene.frame_set(1)
     return True
 
