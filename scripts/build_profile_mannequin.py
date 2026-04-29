@@ -442,6 +442,18 @@ def apply_material(meshes, material):
         finalize_object(obj, smooth=True)
 
 
+def apply_material_slots(meshes, materials):
+    if not materials:
+        return
+    for obj in meshes:
+        slot_count = max(1, len(obj.data.materials), len(materials))
+        obj.data.materials.clear()
+        for index in range(slot_count):
+            material = materials[min(index, len(materials) - 1)]
+            obj.data.materials.append(material)
+        finalize_object(obj, smooth=True)
+
+
 def join_mesh_objects(meshes):
     targets = [obj for obj in meshes if obj and obj.type == "MESH"]
     if len(targets) < 2:
@@ -644,7 +656,7 @@ def add_l2_fighter_profile_animated(variant: str) -> bool:
         texture_root / "MFighter_m000_t01_f.png",
         texture_root / "MFighter_m000_t01_f.tga",
     )
-    hair_tex = find_first_existing(
+    hair_base_tex = find_first_existing(
         OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m001_t03_m00_bh_ori.png",
         OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m001_t03_m00_bh_ori.tga",
         OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m002_t03_m00_bh_ori.png",
@@ -652,21 +664,25 @@ def add_l2_fighter_profile_animated(variant: str) -> bool:
         OUTER_ROOT / "$out" / "FFighter" / "Texture" / "FFighter_m000_t00_m00_bh_ori.png",
         OUTER_ROOT / "$out" / "FFighter" / "Texture" / "FFighter_m000_t00_m00_bh_ori.tga",
     )
+    hair_strands_tex = find_first_existing(
+        OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m001_t03_m00_ah_ori.png",
+        OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m001_t03_m00_ah_ori.tga",
+        OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m002_t03_m00_ah_ori.png",
+        OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m002_t03_m00_ah_ori.tga",
+    )
     face_mat = make_image_material("AnimFace", face_tex, metallic=0.0, roughness=0.68, specular=0.16) if face_tex else make_material("AnimFaceFallback", (0.74, 0.62, 0.50), metallic=0.0, roughness=0.68, specular=0.16)
-    hair_mat = make_image_material("AnimHairTex", hair_tex, metallic=0.0, roughness=0.84, specular=0.08) if hair_tex else make_material("AnimHairFallback", (0.33, 0.23, 0.14), metallic=0.0, roughness=0.84, specular=0.08)
-    hair_volume_mat = make_material("AnimHairVolume", (0.20, 0.13, 0.09), metallic=0.0, roughness=0.88, specular=0.06)
+    hair_base_mat = make_image_material("AnimHairBaseTex", hair_base_tex, metallic=0.0, roughness=0.84, specular=0.08, alpha_mode="HASHED") if hair_base_tex else make_material("AnimHairBaseFallback", (0.33, 0.23, 0.14), metallic=0.0, roughness=0.84, specular=0.08)
+    hair_strands_mat = make_image_material("AnimHairStrandsTex", hair_strands_tex, metallic=0.0, roughness=0.82, specular=0.08, alpha_mode="HASHED") if hair_strands_tex else hair_base_mat
 
     _, hair_head_meshes = import_psk_part(pskimport, exported["MFighter_m000_h"], with_bones=False, armature_obj=armature_obj)
     _, face_meshes = import_psk_part(pskimport, exported["MFighter_m000_f"], with_bones=False, armature_obj=armature_obj)
-    apply_material(hair_head_meshes, hair_mat)
+    apply_material_slots(hair_head_meshes, [hair_base_mat, hair_strands_mat])
     apply_material(face_meshes, face_mat)
     # In the original exports the face mesh is weighted to the root bone while
     # the head shell uses Bip01_head, which makes the face drift under motion.
     # Remap it to the head bone so it follows the skull naturally.
     rename_vertex_group(face_meshes, "Bip01", "Bip01_head")
     join_mesh_objects([*hair_head_meshes, *face_meshes])
-    add_imported_fighter_hair(hair_volume_mat)
-
     psaimport(str(exported["MFighter_anim"]), context=bpy.context, oArmature=armature_obj)
     stand_action = bpy.data.actions.get("Stand_MFighter")
     idle_action = (
