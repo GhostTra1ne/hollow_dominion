@@ -671,8 +671,8 @@ def add_l2_fighter_profile_animated(variant: str) -> bool:
         OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m002_t03_m00_ah_ori.tga",
     )
     face_mat = make_image_material("AnimFace", face_tex, metallic=0.0, roughness=0.68, specular=0.16) if face_tex else make_material("AnimFaceFallback", (0.74, 0.62, 0.50), metallic=0.0, roughness=0.68, specular=0.16)
-    hair_base_mat = make_image_material("AnimHairBaseTex", hair_base_tex, metallic=0.0, roughness=0.84, specular=0.08, alpha_mode="HASHED") if hair_base_tex else make_material("AnimHairBaseFallback", (0.33, 0.23, 0.14), metallic=0.0, roughness=0.84, specular=0.08)
-    hair_strands_mat = make_image_material("AnimHairStrandsTex", hair_strands_tex, metallic=0.0, roughness=0.82, specular=0.08, alpha_mode="HASHED") if hair_strands_tex else hair_base_mat
+    hair_base_mat = make_image_material("AnimHairBaseTex", hair_base_tex, metallic=0.0, roughness=0.84, specular=0.08) if hair_base_tex else make_material("AnimHairBaseFallback", (0.33, 0.23, 0.14), metallic=0.0, roughness=0.84, specular=0.08)
+    hair_strands_mat = make_image_material("AnimHairStrandsTex", hair_strands_tex, metallic=0.0, roughness=0.82, specular=0.08, alpha_mode="CLIP") if hair_strands_tex else hair_base_mat
 
     _, hair_head_meshes = import_psk_part(pskimport, exported["MFighter_m000_h"], with_bones=False, armature_obj=armature_obj)
     _, face_meshes = import_psk_part(pskimport, exported["MFighter_m000_f"], with_bones=False, armature_obj=armature_obj)
