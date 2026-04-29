@@ -8,7 +8,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-      const APP_VERSION = '20260429-telegram-126';
+      const APP_VERSION = '20260429-telegram-127';
       const url = new URL(window.location.href);
       window.__HD_DEBUG_GRID__ = url.searchParams.get('grid') === '1';
       if (url.searchParams.get('appv') !== APP_VERSION) {
@@ -19,8 +19,8 @@
     })();
   </script>  <title>Hollow Dominion</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script type="module" src="./assets/vendor/model-viewer.min.js?v=20260429-telegram-126"></script>
-  <link rel="stylesheet" href="common.css?v=20260429-telegram-126">
+  <script type="module" src="./assets/vendor/model-viewer.min.js?v=20260429-telegram-127"></script>
+  <link rel="stylesheet" href="common.css?v=20260429-telegram-127">
   <style>
     .screen-page {
       position: relative;
@@ -2618,15 +2618,15 @@
       transform: translateY(6%) scale(.94);
       transform-origin: center bottom;
       filter:
-        saturate(1.14)
-        contrast(1.08)
-        brightness(.76)
-        sepia(.04)
-        drop-shadow(1px 0 0 rgba(22, 13, 5, .72))
-        drop-shadow(-1px 0 0 rgba(22, 13, 5, .72))
-        drop-shadow(0 1px 0 rgba(22, 13, 5, .72))
-        drop-shadow(0 -1px 0 rgba(22, 13, 5, .72))
-        drop-shadow(0 6px 14px rgba(0, 0, 0, .26));
+        saturate(1.28)
+        contrast(1.18)
+        brightness(.68)
+        sepia(.06)
+        drop-shadow(2px 0 0 rgba(22, 13, 5, .80))
+        drop-shadow(-2px 0 0 rgba(22, 13, 5, .80))
+        drop-shadow(0 2px 0 rgba(22, 13, 5, .80))
+        drop-shadow(0 -2px 0 rgba(22, 13, 5, .80))
+        drop-shadow(0 8px 18px rgba(0, 0, 0, .30));
     }
 
     .profile-psd-model-anchor .profile-psd-shadow {
@@ -2642,7 +2642,7 @@
 
     .profile-psd-model-anchor .profile-psd-3d-viewer,
     .profile-psd-model-anchor .profile-psd-2d-fallback {
-      inset: 0;
+      inset: -8% -10% -8%;
     }
 
     .profile-psd-model-anchor .profile-psd-3d-viewer model-viewer {
@@ -2936,7 +2936,7 @@
       display: flex;
       opacity: 1;
       pointer-events: auto;
-      inset: -10% -18% -24%;
+      inset: -16% -18% -24%;
     }
 
     body.env-telegram.device-mobile .profile-psd-poster-fallback,
@@ -2950,15 +2950,15 @@
     body.env-browser.device-mobile .profile-psd-3d-viewer model-viewer {
       transform: translateY(-4%) scale(.94);
       filter:
-        saturate(1.14)
-        contrast(1.08)
-        brightness(.76)
-        sepia(.04)
-        drop-shadow(1px 0 0 rgba(22, 13, 5, .72))
-        drop-shadow(-1px 0 0 rgba(22, 13, 5, .72))
-        drop-shadow(0 1px 0 rgba(22, 13, 5, .72))
-        drop-shadow(0 -1px 0 rgba(22, 13, 5, .72))
-        drop-shadow(0 6px 14px rgba(0, 0, 0, .26));
+        saturate(1.28)
+        contrast(1.18)
+        brightness(.68)
+        sepia(.06)
+        drop-shadow(2px 0 0 rgba(22, 13, 5, .80))
+        drop-shadow(-2px 0 0 rgba(22, 13, 5, .80))
+        drop-shadow(0 2px 0 rgba(22, 13, 5, .80))
+        drop-shadow(0 -2px 0 rgba(22, 13, 5, .80))
+        drop-shadow(0 8px 18px rgba(0, 0, 0, .30));
     }
   </style>
 </head>
@@ -2976,8 +2976,8 @@
   </div>
   <div class="toast" id="toast"></div>
 
-<script src="item-catalog.js?v=20260429-telegram-126"></script>
-<script src="common.js?v=20260429-telegram-126"></script>
+<script src="item-catalog.js?v=20260429-telegram-127"></script>
+<script src="common.js?v=20260429-telegram-127"></script>
     <script>
       (async () => {
       const screenPage = document.querySelector('.screen-page');
@@ -3357,7 +3357,7 @@
     function renderCityScreen() {
       setProfileScreenMode(true);
       const hero = state.hero;
-      const assetVersion = window.__HD_APP_VERSION__ || '20260429-telegram-126';
+      const assetVersion = window.__HD_APP_VERSION__ || '20260429-telegram-127';
 
       q('app').innerHTML = `
         <div class="single-page-layout profile-psd-host">
@@ -3379,7 +3379,6 @@
                         <model-viewer
                           id="profileModelViewer"
                           src="./assets/models/profile_base.glb?v=${assetVersion}"
-                          poster="./assets/models/profile_base_poster.png?v=${assetVersion}"
                           camera-controls
                           disable-pan
                           disable-zoom

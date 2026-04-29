@@ -952,8 +952,9 @@ function primeProfile3DViewer(config) {
   if (viewer.dataset.variant !== asset.variant) {
     viewer.dataset.variant = asset.variant;
     viewer.setAttribute('src', asset.src);
-    viewer.setAttribute('poster', asset.poster);
+    viewer.removeAttribute('poster');
   }
+  viewer.removeAttribute('poster');
   const isCompactDesktop = !!document.body &&
     document.body.classList.contains('env-telegram') &&
     document.body.classList.contains('platform-desktop-runtime') &&
