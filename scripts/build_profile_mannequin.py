@@ -1,4 +1,5 @@
 import argparse
+import bmesh
 import importlib.util
 import math
 import os
@@ -439,6 +440,110 @@ def apply_material(meshes, material):
         finalize_object(obj, smooth=True)
 
 
+def join_mesh_objects(meshes):
+    targets = [obj for obj in meshes if obj and obj.type == "MESH"]
+    if len(targets) < 2:
+        return targets[0] if targets else None
+    for obj in bpy.data.objects:
+        obj.select_set(False)
+    active = targets[0]
+    for obj in targets:
+        obj.select_set(True)
+    bpy.context.view_layer.objects.active = active
+    bpy.ops.object.join()
+    result = bpy.context.view_layer.objects.active
+    finalize_object(result, smooth=True)
+    return result
+
+
+def strip_deformed_spike_faces(
+    meshes,
+    length_threshold=0.08,
+    aspect_ratio_threshold=20.0,
+    area_threshold=0.0005,
+    max_component_vertices=2,
+):
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    for obj in meshes:
+        if not obj or obj.type != "MESH":
+            continue
+        eval_obj = obj.evaluated_get(depsgraph)
+        eval_mesh = eval_obj.to_mesh()
+        long_edge_indices = set()
+        target_face_indices = set()
+        for edge_index, edge in enumerate(eval_mesh.edges):
+            v1 = eval_mesh.vertices[edge.vertices[0]].co
+            v2 = eval_mesh.vertices[edge.vertices[1]].co
+            if (v1 - v2).length > length_threshold:
+                long_edge_indices.add(edge_index)
+        for polygon in eval_mesh.polygons:
+            vertices = [eval_mesh.vertices[index].co for index in polygon.vertices]
+            edge_lengths = []
+            for index in range(len(vertices)):
+                edge_lengths.append((vertices[index] - vertices[(index + 1) % len(vertices)]).length)
+            max_edge = max(edge_lengths)
+            min_edge = max(1e-6, min(edge_lengths))
+            if (max_edge / min_edge) > aspect_ratio_threshold and polygon.area < area_threshold:
+                target_face_indices.add(polygon.index)
+        eval_obj.to_mesh_clear()
+
+        if not long_edge_indices and not target_face_indices:
+            continue
+
+        mesh_data = obj.data
+        bm = bmesh.new()
+        bm.from_mesh(mesh_data)
+        bm.verts.ensure_lookup_table()
+        bm.edges.ensure_lookup_table()
+        bm.faces.ensure_lookup_table()
+
+        target_faces = set()
+        for edge_index in long_edge_indices:
+            if edge_index < len(bm.edges):
+                for face in bm.edges[edge_index].link_faces:
+                    target_faces.add(face)
+        for face_index in target_face_indices:
+            if face_index < len(bm.faces):
+                target_faces.add(bm.faces[face_index])
+        expanded_faces = set(target_faces)
+        for face in list(target_faces):
+            for vert in face.verts:
+                for linked_face in vert.link_faces:
+                    expanded_faces.add(linked_face)
+        target_faces = expanded_faces
+        if target_faces:
+            bmesh.ops.delete(bm, geom=list(target_faces), context="FACES")
+
+        bm.verts.ensure_lookup_table()
+        pending = set(v.index for v in bm.verts)
+        tiny_components = []
+        while pending:
+            start_index = next(iter(pending))
+            stack = [bm.verts[start_index]]
+            component = []
+            while stack:
+                vert = stack.pop()
+                if vert.index not in pending:
+                    continue
+                pending.remove(vert.index)
+                component.append(vert)
+                for edge in vert.link_edges:
+                    other = edge.other_vert(vert)
+                    if other.index in pending:
+                        stack.append(other)
+            if len(component) <= max_component_vertices:
+                tiny_components.extend(component)
+
+        orphan_verts = [vert for vert in bm.verts if not vert.link_faces]
+        delete_verts = list({*tiny_components, *orphan_verts})
+        if delete_verts:
+            bmesh.ops.delete(bm, geom=delete_verts, context="VERTS")
+
+        bm.to_mesh(mesh_data)
+        bm.free()
+        mesh_data.update()
+
+
 def add_l2_fighter_profile_animated(variant: str) -> bool:
     exported = ensure_profile_animation_exports(variant)
     if not exported:
@@ -488,11 +593,18 @@ def add_l2_fighter_profile_animated(variant: str) -> bool:
         apply_material(gloves_meshes, gloves_mat)
         apply_material(boots_meshes, boots_mat)
 
-    head_mat = make_material("AnimHead", (0.74, 0.62, 0.50), metallic=0.0, roughness=0.68, specular=0.16)
+    face_tex = find_first_existing(
+        texture_root / "MFighter_m000_t01_f.png",
+        texture_root / "MFighter_m000_t01_f.tga",
+    )
+    face_mat = make_image_material("AnimFace", face_tex, metallic=0.0, roughness=0.68, specular=0.16) if face_tex else make_material("AnimFaceFallback", (0.74, 0.62, 0.50), metallic=0.0, roughness=0.68, specular=0.16)
     hair_mat = make_material("AnimHair", (0.57, 0.46, 0.25), metallic=0.0, roughness=0.86, specular=0.08)
 
-    _, head_meshes = import_psk_part(pskimport, exported["MFighter_m000_h"], with_bones=False, armature_obj=armature_obj)
-    apply_material(head_meshes, head_mat)
+    _, hair_head_meshes = import_psk_part(pskimport, exported["MFighter_m000_h"], with_bones=False, armature_obj=armature_obj)
+    _, face_meshes = import_psk_part(pskimport, exported["MFighter_m000_f"], with_bones=False, armature_obj=armature_obj)
+    apply_material(hair_head_meshes, hair_mat)
+    apply_material(face_meshes, face_mat)
+    join_mesh_objects([*hair_head_meshes, *face_meshes])
     add_imported_fighter_hair(hair_mat)
 
     psaimport(str(exported["MFighter_anim"]), context=bpy.context, oArmature=armature_obj)
@@ -518,6 +630,7 @@ def add_l2_fighter_profile_animated(variant: str) -> bool:
         int(round(max(action.frame_range[1] for action in keep_actions))),
     )
     bpy.context.scene.frame_set(1)
+    strip_deformed_spike_faces(gloves_meshes, length_threshold=0.08, max_component_vertices=2)
     return True
 
 
