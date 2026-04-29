@@ -456,6 +456,15 @@ def join_mesh_objects(meshes):
     return result
 
 
+def offset_meshes(meshes, *, x=0.0, y=0.0, z=0.0):
+    if not meshes:
+        return
+    delta = Vector((x, y, z))
+    for obj in meshes:
+        obj.location += delta
+    bpy.context.view_layer.update()
+
+
 def strip_deformed_spike_faces(
     meshes,
     length_threshold=0.08,
@@ -604,6 +613,9 @@ def add_l2_fighter_profile_animated(variant: str) -> bool:
     _, face_meshes = import_psk_part(pskimport, exported["MFighter_m000_f"], with_bones=False, armature_obj=armature_obj)
     apply_material(hair_head_meshes, hair_mat)
     apply_material(face_meshes, face_mat)
+    # The standalone face mesh sits a bit too low and too far back versus the
+    # animated head/hair shell in the original exports, so align it before join.
+    offset_meshes(face_meshes, y=0.016, z=0.011)
     join_mesh_objects([*hair_head_meshes, *face_meshes])
     add_imported_fighter_hair(hair_mat)
 
