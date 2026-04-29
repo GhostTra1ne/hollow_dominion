@@ -465,6 +465,33 @@ def offset_meshes(meshes, *, x=0.0, y=0.0, z=0.0):
     bpy.context.view_layer.update()
 
 
+def retime_action(action, factor=1.0, anchor_frame=1.0):
+    if not action or factor == 1.0:
+        return
+    channelbags = []
+    if hasattr(action, "layers") and action.layers:
+        for layer in action.layers:
+            strips = getattr(layer, "strips", None)
+            if not strips:
+                continue
+            for strip in strips:
+                bags = getattr(strip, "channelbags", None)
+                if bags:
+                    channelbags.extend(list(bags))
+    elif hasattr(action, "fcurves"):
+        channelbags = [action]
+
+    for channelbag in channelbags:
+        fcurves = getattr(channelbag, "fcurves", None)
+        if not fcurves:
+            continue
+        for fcurve in fcurves:
+            for keyframe in fcurve.keyframe_points:
+                keyframe.co.x = anchor_frame + (keyframe.co.x - anchor_frame) * factor
+                keyframe.handle_left.x = anchor_frame + (keyframe.handle_left.x - anchor_frame) * factor
+                keyframe.handle_right.x = anchor_frame + (keyframe.handle_right.x - anchor_frame) * factor
+
+
 def strip_deformed_spike_faces(
     meshes,
     length_threshold=0.08,
@@ -613,9 +640,10 @@ def add_l2_fighter_profile_animated(variant: str) -> bool:
     _, face_meshes = import_psk_part(pskimport, exported["MFighter_m000_f"], with_bones=False, armature_obj=armature_obj)
     apply_material(hair_head_meshes, hair_mat)
     apply_material(face_meshes, face_mat)
-    # The standalone face mesh sits a bit too low and too far back versus the
-    # animated head/hair shell in the original exports, so align it before join.
-    offset_meshes(face_meshes, y=0.016, z=0.011)
+    # The standalone face mesh sits a bit too low versus the animated
+    # head/hair shell in the original exports. Keep its natural forward depth
+    # and only lift it slightly so it doesn't sink into the face plate.
+    offset_meshes(face_meshes, y=0.0, z=0.011)
     join_mesh_objects([*hair_head_meshes, *face_meshes])
     add_imported_fighter_hair(hair_mat)
 
@@ -629,6 +657,9 @@ def add_l2_fighter_profile_animated(variant: str) -> bool:
     )
     if not stand_action and not idle_action:
         return False
+
+    if idle_action and idle_action is not stand_action:
+        retime_action(idle_action, factor=1.75)
 
     keep_actions = {action for action in (stand_action, idle_action) if action is not None}
     for action in list(bpy.data.actions):
