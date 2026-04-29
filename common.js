@@ -972,7 +972,7 @@ function primeProfile3DViewer(config) {
     viewer.setAttribute('max-camera-orbit', 'auto 78deg 1.34m');
     viewer.setAttribute('field-of-view', '25deg');
   } else if (isMobileProfile) {
-    viewer.setAttribute('camera-target', '0m 0.10m 0m');
+    viewer.setAttribute('camera-target', '0m 0.02m 0m');
     viewer.setAttribute('camera-orbit', '0deg 78deg 1.38m');
     viewer.setAttribute('min-camera-orbit', 'auto 78deg 1.38m');
     viewer.setAttribute('max-camera-orbit', 'auto 78deg 1.38m');
