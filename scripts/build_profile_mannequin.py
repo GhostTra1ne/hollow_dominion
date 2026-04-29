@@ -279,10 +279,10 @@ def add_l2_fighter_profile(variant: str) -> bool:
         ]
         if all(path.exists() for path in required_leather_clean):
             tex_root = OUTER_ROOT / "$out" / "MFighter" / "Texture"
-            armor_u_tex = find_first_existing(tex_root / "MFighter_m001_t01_u_sp.png", tex_root / "MFighter_m001_t01_u_sp.tga")
-            armor_l_tex = find_first_existing(tex_root / "MFighter_m001_t01_l_sp.png", tex_root / "MFighter_m001_t01_l_sp.tga")
-            armor_g_tex = find_first_existing(tex_root / "MFighter_m001_t01_g_sp.png", tex_root / "MFighter_m001_t01_g_sp.tga")
-            armor_b_tex = find_first_existing(tex_root / "MFighter_m001_t01_b_sp.png", tex_root / "MFighter_m001_t01_b_sp.tga")
+            armor_u_tex = find_first_existing(tex_root / "MFighter_m001_t01_u_sp_rgb.png", tex_root / "MFighter_m001_t01_u_sp.png", tex_root / "MFighter_m001_t01_u_sp.tga")
+            armor_l_tex = find_first_existing(tex_root / "MFighter_m001_t01_l_sp_rgb.png", tex_root / "MFighter_m001_t01_l_sp.png", tex_root / "MFighter_m001_t01_l_sp.tga")
+            armor_g_tex = find_first_existing(tex_root / "MFighter_m001_t01_g_sp_rgb.png", tex_root / "MFighter_m001_t01_g_sp.png", tex_root / "MFighter_m001_t01_g_sp.tga")
+            armor_b_tex = find_first_existing(tex_root / "MFighter_m001_t01_b_sp_rgb.png", tex_root / "MFighter_m001_t01_b_sp.png", tex_root / "MFighter_m001_t01_b_sp.tga")
             face_tex = find_first_existing(
                 tex_root / "MFighter_m000_t01_f.png",
                 tex_root / "MFighter_m000_t01_f.tga",
