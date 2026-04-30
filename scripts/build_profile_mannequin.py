@@ -14,6 +14,19 @@ from mathutils import Euler, Vector
 SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent
 OUTER_ROOT = PROJECT_ROOT.parent
+LEATHER_SLOT_ORDER = ("u", "l", "g", "b")
+BASE_SLOT_MESHES = {
+    "u": "MFighter_m000_u",
+    "l": "MFighter_m000_l",
+    "g": "MFighter_m000_g",
+    "b": "MFighter_m000_b",
+}
+LEATHER_SLOT_MESHES = {
+    "u": "MFighter_m001_u",
+    "l": "MFighter_m001_l",
+    "g": "MFighter_m001_g",
+    "b": "MFighter_m001_b",
+}
 
 
 def parse_args():
@@ -27,8 +40,23 @@ def parse_args():
     parser.add_argument("--output-glb", required=True)
     parser.add_argument("--output-poster", required=True)
     parser.add_argument("--resolution", type=int, default=1440)
-    parser.add_argument("--variant", choices=["base", "leather"], default="base")
+    parser.add_argument("--variant", default="base")
     return parser.parse_args(argv)
+
+
+def resolve_leather_slot_codes(variant: str) -> set[str]:
+    normalized = str(variant or "").strip().lower()
+    if normalized == "leather":
+        return set(LEATHER_SLOT_ORDER)
+    if normalized.startswith("leather_"):
+        suffix = normalized.split("_", 1)[1]
+        return {code for code in LEATHER_SLOT_ORDER if code in suffix}
+    return set()
+
+
+def is_supported_variant(variant: str) -> bool:
+    normalized = str(variant or "").strip().lower()
+    return normalized == "base" or normalized == "leather" or normalized.startswith("leather_")
 
 
 def clear_scene():
@@ -241,6 +269,78 @@ def resolve_profile_leather_override_textures() -> dict[str, Path | None]:
     }
 
 
+def resolve_profile_slot_material_texture(slot_code: str, leather_slots: set[str], texture_root: Path, overrides: dict[str, Path | None]) -> Path | None:
+    if slot_code == "u":
+        if slot_code in leather_slots:
+            return overrides.get("upper") or find_first_existing(
+                texture_root / "MFighter_m001_t01_u_sp_rgb.png",
+                texture_root / "MFighter_m001_t01_u_sp.png",
+                texture_root / "MFighter_m001_t01_u_sp.tga",
+            )
+        return find_first_existing(
+            texture_root / "MFighter_m000_t01_u_sp_rgb.png",
+            texture_root / "MFighter_m000_t01_u_sp.png",
+            texture_root / "MFighter_m000_t01_u_sp.tga",
+        )
+    if slot_code == "l":
+        if slot_code in leather_slots:
+            return overrides.get("lower") or find_first_existing(
+                texture_root / "MFighter_m001_t01_l_sp_rgb.png",
+                texture_root / "MFighter_m001_t01_l_sp.png",
+                texture_root / "MFighter_m001_t01_l_sp.tga",
+            )
+        return find_first_existing(
+            texture_root / "MFighter_m000_t01_l_sp_rgb.png",
+            texture_root / "MFighter_m000_t01_l_sp.png",
+            texture_root / "MFighter_m000_t01_l_sp.tga",
+        )
+    if slot_code == "g":
+        if slot_code in leather_slots:
+            return overrides.get("gloves") or find_first_existing(
+                texture_root / "MFighter_m001_t01_g_sp_rgb.png",
+                texture_root / "MFighter_m001_t01_g_sp.png",
+                texture_root / "MFighter_m001_t01_g_sp.tga",
+            )
+        return find_first_existing(
+            texture_root / "MFighter_m000_t01_g_sp_rgb.png",
+            texture_root / "MFighter_m000_t01_g_sp.png",
+            texture_root / "MFighter_m000_t01_g_sp.tga",
+        )
+    if slot_code == "b":
+        if slot_code in leather_slots:
+            return overrides.get("boots") or find_first_existing(
+                texture_root / "MFighter_m001_t01_b_sp_rgb.png",
+                texture_root / "MFighter_m001_t01_b_sp.png",
+                texture_root / "MFighter_m001_t01_b_sp.tga",
+            )
+        return find_first_existing(
+            texture_root / "MFighter_m000_t01_b_sp_rgb.png",
+            texture_root / "MFighter_m000_t01_b_sp.png",
+            texture_root / "MFighter_m000_t01_b_sp.tga",
+        )
+    return None
+
+
+def make_profile_slot_material(slot_code: str, slot_texture: Path | None, leather_slots: set[str]):
+    if slot_code == "u":
+        if slot_texture:
+            return make_image_material("AnimUpperTex", slot_texture, metallic=0.02, roughness=0.78 if slot_code in leather_slots else 0.82, specular=0.18 if slot_code in leather_slots else 0.12)
+        return make_material("AnimUpperFallback", (0.43, 0.31, 0.20) if slot_code in leather_slots else (0.42, 0.42, 0.46), metallic=0.10 if slot_code in leather_slots else 0.02, roughness=0.66 if slot_code in leather_slots else 0.86, specular=0.24 if slot_code in leather_slots else 0.08)
+    if slot_code == "l":
+        if slot_texture:
+            return make_image_material("AnimLowerTex", slot_texture, metallic=0.02, roughness=0.80 if slot_code in leather_slots else 0.84, specular=0.16 if slot_code in leather_slots else 0.10)
+        return make_material("AnimLowerFallback", (0.47, 0.34, 0.22) if slot_code in leather_slots else (0.30, 0.27, 0.24), metallic=0.10 if slot_code in leather_slots else 0.02, roughness=0.68 if slot_code in leather_slots else 0.88, specular=0.24 if slot_code in leather_slots else 0.08)
+    if slot_code == "g":
+        if slot_texture:
+            return make_image_material("AnimGlovesTex", slot_texture, metallic=0.02, roughness=0.80 if slot_code in leather_slots else 0.80, specular=0.16 if slot_code in leather_slots else 0.12)
+        return make_material("AnimGlovesFallback", (0.37, 0.27, 0.18) if slot_code in leather_slots else (0.50, 0.43, 0.35), metallic=0.08 if slot_code in leather_slots else 0.0, roughness=0.70 if slot_code in leather_slots else 0.72, specular=0.22 if slot_code in leather_slots else 0.14)
+    if slot_code == "b":
+        if slot_texture:
+            return make_image_material("AnimBootsTex", slot_texture, metallic=0.02, roughness=0.82 if slot_code in leather_slots else 0.82, specular=0.14 if slot_code in leather_slots else 0.10)
+        return make_material("AnimBootsFallback", (0.29, 0.21, 0.14) if slot_code in leather_slots else (0.24, 0.22, 0.20), metallic=0.08 if slot_code in leather_slots else 0.02, roughness=0.72 if slot_code in leather_slots else 0.86, specular=0.22 if slot_code in leather_slots else 0.08)
+    return make_material("AnimFallback", (0.4, 0.4, 0.4))
+
+
 def find_l2_game_root() -> Path | None:
     candidates = [
         Path("E:/l2 clear"),
@@ -272,24 +372,14 @@ def ensure_profile_animation_exports(variant: str) -> dict[str, Path] | None:
     export_root = PROJECT_ROOT / "_profile_anim_src"
     export_root.mkdir(parents=True, exist_ok=True)
 
-    variant_parts = {
-        "base": [
-            "MFighter_m000_u",
-            "MFighter_m000_l",
-            "MFighter_m000_g",
-            "MFighter_m000_b",
-            "MFighter_m000_h",
-            "MFighter_m000_f",
-        ],
-        "leather": [
-            "MFighter_m001_u",
-            "MFighter_m001_l",
-            "MFighter_m001_g",
-            "MFighter_m001_b",
-            "MFighter_m000_h",
-            "MFighter_m000_f",
-        ],
-    }
+    leather_slots = resolve_leather_slot_codes(variant)
+    variant_parts = [
+        LEATHER_SLOT_MESHES[code] if code in leather_slots else BASE_SLOT_MESHES[code]
+        for code in LEATHER_SLOT_ORDER
+    ] + [
+        "MFighter_m000_h",
+        "MFighter_m000_f",
+    ]
 
     def run_export(object_name: str, export_anims: bool = False) -> None:
         cmd = [
@@ -304,7 +394,7 @@ def ensure_profile_animation_exports(variant: str) -> dict[str, Path] | None:
         subprocess.run(cmd, check=True)
 
     part_paths: dict[str, Path] = {}
-    for object_name in variant_parts[variant]:
+    for object_name in variant_parts:
         psk_path = export_root / "Fighter" / "SkeletalMesh" / f"{object_name}.psk"
         if not psk_path.exists():
             run_export(object_name, export_anims=False)
@@ -631,44 +721,29 @@ def add_l2_fighter_profile_animated(variant: str) -> bool:
 
     texture_root = exported["texture_root"]
     armature_obj = None
+    leather_slots = resolve_leather_slot_codes(variant)
+    overrides = resolve_profile_leather_override_textures()
+    slot_meshes = {
+        code: (LEATHER_SLOT_MESHES[code] if code in leather_slots else BASE_SLOT_MESHES[code])
+        for code in LEATHER_SLOT_ORDER
+    }
+    slot_materials = {
+        code: make_profile_slot_material(
+            code,
+            resolve_profile_slot_material_texture(code, leather_slots, texture_root, overrides),
+            leather_slots,
+        )
+        for code in LEATHER_SLOT_ORDER
+    }
 
-    if variant == "leather":
-        overrides = resolve_profile_leather_override_textures()
-        upper_tex = overrides.get("upper") or find_first_existing(texture_root / "MFighter_m001_t01_u_sp_rgb.png", texture_root / "MFighter_m001_t01_u_sp.png", texture_root / "MFighter_m001_t01_u_sp.tga")
-        lower_tex = overrides.get("lower") or find_first_existing(texture_root / "MFighter_m001_t01_l_sp_rgb.png", texture_root / "MFighter_m001_t01_l_sp.png", texture_root / "MFighter_m001_t01_l_sp.tga")
-        gloves_tex = overrides.get("gloves") or find_first_existing(texture_root / "MFighter_m001_t01_g_sp_rgb.png", texture_root / "MFighter_m001_t01_g_sp.png", texture_root / "MFighter_m001_t01_g_sp.tga")
-        boots_tex = overrides.get("boots") or find_first_existing(texture_root / "MFighter_m001_t01_b_sp_rgb.png", texture_root / "MFighter_m001_t01_b_sp.png", texture_root / "MFighter_m001_t01_b_sp.tga")
-        upper_mat = make_image_material("AnimLeatherUpper", upper_tex, metallic=0.02, roughness=0.78, specular=0.18) if upper_tex else make_material("AnimLeatherUpperFallback", (0.43, 0.31, 0.20), metallic=0.10, roughness=0.66, specular=0.24)
-        lower_mat = make_image_material("AnimLeatherLower", lower_tex, metallic=0.02, roughness=0.80, specular=0.16) if lower_tex else make_material("AnimLeatherLowerFallback", (0.47, 0.34, 0.22), metallic=0.10, roughness=0.68, specular=0.24)
-        gloves_mat = make_image_material("AnimLeatherGloves", gloves_tex, metallic=0.02, roughness=0.80, specular=0.16) if gloves_tex else make_material("AnimLeatherGlovesFallback", (0.37, 0.27, 0.18), metallic=0.08, roughness=0.70, specular=0.22)
-        boots_mat = make_image_material("AnimLeatherBoots", boots_tex, metallic=0.02, roughness=0.82, specular=0.14) if boots_tex else make_material("AnimLeatherBootsFallback", (0.29, 0.21, 0.14), metallic=0.08, roughness=0.72, specular=0.22)
-
-        armature_obj, upper_meshes = import_psk_part(pskimport, exported["MFighter_m001_u"], with_bones=True)
-        _, lower_meshes = import_psk_part(pskimport, exported["MFighter_m001_l"], with_bones=False, armature_obj=armature_obj)
-        _, gloves_meshes = import_psk_part(pskimport, exported["MFighter_m001_g"], with_bones=False, armature_obj=armature_obj)
-        _, boots_meshes = import_psk_part(pskimport, exported["MFighter_m001_b"], with_bones=False, armature_obj=armature_obj)
-        apply_material(upper_meshes, upper_mat)
-        apply_material(lower_meshes, lower_mat)
-        apply_material(gloves_meshes, gloves_mat)
-        apply_material(boots_meshes, boots_mat)
-    else:
-        upper_tex = find_first_existing(texture_root / "MFighter_m000_t01_u_sp_rgb.png", texture_root / "MFighter_m000_t01_u_sp.png", texture_root / "MFighter_m000_t01_u_sp.tga")
-        lower_tex = find_first_existing(texture_root / "MFighter_m000_t01_l_sp_rgb.png", texture_root / "MFighter_m000_t01_l_sp.png", texture_root / "MFighter_m000_t01_l_sp.tga")
-        gloves_tex = find_first_existing(texture_root / "MFighter_m000_t01_g_sp_rgb.png", texture_root / "MFighter_m000_t01_g_sp.png", texture_root / "MFighter_m000_t01_g_sp.tga")
-        boots_tex = find_first_existing(texture_root / "MFighter_m000_t01_b_sp_rgb.png", texture_root / "MFighter_m000_t01_b_sp.png", texture_root / "MFighter_m000_t01_b_sp.tga")
-        upper_mat = make_image_material("AnimBaseUpper", upper_tex, metallic=0.02, roughness=0.82, specular=0.12) if upper_tex else make_material("AnimBaseUpperFallback", (0.42, 0.42, 0.46), metallic=0.02, roughness=0.86, specular=0.08)
-        lower_mat = make_image_material("AnimBaseLower", lower_tex, metallic=0.02, roughness=0.84, specular=0.10) if lower_tex else make_material("AnimBaseLowerFallback", (0.30, 0.27, 0.24), metallic=0.02, roughness=0.88, specular=0.08)
-        gloves_mat = make_image_material("AnimBaseGloves", gloves_tex, metallic=0.02, roughness=0.80, specular=0.12) if gloves_tex else make_material("AnimBaseHandsFallback", (0.50, 0.43, 0.35), metallic=0.0, roughness=0.72, specular=0.14)
-        boots_mat = make_image_material("AnimBaseBoots", boots_tex, metallic=0.02, roughness=0.82, specular=0.10) if boots_tex else make_material("AnimBaseBootsFallback", (0.24, 0.22, 0.20), metallic=0.02, roughness=0.86, specular=0.08)
-
-        armature_obj, upper_meshes = import_psk_part(pskimport, exported["MFighter_m000_u"], with_bones=True)
-        _, lower_meshes = import_psk_part(pskimport, exported["MFighter_m000_l"], with_bones=False, armature_obj=armature_obj)
-        _, gloves_meshes = import_psk_part(pskimport, exported["MFighter_m000_g"], with_bones=False, armature_obj=armature_obj)
-        _, boots_meshes = import_psk_part(pskimport, exported["MFighter_m000_b"], with_bones=False, armature_obj=armature_obj)
-        apply_material(upper_meshes, upper_mat)
-        apply_material(lower_meshes, lower_mat)
-        apply_material(gloves_meshes, gloves_mat)
-        apply_material(boots_meshes, boots_mat)
+    armature_obj, upper_meshes = import_psk_part(pskimport, exported[slot_meshes["u"]], with_bones=True)
+    _, lower_meshes = import_psk_part(pskimport, exported[slot_meshes["l"]], with_bones=False, armature_obj=armature_obj)
+    _, gloves_meshes = import_psk_part(pskimport, exported[slot_meshes["g"]], with_bones=False, armature_obj=armature_obj)
+    _, boots_meshes = import_psk_part(pskimport, exported[slot_meshes["b"]], with_bones=False, armature_obj=armature_obj)
+    apply_material(upper_meshes, slot_materials["u"])
+    apply_material(lower_meshes, slot_materials["l"])
+    apply_material(gloves_meshes, slot_materials["g"])
+    apply_material(boots_meshes, slot_materials["b"])
 
     face_tex = find_first_existing(
         texture_root / "MFighter_m000_t01_f.png",
@@ -748,69 +823,18 @@ def import_l2_profile_part(gltf_path: Path, material):
 
 def add_l2_fighter_profile(variant: str) -> bool:
     clean_root = find_l2_mfighter_clean_root()
-    if variant == "base":
-        if clean_root:
-            required_clean = [
-                clean_root / "MFighter_m000_u.gltf",
-                clean_root / "MFighter_m000_l.gltf",
-                clean_root / "MFighter_m000_g.gltf",
-                clean_root / "MFighter_m000_b.gltf",
-                clean_root / "MFighter_m000_h.gltf",
-                clean_root / "MFighter_m000_f.gltf",
-            ]
-            if all(path.exists() for path in required_clean):
-                face_tex = find_first_existing(
-                    OUTER_ROOT / "$out" / "MFighter" / "Texture" / "MFighter_m000_t01_f.png",
-                    OUTER_ROOT / "$out" / "MFighter" / "Texture" / "MFighter_m000_t01_f.tga",
-                )
-                hair_tex = find_first_existing(
-                    OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m002_t03_m00_bh_ori.png",
-                    OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m002_t03_m00_bh_ori.tga",
-                    OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m001_t03_m00_bh_ori.png",
-                    OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m001_t03_m00_bh_ori.tga",
-                    OUTER_ROOT / "$out" / "FFighter" / "Texture" / "FFighter_m000_t00_m00_bh_ori.png",
-                    OUTER_ROOT / "$out" / "FFighter" / "Texture" / "FFighter_m000_t00_m00_bh_ori.tga",
-                )
-
-                upper_mat = make_material("L2CleanUpper", (0.42, 0.42, 0.46), metallic=0.02, roughness=0.86, specular=0.08)
-                lower_mat = make_material("L2CleanLower", (0.30, 0.27, 0.24), metallic=0.02, roughness=0.88, specular=0.08)
-                hands_mat = make_material("L2CleanHands", (0.50, 0.43, 0.35), metallic=0.0, roughness=0.72, specular=0.14)
-                boots_mat = make_material("L2CleanBoots", (0.24, 0.22, 0.20), metallic=0.02, roughness=0.86, specular=0.08)
-                hair_mat = make_image_material("L2CleanHairTex", hair_tex, metallic=0.0, roughness=0.84, specular=0.08) if hair_tex and hair_tex.exists() else make_material("L2CleanHair", (0.33, 0.23, 0.14), metallic=0.0, roughness=0.84, specular=0.08)
-                face_mat = make_image_material("L2CleanFaceTex", face_tex, metallic=0.0, roughness=0.68, specular=0.16) if face_tex and face_tex.exists() else make_material("L2CleanFace", (0.74, 0.62, 0.50), metallic=0.0, roughness=0.68, specular=0.16)
-
-                import_l2_profile_part(clean_root / "MFighter_m000_u.gltf", upper_mat)
-                import_l2_profile_part(clean_root / "MFighter_m000_l.gltf", lower_mat)
-                import_l2_profile_part(clean_root / "MFighter_m000_g.gltf", hands_mat)
-                import_l2_profile_part(clean_root / "MFighter_m000_b.gltf", boots_mat)
-                import_l2_profile_part(clean_root / "MFighter_m000_h.gltf", hair_mat)
-                import_l2_profile_part(clean_root / "MFighter_m000_f.gltf", face_mat)
-                add_imported_fighter_hair(
-                    make_material(
-                        "L2CleanHairShell",
-                        (0.20, 0.13, 0.09),
-                        metallic=0.0,
-                        roughness=0.88,
-                        specular=0.06,
-                    )
-                )
-                return True
-    elif variant == "leather" and clean_root:
-        required_leather_clean = [
-            clean_root / "MFighter_m001_u.gltf",
-            clean_root / "MFighter_m001_l.gltf",
-            clean_root / "MFighter_m001_g.gltf",
-            clean_root / "MFighter_m001_b.gltf",
+    leather_slots = resolve_leather_slot_codes(variant)
+    if clean_root and is_supported_variant(variant):
+        required_clean = [
+            clean_root / f"{(LEATHER_SLOT_MESHES[code] if code in leather_slots else BASE_SLOT_MESHES[code])}.gltf"
+            for code in LEATHER_SLOT_ORDER
+        ] + [
             clean_root / "MFighter_m000_h.gltf",
             clean_root / "MFighter_m000_f.gltf",
         ]
-        if all(path.exists() for path in required_leather_clean):
+        if all(path.exists() for path in required_clean):
             tex_root = OUTER_ROOT / "$out" / "MFighter" / "Texture"
             overrides = resolve_profile_leather_override_textures()
-            armor_u_tex = overrides.get("upper") or find_first_existing(tex_root / "MFighter_m001_t01_u_sp_rgb.png", tex_root / "MFighter_m001_t01_u_sp.png", tex_root / "MFighter_m001_t01_u_sp.tga")
-            armor_l_tex = overrides.get("lower") or find_first_existing(tex_root / "MFighter_m001_t01_l_sp_rgb.png", tex_root / "MFighter_m001_t01_l_sp.png", tex_root / "MFighter_m001_t01_l_sp.tga")
-            armor_g_tex = overrides.get("gloves") or find_first_existing(tex_root / "MFighter_m001_t01_g_sp_rgb.png", tex_root / "MFighter_m001_t01_g_sp.png", tex_root / "MFighter_m001_t01_g_sp.tga")
-            armor_b_tex = overrides.get("boots") or find_first_existing(tex_root / "MFighter_m001_t01_b_sp_rgb.png", tex_root / "MFighter_m001_t01_b_sp.png", tex_root / "MFighter_m001_t01_b_sp.tga")
             face_tex = find_first_existing(
                 tex_root / "MFighter_m000_t01_f.png",
                 tex_root / "MFighter_m000_t01_f.tga",
@@ -824,22 +848,25 @@ def add_l2_fighter_profile(variant: str) -> bool:
                 OUTER_ROOT / "$out" / "FFighter" / "Texture" / "FFighter_m000_t00_m00_bh_ori.tga",
             )
 
-            armor_mat = make_image_material("L2LeatherM001U", armor_u_tex, metallic=0.02, roughness=0.78, specular=0.18) if armor_u_tex else make_material("L2LeatherM001UFallback", (0.43, 0.31, 0.20), metallic=0.10, roughness=0.66, specular=0.24)
-            legs_mat = make_image_material("L2LeatherM001L", armor_l_tex, metallic=0.02, roughness=0.80, specular=0.16) if armor_l_tex else make_material("L2LeatherM001LFallback", (0.47, 0.34, 0.22), metallic=0.10, roughness=0.68, specular=0.24)
-            gloves_mat = make_image_material("L2LeatherM001G", armor_g_tex, metallic=0.02, roughness=0.80, specular=0.16) if armor_g_tex else make_material("L2LeatherM001GFallback", (0.37, 0.27, 0.18), metallic=0.08, roughness=0.70, specular=0.22)
-            boots_mat = make_image_material("L2LeatherM001B", armor_b_tex, metallic=0.02, roughness=0.82, specular=0.14) if armor_b_tex else make_material("L2LeatherM001BFallback", (0.29, 0.21, 0.14), metallic=0.08, roughness=0.72, specular=0.22)
-            hair_mat = make_image_material("L2LeatherHairTex", hair_tex, metallic=0.0, roughness=0.84, specular=0.08) if hair_tex and hair_tex.exists() else make_material("L2LeatherHair", (0.33, 0.23, 0.14), metallic=0.0, roughness=0.84, specular=0.08)
-            face_mat = make_image_material("L2LeatherFaceTex", face_tex, metallic=0.0, roughness=0.68, specular=0.16) if face_tex and face_tex.exists() else make_material("L2LeatherFace", (0.72, 0.60, 0.48), metallic=0.0, roughness=0.58, specular=0.28)
+            slot_materials = {
+                code: make_profile_slot_material(
+                    code,
+                    resolve_profile_slot_material_texture(code, leather_slots, tex_root, overrides),
+                    leather_slots,
+                )
+                for code in LEATHER_SLOT_ORDER
+            }
+            hair_mat = make_image_material("L2ProfileHairTex", hair_tex, metallic=0.0, roughness=0.84, specular=0.08) if hair_tex and hair_tex.exists() else make_material("L2ProfileHair", (0.33, 0.23, 0.14), metallic=0.0, roughness=0.84, specular=0.08)
+            face_mat = make_image_material("L2ProfileFaceTex", face_tex, metallic=0.0, roughness=0.68, specular=0.16) if face_tex and face_tex.exists() else make_material("L2ProfileFace", (0.74, 0.62, 0.50), metallic=0.0, roughness=0.68, specular=0.16)
 
-            import_l2_profile_part(clean_root / "MFighter_m001_u.gltf", armor_mat)
-            import_l2_profile_part(clean_root / "MFighter_m001_l.gltf", legs_mat)
-            import_l2_profile_part(clean_root / "MFighter_m001_g.gltf", gloves_mat)
-            import_l2_profile_part(clean_root / "MFighter_m001_b.gltf", boots_mat)
+            for code in LEATHER_SLOT_ORDER:
+                mesh_name = LEATHER_SLOT_MESHES[code] if code in leather_slots else BASE_SLOT_MESHES[code]
+                import_l2_profile_part(clean_root / f"{mesh_name}.gltf", slot_materials[code])
             import_l2_profile_part(clean_root / "MFighter_m000_h.gltf", hair_mat)
             import_l2_profile_part(clean_root / "MFighter_m000_f.gltf", face_mat)
             add_imported_fighter_hair(
                 make_material(
-                    "L2LeatherHairShell",
+                    "L2ProfileHairShell",
                     (0.20, 0.13, 0.09),
                     metallic=0.0,
                     roughness=0.88,
@@ -1048,7 +1075,7 @@ def build_scene(variant):
         add_hair(hair_mat)
         add_face(face_mat)
 
-        if variant == "leather":
+        if variant != "base":
             leather_mat = make_material("Leather", (0.33, 0.22, 0.14), metallic=0.06, roughness=0.68, specular=0.24)
             trim_mat = make_material("Trim", (0.73, 0.61, 0.30), metallic=0.88, roughness=0.22, specular=0.56)
             buckle_mat = make_material("Buckle", (0.77, 0.78, 0.82), metallic=0.76, roughness=0.26, specular=0.62)
@@ -1088,6 +1115,8 @@ def render_poster(scene, output_poster, resolution):
 
 def main():
     args = parse_args()
+    if not is_supported_variant(args.variant):
+        raise SystemExit(f"Unsupported profile variant: {args.variant}")
     scene = build_scene(args.variant)
     export_glb(args.output_glb)
     render_poster(scene, args.output_poster, args.resolution)

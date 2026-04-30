@@ -1005,28 +1005,23 @@ function configureProfileViewerAnimation(viewer, config) {
 
 function getProfile3DVariant(config) {
   const equipped = getEquippedPaperdollMap(config);
-  const candidateSlots = ['body', 'legs', 'gloves', 'boots'];
-  const leatherHints = ['leather', 'sandals'];
-  const hasFullLeatherSet = candidateSlots.every((slotKey) => {
-    const item = equipped[slotKey];
-    if (!item?.name) return false;
-    const normalized = normalizeInventoryItemName(item.name);
-    return leatherHints.some((hint) => normalized.includes(hint));
-  });
-  return hasFullLeatherSet ? 'leather' : 'base';
-  const hasVisibleArmorPiece = candidateSlots.some((slotKey) => {
-    const item = equipped[slotKey];
-    return Boolean(item?.name && normalizeInventoryItemName(item.name) !== 'пусто');
-  });
-  const hasLeatherPiece = candidateSlots.some((slotKey) => {
-    const item = equipped[slotKey];
-    if (!item?.name) return false;
-    const normalized = normalizeInventoryItemName(item.name);
-    return leatherHints.some((hint) => normalized.includes(hint));
-  });
-  const shouldUseStarterWarriorLook = !hasVisibleArmorPiece && config?.classId !== 'mage';
-  if (shouldUseStarterWarriorLook) return 'base';
-  return hasLeatherPiece ? 'leather' : 'base';
+  const leatherSlotConfig = [
+    { slot: 'body', code: 'u', hints: ['leather'] },
+    { slot: 'legs', code: 'l', hints: ['leather'] },
+    { slot: 'gloves', code: 'g', hints: ['leather'] },
+    { slot: 'boots', code: 'b', hints: ['leather', 'sandals'] }
+  ];
+  const activeLeatherCodes = leatherSlotConfig
+    .filter(({ slot, hints }) => {
+      const item = equipped[slot];
+      if (!item?.name) return false;
+      const normalized = normalizeInventoryItemName(item.name);
+      return hints.some((hint) => normalized.includes(hint));
+    })
+    .map(({ code }) => code);
+  if (!activeLeatherCodes.length) return 'base';
+  const leatherVariantCode = ['u', 'l', 'g', 'b'].filter((code) => activeLeatherCodes.includes(code)).join('');
+  return leatherVariantCode === 'ulgb' ? 'leather' : `leather_${leatherVariantCode}`;
 }
 
 function getProfile3DAsset(config) {
