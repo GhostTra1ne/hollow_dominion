@@ -1007,6 +1007,13 @@ function getProfile3DVariant(config) {
   const equipped = getEquippedPaperdollMap(config);
   const candidateSlots = ['body', 'legs', 'gloves', 'boots'];
   const leatherHints = ['leather', 'sandals'];
+  const hasFullLeatherSet = candidateSlots.every((slotKey) => {
+    const item = equipped[slotKey];
+    if (!item?.name) return false;
+    const normalized = normalizeInventoryItemName(item.name);
+    return leatherHints.some((hint) => normalized.includes(hint));
+  });
+  return hasFullLeatherSet ? 'leather' : 'base';
   const hasVisibleArmorPiece = candidateSlots.some((slotKey) => {
     const item = equipped[slotKey];
     return Boolean(item?.name && normalizeInventoryItemName(item.name) !== 'пусто');
