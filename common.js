@@ -1018,7 +1018,7 @@ function getProfile3DVariant(config) {
     return leatherHints.some((hint) => normalized.includes(hint));
   });
   const shouldUseStarterWarriorLook = !hasVisibleArmorPiece && config?.classId !== 'mage';
-  if (shouldUseStarterWarriorLook) return 'leather';
+  if (shouldUseStarterWarriorLook) return 'base';
   return hasLeatherPiece ? 'leather' : 'base';
 }
 

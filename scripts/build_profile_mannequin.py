@@ -224,6 +224,23 @@ def resolve_l2_texture_sets():
     return leather_root, head_root
 
 
+def resolve_profile_texture_override_root(variant: str) -> Path | None:
+    candidate = PROJECT_ROOT / "assets" / "profile_textures" / variant
+    return candidate if candidate.exists() else None
+
+
+def resolve_profile_leather_override_textures() -> dict[str, Path | None]:
+    root = resolve_profile_texture_override_root("leather")
+    if not root:
+        return {}
+    return {
+        "upper": find_first_existing(root / "MFighter_m001_t04_u.png", root / "MFighter_m001_t04_u.tga"),
+        "lower": find_first_existing(root / "MFighter_m001_t04_l.png", root / "MFighter_m001_t04_l.tga"),
+        "gloves": find_first_existing(root / "MFighter_m002_t32_g.png", root / "MFighter_m002_t32_g.tga"),
+        "boots": find_first_existing(root / "MFighter_m001_t05_b_sp.png", root / "MFighter_m001_t05_b_sp.tga"),
+    }
+
+
 def find_l2_game_root() -> Path | None:
     candidates = [
         Path("E:/l2 clear"),
@@ -616,10 +633,11 @@ def add_l2_fighter_profile_animated(variant: str) -> bool:
     armature_obj = None
 
     if variant == "leather":
-        upper_tex = find_first_existing(texture_root / "MFighter_m001_t01_u_sp_rgb.png", texture_root / "MFighter_m001_t01_u_sp.png", texture_root / "MFighter_m001_t01_u_sp.tga")
-        lower_tex = find_first_existing(texture_root / "MFighter_m001_t01_l_sp_rgb.png", texture_root / "MFighter_m001_t01_l_sp.png", texture_root / "MFighter_m001_t01_l_sp.tga")
-        gloves_tex = find_first_existing(texture_root / "MFighter_m001_t01_g_sp_rgb.png", texture_root / "MFighter_m001_t01_g_sp.png", texture_root / "MFighter_m001_t01_g_sp.tga")
-        boots_tex = find_first_existing(texture_root / "MFighter_m001_t01_b_sp_rgb.png", texture_root / "MFighter_m001_t01_b_sp.png", texture_root / "MFighter_m001_t01_b_sp.tga")
+        overrides = resolve_profile_leather_override_textures()
+        upper_tex = overrides.get("upper") or find_first_existing(texture_root / "MFighter_m001_t01_u_sp_rgb.png", texture_root / "MFighter_m001_t01_u_sp.png", texture_root / "MFighter_m001_t01_u_sp.tga")
+        lower_tex = overrides.get("lower") or find_first_existing(texture_root / "MFighter_m001_t01_l_sp_rgb.png", texture_root / "MFighter_m001_t01_l_sp.png", texture_root / "MFighter_m001_t01_l_sp.tga")
+        gloves_tex = overrides.get("gloves") or find_first_existing(texture_root / "MFighter_m001_t01_g_sp_rgb.png", texture_root / "MFighter_m001_t01_g_sp.png", texture_root / "MFighter_m001_t01_g_sp.tga")
+        boots_tex = overrides.get("boots") or find_first_existing(texture_root / "MFighter_m001_t01_b_sp_rgb.png", texture_root / "MFighter_m001_t01_b_sp.png", texture_root / "MFighter_m001_t01_b_sp.tga")
         upper_mat = make_image_material("AnimLeatherUpper", upper_tex, metallic=0.02, roughness=0.78, specular=0.18) if upper_tex else make_material("AnimLeatherUpperFallback", (0.43, 0.31, 0.20), metallic=0.10, roughness=0.66, specular=0.24)
         lower_mat = make_image_material("AnimLeatherLower", lower_tex, metallic=0.02, roughness=0.80, specular=0.16) if lower_tex else make_material("AnimLeatherLowerFallback", (0.47, 0.34, 0.22), metallic=0.10, roughness=0.68, specular=0.24)
         gloves_mat = make_image_material("AnimLeatherGloves", gloves_tex, metallic=0.02, roughness=0.80, specular=0.16) if gloves_tex else make_material("AnimLeatherGlovesFallback", (0.37, 0.27, 0.18), metallic=0.08, roughness=0.70, specular=0.22)
@@ -788,10 +806,11 @@ def add_l2_fighter_profile(variant: str) -> bool:
         ]
         if all(path.exists() for path in required_leather_clean):
             tex_root = OUTER_ROOT / "$out" / "MFighter" / "Texture"
-            armor_u_tex = find_first_existing(tex_root / "MFighter_m001_t01_u_sp_rgb.png", tex_root / "MFighter_m001_t01_u_sp.png", tex_root / "MFighter_m001_t01_u_sp.tga")
-            armor_l_tex = find_first_existing(tex_root / "MFighter_m001_t01_l_sp_rgb.png", tex_root / "MFighter_m001_t01_l_sp.png", tex_root / "MFighter_m001_t01_l_sp.tga")
-            armor_g_tex = find_first_existing(tex_root / "MFighter_m001_t01_g_sp_rgb.png", tex_root / "MFighter_m001_t01_g_sp.png", tex_root / "MFighter_m001_t01_g_sp.tga")
-            armor_b_tex = find_first_existing(tex_root / "MFighter_m001_t01_b_sp_rgb.png", tex_root / "MFighter_m001_t01_b_sp.png", tex_root / "MFighter_m001_t01_b_sp.tga")
+            overrides = resolve_profile_leather_override_textures()
+            armor_u_tex = overrides.get("upper") or find_first_existing(tex_root / "MFighter_m001_t01_u_sp_rgb.png", tex_root / "MFighter_m001_t01_u_sp.png", tex_root / "MFighter_m001_t01_u_sp.tga")
+            armor_l_tex = overrides.get("lower") or find_first_existing(tex_root / "MFighter_m001_t01_l_sp_rgb.png", tex_root / "MFighter_m001_t01_l_sp.png", tex_root / "MFighter_m001_t01_l_sp.tga")
+            armor_g_tex = overrides.get("gloves") or find_first_existing(tex_root / "MFighter_m001_t01_g_sp_rgb.png", tex_root / "MFighter_m001_t01_g_sp.png", tex_root / "MFighter_m001_t01_g_sp.tga")
+            armor_b_tex = overrides.get("boots") or find_first_existing(tex_root / "MFighter_m001_t01_b_sp_rgb.png", tex_root / "MFighter_m001_t01_b_sp.png", tex_root / "MFighter_m001_t01_b_sp.tga")
             face_tex = find_first_existing(
                 tex_root / "MFighter_m000_t01_f.png",
                 tex_root / "MFighter_m000_t01_f.tga",
@@ -845,11 +864,12 @@ def add_l2_fighter_profile(variant: str) -> bool:
         return False
 
     leather_root, head_root = resolve_l2_texture_sets()
+    overrides = resolve_profile_leather_override_textures()
 
-    armor_u_tex = leather_root / "FFighter_m001_t04_u.png" if leather_root else None
-    armor_l_tex = leather_root / "FFighter_m001_t04_l.png" if leather_root else None
-    armor_g_tex = leather_root / "FFighter_m001_t04_g.png" if leather_root else None
-    armor_b_tex = (leather_root / "FFighter_m001_t03_b.png") if leather_root and (leather_root / "FFighter_m001_t03_b.png").exists() else (leather_root / "FFighter_m001_t04_b_sp.png" if leather_root else None)
+    armor_u_tex = overrides.get("upper") or (leather_root / "FFighter_m001_t04_u.png" if leather_root else None)
+    armor_l_tex = overrides.get("lower") or (leather_root / "FFighter_m001_t04_l.png" if leather_root else None)
+    armor_g_tex = overrides.get("gloves") or (leather_root / "FFighter_m001_t04_g.png" if leather_root else None)
+    armor_b_tex = overrides.get("boots") or ((leather_root / "FFighter_m001_t03_b.png") if leather_root and (leather_root / "FFighter_m001_t03_b.png").exists() else (leather_root / "FFighter_m001_t04_b_sp.png" if leather_root else None))
     skin_tex = (head_root / "FFighter_m002_t03_m00_bh_ori.png") if head_root and (head_root / "FFighter_m002_t03_m00_bh_ori.png").exists() else ((head_root / "FFighter_m001_t03_m00_bh_ori.png") if head_root and (head_root / "FFighter_m001_t03_m00_bh_ori.png").exists() else None)
     hair_tex = (head_root / "FFighter_m002_t03_m00_ah_ori.png") if head_root and (head_root / "FFighter_m002_t03_m00_ah_ori.png").exists() else ((head_root / "FFighter_m001_t03_m00_ah_ori.png") if head_root and (head_root / "FFighter_m001_t03_m00_ah_ori.png").exists() else None)
 
