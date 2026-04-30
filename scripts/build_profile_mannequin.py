@@ -265,7 +265,7 @@ def resolve_profile_leather_override_textures() -> dict[str, Path | None]:
         "upper": find_first_existing(root / "MFighter_m001_t04_u.png", root / "MFighter_m001_t04_u.tga"),
         "lower": find_first_existing(root / "MFighter_m001_t04_l.png", root / "MFighter_m001_t04_l.tga"),
         "gloves": find_first_existing(root / "MFighter_m002_t32_g.png", root / "MFighter_m002_t32_g.tga"),
-        "boots": find_first_existing(root / "MFighter_m001_t05_b_sp.png", root / "MFighter_m001_t05_b_sp.tga"),
+        "boots": find_first_existing(root / "MFighter_m001_t05_b_sp_rgb.png", root / "MFighter_m001_t05_b_sp_rgb.tga"),
     }
 
 
