@@ -657,18 +657,18 @@ def add_l2_fighter_profile_animated(variant: str) -> bool:
         texture_root / "MFighter_m000_t01_f.tga",
     )
     hair_base_tex = find_first_existing(
-        OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m001_t03_m00_bh_ori.png",
-        OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m001_t03_m00_bh_ori.tga",
         OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m002_t03_m00_bh_ori.png",
         OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m002_t03_m00_bh_ori.tga",
+        OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m001_t03_m00_bh_ori.png",
+        OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m001_t03_m00_bh_ori.tga",
         OUTER_ROOT / "$out" / "FFighter" / "Texture" / "FFighter_m000_t00_m00_bh_ori.png",
         OUTER_ROOT / "$out" / "FFighter" / "Texture" / "FFighter_m000_t00_m00_bh_ori.tga",
     )
     hair_strands_tex = find_first_existing(
-        OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m001_t03_m00_ah_ori.png",
-        OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m001_t03_m00_ah_ori.tga",
         OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m002_t03_m00_ah_ori.png",
         OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m002_t03_m00_ah_ori.tga",
+        OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m001_t03_m00_ah_ori.png",
+        OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m001_t03_m00_ah_ori.tga",
     )
     face_mat = make_image_material("AnimFace", face_tex, metallic=0.0, roughness=0.68, specular=0.16) if face_tex else make_material("AnimFaceFallback", (0.74, 0.62, 0.50), metallic=0.0, roughness=0.68, specular=0.16)
     hair_base_mat = make_image_material("AnimHairBaseTex", hair_base_tex, metallic=0.0, roughness=0.84, specular=0.08) if hair_base_tex else make_material("AnimHairBaseFallback", (0.33, 0.23, 0.14), metallic=0.0, roughness=0.84, specular=0.08)
@@ -746,10 +746,10 @@ def add_l2_fighter_profile(variant: str) -> bool:
                     OUTER_ROOT / "$out" / "MFighter" / "Texture" / "MFighter_m000_t01_f.tga",
                 )
                 hair_tex = find_first_existing(
-                    OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m001_t03_m00_bh_ori.png",
-                    OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m001_t03_m00_bh_ori.tga",
                     OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m002_t03_m00_bh_ori.png",
                     OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m002_t03_m00_bh_ori.tga",
+                    OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m001_t03_m00_bh_ori.png",
+                    OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m001_t03_m00_bh_ori.tga",
                     OUTER_ROOT / "$out" / "FFighter" / "Texture" / "FFighter_m000_t00_m00_bh_ori.png",
                     OUTER_ROOT / "$out" / "FFighter" / "Texture" / "FFighter_m000_t00_m00_bh_ori.tga",
                 )
@@ -797,10 +797,10 @@ def add_l2_fighter_profile(variant: str) -> bool:
                 tex_root / "MFighter_m000_t01_f.tga",
             )
             hair_tex = find_first_existing(
-                OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m001_t03_m00_bh_ori.png",
-                OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m001_t03_m00_bh_ori.tga",
                 OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m002_t03_m00_bh_ori.png",
                 OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m002_t03_m00_bh_ori.tga",
+                OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m001_t03_m00_bh_ori.png",
+                OUTER_ROOT / "_l2_leather_head_probe" / "FFighter" / "Texture" / "FFighter_m001_t03_m00_bh_ori.tga",
                 OUTER_ROOT / "$out" / "FFighter" / "Texture" / "FFighter_m000_t00_m00_bh_ori.png",
                 OUTER_ROOT / "$out" / "FFighter" / "Texture" / "FFighter_m000_t00_m00_bh_ori.tga",
             )
@@ -850,8 +850,8 @@ def add_l2_fighter_profile(variant: str) -> bool:
     armor_l_tex = leather_root / "FFighter_m001_t04_l.png" if leather_root else None
     armor_g_tex = leather_root / "FFighter_m001_t04_g.png" if leather_root else None
     armor_b_tex = (leather_root / "FFighter_m001_t03_b.png") if leather_root and (leather_root / "FFighter_m001_t03_b.png").exists() else (leather_root / "FFighter_m001_t04_b_sp.png" if leather_root else None)
-    skin_tex = head_root / "FFighter_m001_t03_m00_bh_ori.png" if head_root and (head_root / "FFighter_m001_t03_m00_bh_ori.png").exists() else None
-    hair_tex = head_root / "FFighter_m001_t03_m00_ah_ori.png" if head_root and (head_root / "FFighter_m001_t03_m00_ah_ori.png").exists() else None
+    skin_tex = (head_root / "FFighter_m002_t03_m00_bh_ori.png") if head_root and (head_root / "FFighter_m002_t03_m00_bh_ori.png").exists() else ((head_root / "FFighter_m001_t03_m00_bh_ori.png") if head_root and (head_root / "FFighter_m001_t03_m00_bh_ori.png").exists() else None)
+    hair_tex = (head_root / "FFighter_m002_t03_m00_ah_ori.png") if head_root and (head_root / "FFighter_m002_t03_m00_ah_ori.png").exists() else ((head_root / "FFighter_m001_t03_m00_ah_ori.png") if head_root and (head_root / "FFighter_m001_t03_m00_ah_ori.png").exists() else None)
 
     if variant == "leather" and armor_u_tex and armor_u_tex.exists():
         armor_mat = make_image_material("L2ArmorLeatherTex", armor_u_tex, metallic=0.02, roughness=0.78, specular=0.18)
