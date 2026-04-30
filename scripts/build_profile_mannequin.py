@@ -16,10 +16,10 @@ PROJECT_ROOT = SCRIPT_DIR.parent
 OUTER_ROOT = PROJECT_ROOT.parent
 LEATHER_SLOT_ORDER = ("u", "l", "g", "b")
 BASE_SLOT_MESHES = {
-    "u": "MFighter_m000_u",
-    "l": "MFighter_m000_l",
-    "g": "MFighter_m000_g",
-    "b": "MFighter_m000_b",
+    "u": "MFighter_m001_u",
+    "l": "MFighter_m001_l",
+    "g": "MFighter_m001_g",
+    "b": "MFighter_m001_b",
 }
 LEATHER_SLOT_MESHES = {
     "u": "MFighter_m001_u",
@@ -278,9 +278,9 @@ def resolve_profile_slot_material_texture(slot_code: str, leather_slots: set[str
                 texture_root / "MFighter_m001_t01_u_sp.tga",
             )
         return find_first_existing(
-            texture_root / "MFighter_m000_t01_u_sp_rgb.png",
-            texture_root / "MFighter_m000_t01_u_sp.png",
-            texture_root / "MFighter_m000_t01_u_sp.tga",
+            texture_root / "MFighter_m001_t01_u_sp_rgb.png",
+            texture_root / "MFighter_m001_t01_u_sp.png",
+            texture_root / "MFighter_m001_t01_u_sp.tga",
         )
     if slot_code == "l":
         if slot_code in leather_slots:
@@ -290,9 +290,9 @@ def resolve_profile_slot_material_texture(slot_code: str, leather_slots: set[str
                 texture_root / "MFighter_m001_t01_l_sp.tga",
             )
         return find_first_existing(
-            texture_root / "MFighter_m000_t01_l_sp_rgb.png",
-            texture_root / "MFighter_m000_t01_l_sp.png",
-            texture_root / "MFighter_m000_t01_l_sp.tga",
+            texture_root / "MFighter_m001_t01_l_sp_rgb.png",
+            texture_root / "MFighter_m001_t01_l_sp.png",
+            texture_root / "MFighter_m001_t01_l_sp.tga",
         )
     if slot_code == "g":
         if slot_code in leather_slots:
@@ -302,9 +302,9 @@ def resolve_profile_slot_material_texture(slot_code: str, leather_slots: set[str
                 texture_root / "MFighter_m001_t01_g_sp.tga",
             )
         return find_first_existing(
-            texture_root / "MFighter_m000_t01_g_sp_rgb.png",
-            texture_root / "MFighter_m000_t01_g_sp.png",
-            texture_root / "MFighter_m000_t01_g_sp.tga",
+            texture_root / "MFighter_m001_t01_g_sp_rgb.png",
+            texture_root / "MFighter_m001_t01_g_sp.png",
+            texture_root / "MFighter_m001_t01_g_sp.tga",
         )
     if slot_code == "b":
         if slot_code in leather_slots:
@@ -314,9 +314,9 @@ def resolve_profile_slot_material_texture(slot_code: str, leather_slots: set[str
                 texture_root / "MFighter_m001_t01_b_sp.tga",
             )
         return find_first_existing(
-            texture_root / "MFighter_m000_t01_b_sp_rgb.png",
-            texture_root / "MFighter_m000_t01_b_sp.png",
-            texture_root / "MFighter_m000_t01_b_sp.tga",
+            texture_root / "MFighter_m001_t01_b_sp_rgb.png",
+            texture_root / "MFighter_m001_t01_b_sp.png",
+            texture_root / "MFighter_m001_t01_b_sp.tga",
         )
     return None
 
