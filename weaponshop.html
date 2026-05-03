@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Оружейник</title>
+  <style>
+    :root {
+      --gold: #e8bf78;
+      --gold-light: #ffe6ae;
+      --gold-muted: #c99a5a;
+      --ink: #fff1c8;
+      --ink-soft: #f0c98b;
+      --bg: #080609;
+      --frame: rgba(207, 151, 75, .42);
+      --dialog-h: clamp(182px, 25vh, 238px);
+
+      /*
+        Варианты шрифта без подключения файлов:
+        1) current: чёткий псевдо-пиксельный monospace
+        2) serif-rpg: Georgia, "Times New Roman", serif
+        3) clean-ui: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif
+
+        Если позже добавим свой .woff2, достаточно заменить --dialog-font на:
+        --dialog-font: "HollowPixel", "Courier New", monospace;
+        и добавить @font-face.
+      */
+      --dialog-font: "Lucida Console", "Courier New", monospace;
+      --title-font: Georgia, "Times New Roman", serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(121, 68, 22, .26), transparent 34%),
+        radial-gradient(circle at 50% 100%, rgba(50, 28, 16, .34), transparent 38%),
+        var(--bg);
+      color: var(--ink);
+      font-family: var(--title-font);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(180deg, rgba(255, 212, 135, .06), transparent 22%, transparent 78%, rgba(255, 212, 135, .04)),
+        radial-gradient(circle at 10% 20%, rgba(255, 210, 120, .045), transparent 18%),
+        radial-gradient(circle at 90% 24%, rgba(255, 210, 120, .04), transparent 16%);
+      mix-blend-mode: screen;
+    }
+
+    .page {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      padding: 10px;
+    }
+
+    .screen {
+      position: relative;
+      width: min(100%, 1040px);
+      height: min(100%, 720px);
+      max-height: calc(100vh - 16px);
+      border-radius: 26px;
+      border: 1px solid var(--frame);
+      background: linear-gradient(180deg, rgba(42, 20, 14, .9), rgba(11, 8, 10, .97));
+      box-shadow:
+        0 18px 44px rgba(0, 0, 0, .52),
+        inset 0 0 0 1px rgba(255, 221, 156, .075);
+      overflow: hidden;
+    }
+
+    .screen::before {
+      content: "";
+      position: absolute;
+      inset: 10px;
+      border-radius: 20px;
+      border: 1px solid rgba(226, 174, 96, .17);
+      pointer-events: none;
+      z-index: 20;
+    }
+
+    .top-bar {
+      position: absolute;
+      top: 14px;
+      left: 18px;
+      right: 18px;
+      z-index: 8;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      pointer-events: none;
+    }
+
+    .top-title {
+      padding: 13px 18px 15px;
+      min-width: 260px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(42, 19, 13, .9), rgba(18, 10, 9, .9));
+      border: 1px solid rgba(217, 166, 88, .32);
+      box-shadow: 0 8px 22px rgba(0, 0, 0, .3);
+      pointer-events: auto;
+    }
+
+    .title {
+      font-size: clamp(34px, 4.6vw, 52px);
+      line-height: .9;
+      font-weight: 800;
+      color: var(--gold-light);
+      letter-spacing: .02em;
+      text-shadow:
+        0 2px 0 rgba(78, 38, 10, .72),
+        0 0 18px rgba(231, 177, 91, .18);
+    }
+
+    .back-btn {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: 1px solid rgba(217, 166, 88, .42);
+      background: linear-gradient(180deg, rgba(71, 43, 22, .96), rgba(26, 15, 12, .96));
+      color: var(--gold-light);
+      font-size: 22px;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .06), 0 8px 16px rgba(0, 0, 0, .3);
+      pointer-events: auto;
+    }
+
+    .back-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+    .back-btn:active { transform: translateY(0); }
+
+    .scene-wrap {
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      top: 76px;
+      bottom: calc(var(--dialog-h) + 18px);
+      border-radius: 24px;
+      overflow: hidden;
+      border: 1px solid rgba(217, 166, 88, .22);
+      background: #0f0908;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .03);
+    }
+
+    .scene-fallback,
+    .scene-base {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .scene-base {
+      object-fit: cover;
+      object-position: center;
+      display: block;
+    }
+
+    .scene-fallback {
+      background:
+        radial-gradient(circle at 50% 42%, rgba(236, 190, 121, .12), transparent 24%),
+        linear-gradient(180deg, rgba(78, 43, 28, .45), rgba(18, 10, 8, .2)),
+        linear-gradient(90deg, #24130f 0%, #3b2118 18%, #2a1712 50%, #3b2118 82%, #24130f 100%);
+    }
+
+    .scene-fallback::before,
+    .scene-fallback::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .scene-fallback::before {
+      background:
+        linear-gradient(90deg, rgba(0, 0, 0, .36), transparent 13%, transparent 87%, rgba(0, 0, 0, .36)),
+        linear-gradient(180deg, rgba(0, 0, 0, .22), transparent 18%, transparent 84%, rgba(0, 0, 0, .34));
+    }
+
+    .scene-fallback::after {
+      opacity: .85;
+      background:
+        radial-gradient(circle at 12% 28%, rgba(255, 220, 150, .05), transparent 8%),
+        radial-gradient(circle at 82% 20%, rgba(255, 220, 150, .05), transparent 9%),
+        radial-gradient(circle at 78% 72%, rgba(255, 220, 150, .04), transparent 10%),
+        radial-gradient(circle at 24% 74%, rgba(255, 220, 150, .04), transparent 9%);
+    }
+
+    .asset-hint {
+      position: absolute;
+      right: 18px;
+      top: 18px;
+      z-index: 5;
+      max-width: min(330px, 50%);
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(12, 8, 8, .66);
+      border: 1px solid rgba(211, 159, 81, .2);
+      color: #c6aa7b;
+      font-size: 12px;
+      line-height: 1.35;
+      backdrop-filter: blur(3px);
+    }
+
+
+    .scene-ambient,
+    .lamp-glow,
+    .scene-embers {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .scene-ambient {
+      z-index: 3;
+      pointer-events: none;
+      mix-blend-mode: screen;
+      background:
+        radial-gradient(circle at 18% 40%, rgba(255, 207, 112, .08), transparent 18%),
+        radial-gradient(circle at 50% 36%, rgba(255, 202, 126, .075), transparent 18%),
+        radial-gradient(circle at 83% 42%, rgba(255, 156, 62, .08), transparent 17%),
+        linear-gradient(90deg, rgba(0, 0, 0, .16), transparent 20%, transparent 80%, rgba(0, 0, 0, .12));
+      animation: ambientPulse 4.4s ease-in-out infinite;
+    }
+
+    .lamp-glow {
+      z-index: 5;
+      pointer-events: none;
+      mix-blend-mode: screen;
+      opacity: .52;
+      background:
+        radial-gradient(circle at 98.8% 7.5%,
+          rgba(255, 246, 210, .82) 0%,
+          rgba(255, 222, 148, .36) 6%,
+          rgba(255, 176, 73, .16) 13%,
+          rgba(255, 127, 42, .07) 20%,
+          transparent 31%);
+      animation: lampFlicker 2.1s ease-in-out infinite;
+    }
+
+    .lamp-glow::before {
+      content: "";
+      position: absolute;
+      right: -0.8%;
+      top: -1.2%;
+      width: 11%;
+      height: 18%;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle,
+          rgba(255, 244, 191, .42),
+          rgba(255, 184, 70, .18) 42%,
+          transparent 74%);
+      filter: blur(4px);
+      animation: lampCore 1.8s steps(2, end) infinite;
+    }
+
+    .lamp-glow::after {
+      content: "";
+      position: absolute;
+      right: -4%;
+      top: -5%;
+      width: 24%;
+      height: 34%;
+      background:
+        radial-gradient(circle at 72% 34%,
+          rgba(255, 236, 172, .24),
+          rgba(255, 167, 60, .08) 34%,
+          transparent 68%);
+      filter: blur(9px);
+      animation: lampPulse 3.8s ease-in-out infinite;
+    }
+
+    .scene-embers {
+      z-index: 6;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .scene-embers span {
+      position: absolute;
+      bottom: -20px;
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: rgba(255, 191, 92, .82);
+      box-shadow: 0 0 10px rgba(255, 151, 45, .72);
+      animation: emberRise var(--dur, 6s) linear infinite;
+      animation-delay: var(--delay, 0s);
+      opacity: 0;
+    }
+
+    .scene-embers span:nth-child(1) { left: 12%; --dur: 6.5s; --delay: -1.2s; }
+    .scene-embers span:nth-child(2) { left: 20%; --dur: 7.2s; --delay: -3.4s; }
+    .scene-embers span:nth-child(3) { left: 33%; --dur: 5.6s; --delay: -2.1s; }
+    .scene-embers span:nth-child(4) { left: 47%; --dur: 8s; --delay: -4.4s; }
+    .scene-embers span:nth-child(5) { left: 62%; --dur: 6.9s; --delay: -1.8s; }
+    .scene-embers span:nth-child(6) { left: 73%; --dur: 7.5s; --delay: -5.2s; }
+    .scene-embers span:nth-child(7) { left: 82%; --dur: 5.8s; --delay: -2.8s; }
+    .scene-embers span:nth-child(8) { left: 90%; --dur: 8.6s; --delay: -6.1s; }
+
+    .trade-panel {
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      top: 18px;
+      bottom: 18px;
+      z-index: 14;
+      border-radius: 20px;
+      border: 1px solid rgba(228, 174, 91, .28);
+      background:
+        radial-gradient(circle at 15% 0%, rgba(255, 213, 127, .08), transparent 30%),
+        linear-gradient(180deg, rgba(35, 20, 14, .92), rgba(11, 8, 9, .94));
+      box-shadow:
+        0 18px 34px rgba(0, 0, 0, .34),
+        inset 0 0 0 1px rgba(255, 235, 180, .045);
+      backdrop-filter: blur(4px);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(12px) scale(.985);
+      transition: opacity .22s ease, transform .22s ease;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      overflow: hidden;
+    }
+
+    .trade-panel.is-open {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0) scale(1);
+    }
+
+    .trade-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid rgba(216, 166, 88, .18);
+      background: linear-gradient(180deg, rgba(58, 33, 18, .72), rgba(18, 10, 8, .28));
+    }
+
+    .trade-title {
+      font-family: var(--dialog-font);
+      font-size: clamp(15px, 1.7vw, 20px);
+      font-weight: 800;
+      letter-spacing: .04em;
+      color: #ffe7b0;
+      text-shadow: 1px 1px 0 rgba(0,0,0,.7);
+      -webkit-font-smoothing: none;
+      font-smooth: never;
+    }
+
+    .trade-gold {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(233, 180, 91, .32);
+      background: rgba(18, 11, 8, .58);
+      color: #ffe7a8;
+      font-family: var(--dialog-font);
+      font-size: 14px;
+      font-weight: 800;
+      text-shadow: 1px 1px 0 rgba(0,0,0,.7);
+    }
+
+    .trade-body {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(210px, 280px);
+      gap: 14px;
+      padding: 14px;
+    }
+
+    .trade-grid {
+      min-height: 0;
+      overflow: auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+      align-content: start;
+      gap: 10px;
+      padding-right: 4px;
+    }
+
+    .trade-grid::-webkit-scrollbar { width: 8px; }
+    .trade-grid::-webkit-scrollbar-thumb { background: rgba(223, 171, 88, .28); border-radius: 10px; }
+
+    .item-card {
+      position: relative;
+      min-height: 124px;
+      border: 1px solid rgba(210, 160, 86, .22);
+      border-radius: 14px;
+      background:
+        radial-gradient(circle at 50% 12%, rgba(255, 218, 138, .08), transparent 42%),
+        linear-gradient(180deg, rgba(44, 26, 16, .88), rgba(15, 10, 9, .92));
+      color: #f8ddb0;
+      cursor: pointer;
+      padding: 10px 8px 9px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.035);
+      transition: transform .14s ease, border-color .14s ease, box-shadow .14s ease, filter .14s ease;
+      text-align: center;
+    }
+
+    .item-card:hover,
+    .item-card.is-selected {
+      transform: translateY(-2px);
+      border-color: rgba(255, 216, 140, .52);
+      box-shadow:
+        0 8px 18px rgba(0,0,0,.25),
+        0 0 14px rgba(229, 174, 88, .14),
+        inset 0 0 0 1px rgba(255,255,255,.06);
+      filter: brightness(1.05);
+    }
+
+    .item-icon {
+      width: 44px;
+      height: 44px;
+      margin: 0 auto 7px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      border: 1px solid rgba(235, 185, 103, .24);
+      background:
+        radial-gradient(circle at 38% 30%, rgba(255, 230, 160, .18), transparent 55%),
+        rgba(13, 9, 8, .58);
+      font-size: 24px;
+    }
+
+    .item-name {
+      min-height: 32px;
+      font-family: var(--dialog-font);
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1.25;
+      color: #fff0c2;
+      text-shadow: 1px 1px 0 rgba(0,0,0,.72);
+      -webkit-font-smoothing: none;
+      font-smooth: never;
+    }
+
+    .item-meta {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 7px;
+      font-family: var(--dialog-font);
+      font-size: 11px;
+      font-weight: 800;
+      color: #e8c07e;
+      text-shadow: 1px 1px 0 rgba(0,0,0,.66);
+    }
+
+    .item-rarity {
+      position: absolute;
+      left: 8px;
+      top: 8px;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      box-shadow: 0 0 8px currentColor;
+    }
+
+    .rarity-common { color: #d8c6a5; }
+    .rarity-uncommon { color: #82d87a; }
+    .rarity-rare { color: #7aa7ff; }
+    .rarity-epic { color: #c989ff; }
+
+    .trade-details {
+      min-height: 0;
+      border-radius: 16px;
+      border: 1px solid rgba(215, 166, 88, .24);
+      background: linear-gradient(180deg, rgba(27, 16, 12, .88), rgba(10, 7, 8, .92));
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.03);
+    }
+
+    .details-icon {
+      width: 58px;
+      height: 58px;
+      display: grid;
+      place-items: center;
+      border-radius: 15px;
+      border: 1px solid rgba(235, 185, 103, .26);
+      background:
+        radial-gradient(circle at 38% 30%, rgba(255, 230, 160, .18), transparent 55%),
+        rgba(13, 9, 8, .58);
+      font-size: 32px;
+    }
+
+    .details-name {
+      font-family: var(--dialog-font);
+      font-size: 16px;
+      font-weight: 800;
+      color: #fff0c0;
+      line-height: 1.25;
+      text-shadow: 1px 1px 0 rgba(0,0,0,.75);
+      -webkit-font-smoothing: none;
+      font-smooth: never;
+    }
+
+    .details-desc {
+      font-family: var(--dialog-font);
+      font-size: 12px;
+      line-height: 1.45;
+      color: #dcc08d;
+      text-shadow: 1px 1px 0 rgba(0,0,0,.52);
+      -webkit-font-smoothing: none;
+      font-smooth: never;
+    }
+
+    .details-price {
+      margin-top: auto;
+      padding: 9px 10px;
+      border-radius: 12px;
+      background: rgba(0,0,0,.24);
+      border: 1px solid rgba(229, 175, 89, .17);
+      color: #ffe4a3;
+      font-family: var(--dialog-font);
+      font-size: 13px;
+      font-weight: 800;
+      text-shadow: 1px 1px 0 rgba(0,0,0,.7);
+    }
+
+    .trade-action {
+      min-height: 44px;
+      border: 1px solid rgba(241, 190, 108, .42);
+      border-radius: 13px;
+      background: linear-gradient(180deg, #9b632e, #543019);
+      color: #fff0bf;
+      font-family: var(--dialog-font);
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 8px 18px rgba(0,0,0,.26);
+      text-shadow: 1px 1px 0 rgba(0,0,0,.6);
+      -webkit-font-smoothing: none;
+      font-smooth: never;
+    }
+
+    .trade-action:disabled {
+      opacity: .42;
+      cursor: default;
+      filter: grayscale(.4);
+    }
+
+    .empty-note {
+      padding: 18px;
+      border-radius: 14px;
+      border: 1px dashed rgba(225, 171, 88, .26);
+      color: #d9b781;
+      font-family: var(--dialog-font);
+      font-size: 13px;
+      line-height: 1.45;
+      text-shadow: 1px 1px 0 rgba(0,0,0,.62);
+      -webkit-font-smoothing: none;
+      font-smooth: never;
+    }
+
+    @keyframes sceneBreath {
+      0%, 100% { transform: scale(1); filter: brightness(1); }
+      50% { transform: scale(1.012); filter: brightness(1.03); }
+    }
+
+    @keyframes ambientPulse {
+      0%, 100% { opacity: .58; }
+      48% { opacity: .86; }
+      62% { opacity: .70; }
+      76% { opacity: .92; }
+    }
+
+    @keyframes lampFlicker {
+      0%, 100% { opacity: .46; filter: brightness(.96); }
+      20% { opacity: .58; filter: brightness(1.04); }
+      46% { opacity: .50; filter: brightness(1); }
+      72% { opacity: .60; filter: brightness(1.06); }
+    }
+
+    @keyframes lampCore {
+      0%, 100% { opacity: .42; transform: scale(.98); }
+      50% { opacity: .58; transform: scale(1.04); }
+    }
+
+    @keyframes lampPulse {
+      0%, 100% { opacity: .24; transform: scale(.98); }
+      50% { opacity: .36; transform: scale(1.06); }
+    }
+
+    @keyframes emberRise {
+      0% { transform: translateY(0) translateX(0) scale(.8); opacity: 0; }
+      12% { opacity: .75; }
+      55% { opacity: .45; }
+      100% { transform: translateY(-78vh) translateX(26px) scale(.25); opacity: 0; }
+    }
+
+    .dialogue {
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      bottom: 14px;
+      min-height: var(--dialog-h);
+      z-index: 9;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(178px, 250px);
+      gap: clamp(12px, 2vw, 22px);
+      padding: clamp(24px, 3.2vh, 34px) clamp(28px, 4vw, 50px);
+      border-radius: 28px;
+      overflow: hidden;
+    }
+
+    .dialogue::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -2;
+      border-radius: inherit;
+      background: linear-gradient(180deg, rgba(44, 22, 15, .94), rgba(13, 10, 11, .96));
+      border: 1px solid rgba(210, 160, 86, .24);
+      box-shadow: 0 18px 36px rgba(0, 0, 0, .35), inset 0 0 0 1px rgba(255, 255, 255, .03);
+    }
+
+    .dialogue-banner {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      object-position: center;
+      z-index: -1;
+      pointer-events: none;
+      image-rendering: auto;
+    }
+
+    .dialogue-copy {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      justify-content: flex-start;
+    }
+
+    .speaker-name {
+      font-family: var(--dialog-font);
+      font-size: clamp(24px, 3vw, 38px);
+      font-weight: 800;
+      color: #fff0bd;
+      line-height: 1;
+      letter-spacing: .02em;
+      text-shadow:
+        2px 2px 0 rgba(58, 31, 12, .95),
+        0 0 10px rgba(255, 218, 145, .16);
+      -webkit-font-smoothing: none;
+      font-smooth: never;
+    }
+
+    .dialogue-text {
+      max-width: 680px;
+      min-height: 62px;
+      font-family: var(--dialog-font);
+      font-size: clamp(15px, 1.65vw, 20px);
+      font-weight: 700;
+      line-height: 1.45;
+      letter-spacing: .015em;
+      color: #fff3cf;
+      text-shadow:
+        1px 1px 0 rgba(42, 22, 8, .98),
+        2px 2px 0 rgba(42, 22, 8, .55),
+        0 0 8px rgba(255, 227, 166, .14);
+      -webkit-font-smoothing: none;
+      font-smooth: never;
+      text-rendering: geometricPrecision;
+      cursor: pointer;
+    }
+
+    .dialogue-text.is-typing::after {
+      content: "▌";
+      display: inline-block;
+      margin-left: 3px;
+      color: #ffd98e;
+      animation: caretBlink .8s steps(2, end) infinite;
+    }
+
+    @keyframes caretBlink {
+      0%, 45% { opacity: 1; }
+      46%, 100% { opacity: 0; }
+    }
+
+    .vn-choices {
+      align-self: center;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity .18s ease, transform .18s ease;
+    }
+
+    .vn-choices.is-hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(6px);
+    }
+
+    .choice-btn {
+      appearance: none;
+      border: 0;
+      background: transparent;
+      color: #ffe1a5;
+      font-family: var(--dialog-font);
+      font-size: clamp(16px, 1.8vw, 22px);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: .02em;
+      text-align: left;
+      cursor: pointer;
+      padding: 8px 10px 8px 32px;
+      border-radius: 12px;
+      position: relative;
+      text-shadow:
+        1px 1px 0 rgba(44, 22, 8, .95),
+        0 0 10px rgba(232, 181, 96, .16);
+      -webkit-font-smoothing: none;
+      font-smooth: never;
+      transition: color .14s ease, transform .14s ease, background .14s ease, text-shadow .14s ease;
+    }
+
+    .choice-btn::before {
+      content: "›";
+      position: absolute;
+      left: 9px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: rgba(255, 214, 139, .78);
+      opacity: .85;
+      transition: transform .14s ease, opacity .14s ease, color .14s ease;
+    }
+
+    .choice-btn:hover,
+    .choice-btn:focus-visible,
+    .choice-btn.is-active {
+      color: #fff4cf;
+      background: linear-gradient(90deg, rgba(156, 95, 36, .30), rgba(156, 95, 36, 0));
+      text-shadow:
+        1px 1px 0 rgba(44, 22, 8, .95),
+        0 0 14px rgba(242, 191, 101, .28);
+      transform: translateX(2px);
+      outline: none;
+    }
+
+    .choice-btn:hover::before,
+    .choice-btn:focus-visible::before,
+    .choice-btn.is-active::before {
+      color: #fff0bb;
+      opacity: 1;
+      transform: translateY(-50%) translateX(4px);
+    }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 860px) {
+      .screen { border-radius: 20px; }
+      .top-title { min-width: 0; padding: 11px 14px 13px; }
+      .scene-wrap { inset: 72px 10px calc(var(--dialog-h) + 14px) 10px; }
+      .dialogue {
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+        grid-template-columns: 1fr;
+        gap: 8px;
+        padding: 22px 28px;
+      }
+      .vn-choices {
+        flex-direction: row;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        align-self: start;
+        gap: 4px 12px;
+      }
+      .choice-btn { min-width: 122px; }
+      .asset-hint { max-width: 50%; font-size: 11px; }
+    }
+
+    @media (max-width: 640px) {
+      :root { --dialog-h: clamp(232px, 38vh, 320px); }
+      .page { padding: 0; }
+      .screen {
+        width: 100%;
+        height: 100%;
+        max-height: none;
+        border-radius: 0;
+        border-left: 0;
+        border-right: 0;
+      }
+      .screen::before { inset: 8px; }
+      .top-bar { top: 10px; left: 10px; right: 10px; }
+      .title { font-size: 31px; }
+      .back-btn { width: 44px; height: 44px; }
+      .scene-wrap { inset: 68px 8px calc(var(--dialog-h) + 10px) 8px; border-radius: 18px; }
+      .asset-hint { right: 12px; top: 12px; max-width: 58%; padding: 8px 10px; }
+      .dialogue {
+        left: 8px;
+        right: 8px;
+        bottom: 8px;
+        border-radius: 20px;
+        padding: 20px 22px;
+      }
+      .speaker-name { font-size: 23px; }
+      .dialogue-text { min-height: 74px; font-size: 13px; line-height: 1.5; }
+      .choice-btn { flex: 1 1 100%; min-width: 0; font-size: 15px; padding-top: 7px; padding-bottom: 7px; }
+    }
+
+    @media (max-width: 420px) {
+      .asset-hint { display: none; }
+    }
+
+    @media (max-width: 860px) {
+      .trade-panel { left: 12px; right: 12px; top: 12px; bottom: 12px; }
+      .trade-body { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) auto; }
+      .trade-details { min-height: 142px; }
+    }
+
+    @media (max-width: 640px) {
+      .trade-head { padding: 11px 12px 10px; }
+      .trade-title { font-size: 13px; }
+      .trade-gold { font-size: 12px; padding: 7px 9px; }
+      .trade-body { gap: 10px; padding: 10px; }
+      .trade-grid { grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; }
+      .item-card { min-height: 104px; padding: 8px 6px; }
+      .item-icon { width: 36px; height: 36px; font-size: 21px; }
+      .item-name { font-size: 10px; }
+      .item-meta { font-size: 9px; }
+      .trade-details { min-height: 126px; padding: 10px; gap: 8px; }
+      .details-icon { display: none; }
+      .details-name { font-size: 13px; }
+      .details-desc { font-size: 10px; }
+      .details-price { font-size: 11px; padding: 7px 8px; }
+      .trade-action { min-height: 38px; font-size: 12px; }
+      .lamp-glow {
+        opacity: .46;
+        background: radial-gradient(circle at 99.2% 6.2%, rgba(255, 246, 210, .72) 0%, rgba(255, 222, 148, .30) 7%, rgba(255, 176, 73, .12) 14%, rgba(255, 127, 42, .06) 22%, transparent 33%);
+      }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="page">
+    <main class="screen">
+      <header class="top-bar">
+        <div class="top-title">
+          <div class="title">Оружейник</div>
+        </div>
+        <button class="back-btn" type="button" id="backButton" aria-label="Назад на карту">←</button>
+      </header>
+
+      <section class="scene-wrap">
+        <div class="scene-fallback" aria-hidden="true"></div>
+        <img class="scene-base hidden" id="sceneBase" alt="Сцена оружейника" />
+
+        <div class="scene-ambient" aria-hidden="true"></div>
+        <div class="lamp-glow" aria-hidden="true"></div>
+
+        <div class="scene-embers" aria-hidden="true">
+          <span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span>
+        </div>
+        <div class="asset-hint" id="assetHint">
+          Ассеты сюда:<br>
+          <strong>assets/locations/weaponshop/scene_clean.png</strong><br>
+          <strong>assets/locations/weaponshop/banner.png</strong>
+        </div>
+
+
+        <div class="trade-panel" id="tradePanel" aria-hidden="true">
+          <div class="trade-head">
+            <div class="trade-title" id="tradeTitle">Товары оружейника</div>
+            <div class="trade-gold">🪙 <span id="goldValue">0</span></div>
+          </div>
+
+          <div class="trade-body">
+            <div class="trade-grid" id="tradeGrid"></div>
+
+            <aside class="trade-details">
+              <div class="details-icon" id="detailsIcon">?</div>
+              <div class="details-name" id="detailsName">Выбери предмет</div>
+              <div class="details-desc" id="detailsDesc">Нажми на вещь в списке, чтобы увидеть описание и цену.</div>
+              <div class="details-price" id="detailsPrice">Цена: —</div>
+              <button class="trade-action" type="button" id="tradeAction" disabled>Выбери предмет</button>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <section class="dialogue" id="dialogueBox">
+        <img class="dialogue-banner hidden" id="dialogueBanner" alt="" />
+        <div class="dialogue-copy">
+          <div class="speaker-name">Arodin</div>
+          <div class="dialogue-text" id="dialogueText">Приветствую, путник. Нужен клинок, хочешь сбыть лишнее железо или уже уходишь?</div>
+        </div>
+        <div class="vn-choices is-hidden" id="choices"></div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const SCENE_IMAGE = 'assets/locations/weaponshop/scene_clean.png';
+    const BANNER_IMAGE = 'assets/locations/weaponshop/banner.png';
+    const MAP_RETURN = 'map.html';
+    const STORAGE_KEY = 'hollow_dominion_weaponshop_trade_v1';
+
+    const dialogueText = document.getElementById('dialogueText');
+    const choicesWrap = document.getElementById('choices');
+    const backButton = document.getElementById('backButton');
+    const assetHint = document.getElementById('assetHint');
+    const sceneBase = document.getElementById('sceneBase');
+    const dialogueBanner = document.getElementById('dialogueBanner');
+    const dialogueBox = document.getElementById('dialogueBox');
+
+    const tradePanel = document.getElementById('tradePanel');
+    const tradeTitle = document.getElementById('tradeTitle');
+    const tradeGrid = document.getElementById('tradeGrid');
+    const goldValue = document.getElementById('goldValue');
+    const detailsIcon = document.getElementById('detailsIcon');
+    const detailsName = document.getElementById('detailsName');
+    const detailsDesc = document.getElementById('detailsDesc');
+    const detailsPrice = document.getElementById('detailsPrice');
+    const tradeAction = document.getElementById('tradeAction');
+
+    const itemTemplates = {
+      iron_sword: { id: 'iron_sword', name: 'Железный меч', icon: '⚔️', rarity: 'common', buyPrice: 90, sellPrice: 34, desc: 'Надёжный клинок для первых вылазок за стены.' },
+      hunter_bow: { id: 'hunter_bow', name: 'Лук охотника', icon: '🏹', rarity: 'common', buyPrice: 75, sellPrice: 28, desc: 'Простой лук с тугой тетивой. Хорош против мелкой дичи и слабой нежити.' },
+      oak_shield: { id: 'oak_shield', name: 'Дубовый щит', icon: '🛡️', rarity: 'common', buyPrice: 68, sellPrice: 24, desc: 'Крепкий деревянный щит с железной окантовкой.' },
+      steel_axe: { id: 'steel_axe', name: 'Стальной топор', icon: '🪓', rarity: 'uncommon', buyPrice: 125, sellPrice: 48, desc: 'Тяжёлый удар, грубая работа, хороший результат.' },
+      guard_spear: { id: 'guard_spear', name: 'Копьё стражи', icon: '🔱', rarity: 'uncommon', buyPrice: 110, sellPrice: 42, desc: 'Длинное оружие городской стражи. Держит врага на расстоянии.' },
+      knight_blade: { id: 'knight_blade', name: 'Клинок рыцаря', icon: '🗡️', rarity: 'rare', buyPrice: 210, sellPrice: 82, desc: 'Хорошо сбалансированный клинок с потёртой гербовой гардой.' },
+      rusty_dagger: { id: 'rusty_dagger', name: 'Ржавый кинжал', icon: '🗡️', rarity: 'common', buyPrice: 22, sellPrice: 8, desc: 'Старый кинжал. Не красивый, но всё ещё режет.' },
+      cracked_buckler: { id: 'cracked_buckler', name: 'Треснувший баклер', icon: '🛡️', rarity: 'common', buyPrice: 35, sellPrice: 13, desc: 'Малый щит с трещиной у края. Торговец много не даст.' },
+      bent_sword: { id: 'bent_sword', name: 'Погнутый меч', icon: '⚔️', rarity: 'common', buyPrice: 42, sellPrice: 16, desc: 'После боя с ним явно случилось что-то неприятное.' },
+      wolf_fang: { id: 'wolf_fang', name: 'Клык волка', icon: '🦷', rarity: 'common', buyPrice: 12, sellPrice: 5, desc: 'Обычный трофей. Оружейник берёт такие для рукоятей и украшений.' },
+      iron_scrap: { id: 'iron_scrap', name: 'Железный лом', icon: '⛓️', rarity: 'common', buyPrice: 10, sellPrice: 4, desc: 'Годится на переплавку. Много не стоит, но всё лучше пустой сумки.' }
+    };
+
+    const defaultTradeState = {
+      gold: 180,
+      merchant: [
+        { id: 'iron_sword', stock: 3 },
+        { id: 'hunter_bow', stock: 2 },
+        { id: 'oak_shield', stock: 3 },
+        { id: 'steel_axe', stock: 2 },
+        { id: 'guard_spear', stock: 2 },
+        { id: 'knight_blade', stock: 1 }
+      ],
+      player: [
+        { id: 'rusty_dagger', count: 1 },
+        { id: 'cracked_buckler', count: 1 },
+        { id: 'bent_sword', count: 1 },
+        { id: 'wolf_fang', count: 4 },
+        { id: 'iron_scrap', count: 6 }
+      ]
+    };
+
+    const states = {
+      intro: 'Приветствую, путник. Нужен клинок, хочешь сбыть лишнее железо или уже уходишь?',
+      buy: 'Смотри внимательно. Хорошее оружие стоит монет, но плохое оружие стоит жизни.',
+      sell: 'Выкладывай добычу на прилавок. Железо, старые клинки и трофеи я осмотрю.',
+      leave: 'Береги себя за стенами. Плохой клинок губит быстрее любого зверя.'
+    };
+
+    const choices = [
+      { id: 'buy', label: 'Купить' },
+      { id: 'sell', label: 'Продать' },
+      { id: 'leave', label: 'Уйти' }
+    ];
+
+    let currentState = 'intro';
+    let currentFullText = states.intro;
+    let typeTimer = null;
+    let isTyping = false;
+    let tradeState = loadTradeState();
+    let tradeMode = 'none';
+    let selectedItemId = null;
+
+    function cloneDefaultState() { return JSON.parse(JSON.stringify(defaultTradeState)); }
+
+    function loadTradeState() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (!saved) return cloneDefaultState();
+        const parsed = JSON.parse(saved);
+        if (!parsed || !Array.isArray(parsed.merchant) || !Array.isArray(parsed.player)) return cloneDefaultState();
+        return {
+          gold: Number.isFinite(parsed.gold) ? parsed.gold : defaultTradeState.gold,
+          merchant: parsed.merchant,
+          player: parsed.player
+        };
+      } catch (error) {
+        return cloneDefaultState();
+      }
+    }
+
+    function saveTradeState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(tradeState)); }
+
+    function getTemplate(id) {
+      return itemTemplates[id] || { id, name: 'Неизвестный предмет', icon: '?', rarity: 'common', buyPrice: 0, sellPrice: 0, desc: 'Описание предмета не найдено.' };
+    }
+
+    function stopTyping() {
+      if (typeTimer) {
+        window.clearInterval(typeTimer);
+        window.clearTimeout(typeTimer);
+        typeTimer = null;
+      }
+      isTyping = false;
+      dialogueText.classList.remove('is-typing');
+    }
+
+    function typeDialogue(text, onDone) {
+      stopTyping();
+      currentFullText = text;
+      dialogueText.textContent = '';
+      choicesWrap.classList.add('is-hidden');
+      dialogueText.classList.add('is-typing');
+      isTyping = true;
+      let i = 0;
+
+      const tick = () => {
+        if (!isTyping) return;
+        i += 1;
+        dialogueText.textContent = text.slice(0, i);
+        if (i >= text.length) {
+          stopTyping();
+          if (onDone) onDone();
+          return;
+        }
+        const ch = text[i - 1];
+        let delay = 24;
+        if (ch === '.' || ch === '!' || ch === '?') delay = 145;
+        if (ch === ',' || ch === ';' || ch === ':') delay = 75;
+        typeTimer = window.setTimeout(tick, delay);
+      };
+
+      typeTimer = window.setTimeout(tick, 100);
+    }
+
+    function finishTyping() {
+      if (!isTyping) return;
+      stopTyping();
+      dialogueText.textContent = currentFullText;
+      choicesWrap.classList.remove('is-hidden');
+    }
+
+    function renderChoices() {
+      choicesWrap.innerHTML = '';
+      choices.forEach((choice) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'choice-btn' + (choice.id === currentState ? ' is-active' : '');
+        button.textContent = choice.label;
+        button.addEventListener('click', () => setState(choice.id));
+        choicesWrap.appendChild(button);
+      });
+    }
+
+    function setState(stateKey) {
+      currentState = stateKey;
+      renderChoices();
+      if (stateKey === 'buy') openTrade('buy');
+      else if (stateKey === 'sell') openTrade('sell');
+      else closeTrade();
+
+      typeDialogue(states[stateKey], () => {
+        choicesWrap.classList.remove('is-hidden');
+        if (stateKey === 'leave') {
+          window.setTimeout(() => { window.location.href = MAP_RETURN; }, 650);
+        }
+      });
+    }
+
+    function openTrade(mode) {
+      tradeMode = mode;
+      selectedItemId = null;
+      tradePanel.classList.add('is-open');
+      tradePanel.setAttribute('aria-hidden', 'false');
+      renderTrade();
+    }
+
+    function closeTrade() {
+      tradeMode = 'none';
+      selectedItemId = null;
+      tradePanel.classList.remove('is-open');
+      tradePanel.setAttribute('aria-hidden', 'true');
+      renderTradeDetails(null);
+    }
+
+    function currentTradeList() {
+      if (tradeMode === 'buy') return tradeState.merchant.filter((entry) => entry.stock > 0);
+      if (tradeMode === 'sell') return tradeState.player.filter((entry) => entry.count > 0);
+      return [];
+    }
+
+    function renderTrade() {
+      goldValue.textContent = tradeState.gold;
+      tradeGrid.innerHTML = '';
+      tradeTitle.textContent = tradeMode === 'buy' ? 'Товары Arodin' : 'Вещи игрока';
+      const list = currentTradeList();
+
+      if (!list.length) {
+        const note = document.createElement('div');
+        note.className = 'empty-note';
+        note.textContent = tradeMode === 'buy' ? 'Товары закончились. Загляни позже.' : 'В сумке нет вещей, которые можно продать.';
+        tradeGrid.appendChild(note);
+        renderTradeDetails(null);
+        return;
+      }
+
+      list.forEach((entry) => {
+        const item = getTemplate(entry.id);
+        const count = tradeMode === 'buy' ? entry.stock : entry.count;
+        const price = tradeMode === 'buy' ? item.buyPrice : item.sellPrice;
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'item-card' + (entry.id === selectedItemId ? ' is-selected' : '');
+        card.innerHTML = `
+          <span class="item-rarity rarity-${item.rarity}"></span>
+          <div class="item-icon">${item.icon}</div>
+          <div class="item-name">${item.name}</div>
+          <div class="item-meta"><span>×${count}</span><span>🪙 ${price}</span></div>
+        `;
+        card.addEventListener('click', (event) => {
+          event.stopPropagation();
+          selectedItemId = entry.id;
+          renderTrade();
+          renderTradeDetails(entry.id);
+        });
+        tradeGrid.appendChild(card);
+      });
+      renderTradeDetails(selectedItemId);
+    }
+
+    function renderTradeDetails(itemId) {
+      if (!itemId) {
+        detailsIcon.textContent = '?';
+        detailsName.textContent = 'Выбери предмет';
+        detailsDesc.textContent = tradeMode === 'buy' ? 'Нажми на товар торговца, чтобы увидеть описание и купить его.' : 'Нажми на предмет из сумки, чтобы увидеть цену продажи.';
+        detailsPrice.textContent = 'Цена: —';
+        tradeAction.textContent = 'Выбери предмет';
+        tradeAction.disabled = true;
+        return;
+      }
+      const item = getTemplate(itemId);
+      const price = tradeMode === 'buy' ? item.buyPrice : item.sellPrice;
+      detailsIcon.textContent = item.icon;
+      detailsName.textContent = item.name;
+      detailsDesc.textContent = item.desc;
+      detailsPrice.textContent = tradeMode === 'buy' ? `Цена покупки: ${price} монет` : `Цена продажи: ${price} монет`;
+      tradeAction.disabled = false;
+      tradeAction.textContent = tradeMode === 'buy' ? `Купить за ${price}` : `Продать за ${price}`;
+    }
+
+    function addPlayerItem(itemId, amount = 1) {
+      const existing = tradeState.player.find((entry) => entry.id === itemId);
+      if (existing) existing.count += amount;
+      else tradeState.player.push({ id: itemId, count: amount });
+    }
+
+    function performTrade() {
+      if (!selectedItemId || tradeMode === 'none') return;
+      const item = getTemplate(selectedItemId);
+
+      if (tradeMode === 'buy') {
+        const merchantEntry = tradeState.merchant.find((entry) => entry.id === selectedItemId);
+        if (!merchantEntry || merchantEntry.stock <= 0) {
+          typeDialogue('Этот товар уже закончился.', () => choicesWrap.classList.remove('is-hidden'));
+          renderTrade();
+          return;
+        }
+        if (tradeState.gold < item.buyPrice) {
+          typeDialogue('Монет не хватает. Возвращайся, когда кошель станет тяжелее.', () => choicesWrap.classList.remove('is-hidden'));
+          return;
+        }
+        tradeState.gold -= item.buyPrice;
+        merchantEntry.stock -= 1;
+        addPlayerItem(selectedItemId, 1);
+        saveTradeState();
+        typeDialogue(`Забирай: ${item.name}. Пусть служит тебе верно.`, () => choicesWrap.classList.remove('is-hidden'));
+        selectedItemId = null;
+        renderTrade();
+        return;
+      }
+
+      if (tradeMode === 'sell') {
+        const playerEntry = tradeState.player.find((entry) => entry.id === selectedItemId);
+        if (!playerEntry || playerEntry.count <= 0) {
+          typeDialogue('Этого предмета уже нет в сумке.', () => choicesWrap.classList.remove('is-hidden'));
+          renderTrade();
+          return;
+        }
+        playerEntry.count -= 1;
+        tradeState.gold += item.sellPrice;
+        tradeState.player = tradeState.player.filter((entry) => entry.count > 0);
+        saveTradeState();
+        typeDialogue(`Беру ${item.name}. Вот твои ${item.sellPrice} монет.`, () => choicesWrap.classList.remove('is-hidden'));
+        selectedItemId = null;
+        renderTrade();
+      }
+    }
+
+    dialogueBox.addEventListener('click', finishTyping);
+    tradePanel.addEventListener('click', (event) => event.stopPropagation());
+    tradeAction.addEventListener('click', (event) => {
+      event.stopPropagation();
+      performTrade();
+    });
+    backButton.addEventListener('click', () => { window.location.href = MAP_RETURN; });
+
+    function wireAsset(imgEl, src, { hideHintOnSuccess = false } = {}) {
+      imgEl.addEventListener('load', () => {
+        imgEl.classList.remove('hidden');
+        if (hideHintOnSuccess) assetHint.classList.add('hidden');
+      });
+      imgEl.addEventListener('error', () => { imgEl.classList.add('hidden'); });
+      imgEl.src = src;
+    }
+
+    wireAsset(sceneBase, SCENE_IMAGE, { hideHintOnSuccess: true });
+    wireAsset(dialogueBanner, BANNER_IMAGE);
+    renderChoices();
+    setState('intro');
+  </script>
+</body>
+</html>
