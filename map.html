@@ -1,0 +1,1899 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Gludin Village</title>
+  <!-- map_fixed_v19_living_city: живые эффекты города + персонаж поверх всех точек -->
+  <link rel="stylesheet" href="common.css" />
+  <style>
+    :root {
+      --map-gold: #f4c86a;
+      --map-gold-soft: rgba(244, 200, 106, 0.55);
+      --map-gold-dim: #b99245;
+      --map-bg: #05070b;
+      --map-panel: rgba(13, 10, 16, 0.92);
+      --map-panel-2: rgba(33, 23, 28, 0.88);
+      --map-border: rgba(244, 200, 106, 0.32);
+      --map-text: #f7ead0;
+      --map-muted: #bda987;
+      --map-danger: #e0a95d;
+      --nav-safe: 108px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      min-height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(104, 76, 32, 0.28), transparent 34%),
+        radial-gradient(circle at 12% 22%, rgba(84, 38, 90, 0.18), transparent 30%),
+        linear-gradient(180deg, #07090e 0%, #030407 100%);
+      color: var(--map-text);
+      font-family: Georgia, "Times New Roman", serif;
+    }
+
+    body {
+      height: 100dvh;
+    }
+
+    .hd-map-page {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100dvh;
+      min-height: 0;
+      padding: max(10px, env(safe-area-inset-top)) 12px calc(var(--nav-safe) + env(safe-area-inset-bottom));
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .hd-map-page::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      background:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: radial-gradient(circle at 50% 34%, #000 0%, transparent 78%);
+      pointer-events: none;
+    }
+
+    .hd-map-page::after {
+      content: none !important;
+      display: none !important;
+      background: none !important;
+    }
+
+    .map-shell {
+      display: grid;
+      grid-template-rows: auto auto auto;
+      align-content: start;
+      gap: 9px;
+      width: min(100%, 980px);
+      height: 100%;
+      min-height: 0;
+      margin: 0 auto;
+    }
+
+    .map-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      min-height: 44px;
+      padding: 9px 13px;
+      border: 1px solid rgba(244, 200, 106, 0.24);
+      border-radius: 18px;
+      background:
+        linear-gradient(180deg, rgba(42, 31, 25, 0.86), rgba(12, 10, 15, 0.9)),
+        radial-gradient(circle at 15% 20%, rgba(244, 200, 106, 0.16), transparent 30%);
+      box-shadow: 0 12px 34px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+
+    .map-title-wrap {
+      min-width: 0;
+    }
+
+    .map-kicker {
+      display: block;
+      margin-bottom: 1px;
+      color: var(--map-muted);
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .map-title {
+      margin: 0;
+      color: var(--map-gold);
+      font-size: clamp(18px, 4.4vw, 26px);
+      line-height: 1;
+      letter-spacing: 0.03em;
+      text-shadow: 0 0 16px rgba(244, 200, 106, 0.2);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .map-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 0 0 auto;
+    }
+
+    .map-sound-toggle,
+    .map-compass {
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      width: 39px;
+      height: 39px;
+      border: 1px solid rgba(244, 200, 106, 0.38);
+      border-radius: 50%;
+      background:
+        radial-gradient(circle, rgba(244, 200, 106, 0.17), transparent 58%),
+        rgba(0, 0, 0, 0.22);
+      color: var(--map-gold);
+      font-size: 19px;
+      box-shadow: inset 0 0 14px rgba(0, 0, 0, 0.62), 0 0 18px rgba(244, 200, 106, 0.12);
+    }
+
+    .map-sound-toggle {
+      cursor: pointer;
+      padding: 0;
+      font-family: inherit;
+      font-size: 16px;
+      transition: transform 140ms ease, filter 140ms ease, opacity 140ms ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .map-sound-toggle:active {
+      transform: scale(0.94);
+    }
+
+    .map-sound-toggle.is-muted {
+      opacity: 0.48;
+      filter: grayscale(0.5);
+    }
+
+    .map-board {
+      --map-aspect: 1.585;
+      position: relative;
+      justify-self: center;
+      align-self: start;
+      width: var(--map-board-width, 100%);
+      height: var(--map-board-height, auto);
+      aspect-ratio: var(--map-aspect);
+      min-height: 0;
+      overflow: hidden;
+      border: 1px solid var(--map-border);
+      border-radius: 24px;
+      background:
+        linear-gradient(180deg, rgba(36, 26, 27, 0.76), rgba(8, 8, 12, 0.9)),
+        radial-gradient(circle at 50% 45%, rgba(244, 200, 106, 0.08), transparent 54%);
+      box-shadow:
+        0 18px 45px rgba(0, 0, 0, 0.48),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.035),
+        inset 0 0 35px rgba(0, 0, 0, 0.42);
+    }
+
+    .map-board::before {
+      content: none !important;
+      display: none !important;
+      background: none !important;
+      border: 0 !important;
+      box-shadow: none !important;
+    }
+
+    .map-board::after {
+      content: none !important;
+      display: none !important;
+      background: none !important;
+      border: 0 !important;
+      box-shadow: none !important;
+    }
+
+    .map-image {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center center;
+      padding: 0;
+      opacity: 1 !important;
+      transform: none;
+      transition: none;
+      filter: none !important;
+      mix-blend-mode: normal !important;
+      user-select: none;
+      -webkit-user-drag: none;
+      pointer-events: none;
+    }
+
+    .map-board.is-loaded .map-image {
+      opacity: 1 !important;
+      transform: none;
+    }
+
+    .map-points-layer {
+      position: absolute;
+      z-index: 20;
+      pointer-events: none;
+      opacity: 1 !important;
+      filter: none !important;
+      mix-blend-mode: normal !important;
+    }
+
+    .map-point {
+      --x: 50;
+      --y: 50;
+      position: absolute;
+      left: calc(var(--x) * 1%);
+      top: calc(var(--y) * 1%);
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      min-width: 88px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: var(--map-gold);
+      cursor: pointer;
+      transform: translate(-50%, -50%);
+      pointer-events: auto;
+      font: inherit;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 150ms ease, filter 150ms ease;
+      z-index: 30;
+    }
+
+    .map-point:hover,
+    .map-point:focus-visible {
+      transform: translate(-50%, -50%) scale(1.05);
+      filter: brightness(1.08);
+      outline: none;
+    }
+
+    .map-point.is-active {
+      z-index: 40;
+      transform: translate(-50%, -50%) scale(1.08);
+    }
+
+    .map-point-icon-wrap {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: clamp(30px, 5.8vw, 48px);
+      height: clamp(30px, 5.8vw, 48px);
+      border: 1px solid rgba(244, 200, 106, 0.46);
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 50% 38%, rgba(255, 230, 160, 0.34), rgba(244, 200, 106, 0.1) 42%, rgba(24, 13, 14, 0.93) 72%),
+        rgba(0, 0, 0, 0.46);
+      box-shadow:
+        0 6px 14px rgba(0, 0, 0, 0.52),
+        inset 0 0 12px rgba(0, 0, 0, 0.62),
+        0 0 0 rgba(244, 200, 106, 0);
+      transition: box-shadow 160ms ease, border-color 160ms ease, background 160ms ease;
+    }
+
+    .map-point-icon-wrap::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: -7px;
+      width: 10px;
+      height: 10px;
+      border-right: 1px solid rgba(244, 200, 106, 0.42);
+      border-bottom: 1px solid rgba(244, 200, 106, 0.42);
+      background: rgba(19, 12, 14, 0.96);
+      transform: translateX(-50%) rotate(45deg);
+      box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.28);
+    }
+
+    .map-point.is-active .map-point-icon-wrap {
+      border-color: rgba(255, 221, 136, 0.9);
+      background:
+        radial-gradient(circle at 50% 38%, rgba(255, 235, 172, 0.52), rgba(244, 200, 106, 0.16) 48%, rgba(28, 13, 12, 0.95) 76%),
+        rgba(0, 0, 0, 0.52);
+      box-shadow:
+        0 8px 18px rgba(0, 0, 0, 0.58),
+        inset 0 0 14px rgba(0, 0, 0, 0.52),
+        0 0 18px rgba(244, 200, 106, 0.62),
+        0 0 36px rgba(244, 200, 106, 0.24);
+    }
+
+    .map-point.is-active .map-point-icon-wrap::before {
+      content: "";
+      position: absolute;
+      inset: -8px;
+      border: 1px solid rgba(244, 200, 106, 0.52);
+      border-radius: 50%;
+      animation: mapPulse 1.9s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    .map-point-icon {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      transform: scale(1.12);
+      filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.66));
+    }
+
+    .map-point-label {
+      max-width: 122px;
+      padding: 2px 7px 3px;
+      border: 1px solid rgba(244, 200, 106, 0.18);
+      border-radius: 999px;
+      background: rgba(8, 7, 9, 0.64);
+      color: #ffd985;
+      font-size: clamp(9px, 2.15vw, 12px);
+      line-height: 1.05;
+      letter-spacing: 0.015em;
+      text-align: center;
+      text-shadow: 0 1px 2px #000, 0 0 10px rgba(244, 200, 106, 0.32);
+      white-space: nowrap;
+      box-shadow: 0 5px 12px rgba(0, 0, 0, 0.36);
+    }
+
+    .map-point[data-point-id="magicshop"] .map-point-label {
+      max-width: 108px;
+      white-space: normal;
+      overflow-wrap: normal;
+      border-radius: 12px;
+      line-height: 1.08;
+    }
+
+    .map-point.is-active .map-point-label {
+      color: #ffe3a1;
+      border-color: rgba(244, 200, 106, 0.38);
+      background: rgba(24, 16, 16, 0.78);
+    }
+
+    .map-point:not(.is-active) .map-point-icon-wrap {
+      animation: mapIconIdle 4.2s ease-in-out infinite;
+    }
+
+    .map-point[data-point-id="portal"]:not(.is-active) .map-point-icon-wrap {
+      animation: mapIconIdle 4.2s ease-in-out infinite, mapPortalGlow 2.8s ease-in-out infinite;
+    }
+
+    .map-point[data-point-id="market"]:not(.is-active) .map-point-icon {
+      animation: mapMarketGlimmer 3.3s ease-in-out infinite;
+    }
+
+    .map-live-effect {
+      position: absolute;
+      inset: -10px;
+      z-index: 2;
+      display: block;
+      border-radius: 50%;
+      pointer-events: none;
+      opacity: 0.86;
+      mix-blend-mode: screen;
+      transform: translateZ(0);
+    }
+
+    .map-live-effect::before,
+    .map-live-effect::after {
+      content: "";
+      position: absolute;
+      pointer-events: none;
+    }
+
+    .effect-portal {
+      inset: -13px;
+      border: 1px solid rgba(117, 197, 255, 0.16);
+      background:
+        radial-gradient(circle at 50% 50%, rgba(102, 191, 255, 0.28), rgba(92, 143, 255, 0.08) 42%, rgba(92, 143, 255, 0) 68%);
+      box-shadow: 0 0 20px rgba(96, 177, 255, 0.22);
+      animation: mapPortalAura 2.9s ease-in-out infinite;
+    }
+
+    .effect-portal::before {
+      inset: 4px;
+      border-radius: 50%;
+      border-top: 1px solid rgba(173, 226, 255, 0.62);
+      border-right: 1px solid rgba(173, 226, 255, 0.22);
+      animation: mapPortalSpin 5.6s linear infinite;
+    }
+
+    .effect-magicshop {
+      inset: -12px;
+      background:
+        radial-gradient(circle at 52% 44%, rgba(186, 119, 255, 0.28), rgba(105, 72, 196, 0.10) 44%, rgba(105, 72, 196, 0) 70%);
+      animation: mapMagicBreath 3.4s ease-in-out infinite;
+    }
+
+    .effect-magicshop::before,
+    .effect-magicshop::after {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(246, 229, 255, .96), rgba(172, 107, 255, .48) 48%, rgba(172, 107, 255, 0) 72%);
+      box-shadow: 0 0 9px rgba(190, 125, 255, 0.52);
+      animation: mapMagicMote 3.6s ease-in-out infinite;
+    }
+
+    .effect-magicshop::before { left: 18%; top: 20%; }
+    .effect-magicshop::after { right: 18%; bottom: 18%; animation-delay: -1.7s; }
+
+    .effect-market {
+      inset: -8px;
+      opacity: 0.8;
+    }
+
+    .effect-market::before {
+      left: 10%;
+      top: 14%;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 248, 206, .98), rgba(255, 199, 74, .76) 45%, rgba(255, 199, 74, 0) 76%);
+      box-shadow: 0 0 10px rgba(255, 207, 91, .56);
+      animation: mapCoinBlink 3.1s ease-in-out infinite;
+    }
+
+    .effect-market::after {
+      right: 13%;
+      bottom: 12%;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 247, 209, .92), rgba(255, 183, 68, .50) 48%, rgba(255, 183, 68, 0) 75%);
+      animation: mapCoinBlink 3.1s ease-in-out infinite -1.35s;
+    }
+
+    .effect-blacksmith {
+      inset: -10px;
+    }
+
+    .effect-blacksmith::before,
+    .effect-blacksmith::after {
+      width: 4px;
+      height: 12px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, rgba(255, 241, 170, .95), rgba(255, 105, 37, .72), rgba(255, 105, 37, 0));
+      box-shadow: 0 0 9px rgba(255, 121, 43, .54);
+      transform-origin: center bottom;
+      animation: mapForgeSpark 2.45s ease-out infinite;
+    }
+
+    .effect-blacksmith::before { left: 22%; bottom: 4%; --spark-rot: -22deg; transform: rotate(-22deg); }
+    .effect-blacksmith::after { right: 18%; bottom: 12%; --spark-rot: 18deg; transform: rotate(18deg); animation-delay: -1.05s; }
+
+    .effect-weaponshop {
+      inset: -9px;
+      overflow: hidden;
+      opacity: 0.72;
+    }
+
+    .effect-weaponshop::before {
+      left: -34%;
+      top: 22%;
+      width: 68%;
+      height: 2px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255, 233, 164, .82), rgba(255,255,255,0));
+      box-shadow: 0 0 8px rgba(255, 230, 160, .38);
+      transform: rotate(-28deg);
+      animation: mapBladeShine 4.1s ease-in-out infinite;
+    }
+
+    .map-trail-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 50;
+      pointer-events: none;
+      overflow: visible;
+    }
+
+    .map-trail-spark {
+      --sx: 50;
+      --sy: 50;
+      position: absolute;
+      left: calc(var(--sx) * 1%);
+      top: calc(var(--sy) * 1%);
+      width: clamp(5px, 0.9vw, 9px);
+      height: clamp(5px, 0.9vw, 9px);
+      border-radius: 50%;
+      background: radial-gradient(circle, #fff4b8 0%, #f4c86a 42%, rgba(244, 200, 106, 0) 72%);
+      box-shadow: 0 0 9px rgba(244, 200, 106, 0.78), 0 0 18px rgba(244, 200, 106, 0.34);
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.35);
+      animation: mapTrailSpark 760ms ease-out forwards;
+    }
+
+
+
+    .map-player {
+      --px: 43.2;
+      --py: 66.2;
+      position: absolute;
+      left: calc(var(--px) * 1%);
+      top: calc(var(--py) * 1%);
+      z-index: 140;
+      display: grid;
+      place-items: center;
+      width: clamp(48px, 7.7vw, 76px);
+      height: clamp(58px, 9.4vw, 94px);
+      transform: translate(-50%, -92%);
+      pointer-events: none;
+      opacity: 1 !important;
+      filter: none !important;
+      mix-blend-mode: normal !important;
+      overflow: visible;
+      will-change: left, top, transform;
+    }
+
+    .map-player.is-facing-left {
+      transform: translate(-50%, -92%) scaleX(-1);
+    }
+
+    .map-player::before {
+      content: "";
+      position: absolute;
+      inset: 10% 5% 4%;
+      z-index: 0;
+      border-radius: 44% 44% 48% 48%;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse at 50% 42%, rgba(255, 231, 161, 0.28) 0%, rgba(244, 200, 106, 0.16) 42%, rgba(244, 200, 106, 0) 72%);
+      filter: blur(10px);
+      opacity: 0.82;
+      transform: scale(0.96);
+      animation: playerSoftAura 2.8s ease-in-out infinite;
+    }
+
+    .map-player::after {
+      content: none !important;
+      display: none !important;
+      background: none !important;
+      box-shadow: none !important;
+      filter: none !important;
+    }
+
+    .map-player-sprite {
+      position: relative;
+      z-index: 2;
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      image-rendering: auto;
+      user-select: none;
+      -webkit-user-drag: none;
+      opacity: 1 !important;
+      filter:
+        drop-shadow(0 0 4px rgba(255, 239, 190, 0.76))
+        drop-shadow(0 0 12px rgba(244, 200, 106, 0.42))
+        drop-shadow(0 1px 0 rgba(0, 0, 0, 0.72)) !important;
+      mix-blend-mode: normal !important;
+    }
+
+    .map-player-fallback {
+      display: none;
+      place-items: center;
+      width: 32px;
+      height: 32px;
+      border: 1px solid rgba(244, 200, 106, 0.5);
+      border-radius: 50%;
+      background: rgba(10, 8, 10, 0.82);
+      color: var(--map-gold);
+      font-size: 20px;
+      box-shadow: 0 0 14px rgba(244, 200, 106, 0.22), inset 0 0 10px rgba(0,0,0,0.6);
+    }
+
+    .map-player.has-no-sprite .map-player-sprite {
+      display: none;
+    }
+
+    .map-player.has-no-sprite .map-player-fallback {
+      display: grid;
+    }
+
+    .map-player.is-walking .map-player-sprite {
+      animation: none;
+    }
+
+    .map-fallback {
+      position: absolute;
+      inset: 16px;
+      z-index: 30;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      border: 1px dashed rgba(244, 200, 106, 0.42);
+      border-radius: 18px;
+      background: rgba(5, 5, 7, 0.78);
+      color: var(--map-muted);
+      text-align: center;
+      font-size: 14px;
+      line-height: 1.35;
+    }
+
+    .map-fallback strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--map-gold);
+      font-size: 16px;
+    }
+
+    .map-fallback code {
+      display: inline-block;
+      margin-top: 7px;
+      padding: 4px 7px;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.42);
+      color: #ffe0a0;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      word-break: break-all;
+    }
+
+
+    /* Важно: author CSS display:grid перебивал стандартный hidden и пустой fallback закрывал карту. */
+    .map-fallback[hidden] {
+      display: none !important;
+    }
+
+    .location-panel {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 12px;
+      min-height: 102px;
+      padding: 11px 12px;
+      border: 1px solid var(--map-border);
+      border-radius: 22px;
+      background:
+        linear-gradient(180deg, var(--map-panel-2), var(--map-panel)),
+        radial-gradient(circle at 12% 20%, rgba(244, 200, 106, 0.16), transparent 30%);
+      box-shadow:
+        0 14px 36px rgba(0, 0, 0, 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.045);
+    }
+
+    .location-emblem {
+      display: grid;
+      place-items: center;
+      width: 58px;
+      height: 58px;
+      border: 1px solid rgba(244, 200, 106, 0.36);
+      border-radius: 18px;
+      background:
+        radial-gradient(circle at 50% 34%, rgba(244, 200, 106, 0.24), transparent 54%),
+        rgba(0, 0, 0, 0.36);
+      box-shadow: inset 0 0 16px rgba(0, 0, 0, 0.55), 0 0 17px rgba(244, 200, 106, 0.08);
+    }
+
+    .location-emblem img {
+      width: 54px;
+      height: 54px;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 4px #000);
+    }
+
+    .location-emblem-placeholder {
+      color: var(--map-gold);
+      font-size: 25px;
+      text-shadow: 0 0 14px rgba(244, 200, 106, 0.32);
+    }
+
+    .location-copy {
+      min-width: 0;
+    }
+
+    .location-name {
+      margin: 0 0 4px;
+      color: var(--map-gold);
+      font-size: clamp(17px, 3.6vw, 22px);
+      line-height: 1.05;
+      text-shadow: 0 0 14px rgba(244, 200, 106, 0.18);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .location-description {
+      display: -webkit-box;
+      min-height: 2.5em;
+      margin: 0;
+      overflow: hidden;
+      color: var(--map-muted);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: clamp(12px, 2.55vw, 14px);
+      line-height: 1.25;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .location-open {
+      min-width: 106px;
+      min-height: 44px;
+      padding: 0 15px;
+      border: 1px solid rgba(255, 220, 145, 0.45);
+      border-radius: 15px;
+      background:
+        linear-gradient(180deg, rgba(137, 85, 34, 0.95), rgba(67, 38, 21, 0.98)),
+        radial-gradient(circle at 50% 0%, rgba(255, 232, 164, 0.32), transparent 48%);
+      color: #ffe6ad;
+      cursor: pointer;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-shadow: 0 1px 2px #000;
+      box-shadow: 0 9px 17px rgba(0, 0, 0, 0.36), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      transition: transform 140ms ease, filter 140ms ease, opacity 140ms ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .location-open:disabled {
+      cursor: default;
+      opacity: 0.48;
+      filter: grayscale(0.45);
+    }
+
+    .location-open:not(:disabled):active {
+      transform: translateY(1px) scale(0.99);
+    }
+
+    .location-open.is-ready:not(:disabled) {
+      animation: mapOpenReady 2.2s ease-in-out infinite;
+    }
+
+    .map-toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(var(--nav-safe) + env(safe-area-inset-bottom) + 8px);
+      z-index: 40;
+      max-width: min(92vw, 420px);
+      padding: 9px 13px;
+      border: 1px solid rgba(244, 200, 106, 0.32);
+      border-radius: 14px;
+      background: rgba(12, 10, 14, 0.94);
+      color: #ffe0a0;
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.42);
+      font-size: 13px;
+      line-height: 1.25;
+      opacity: 0;
+      transform: translate(-50%, 14px);
+      pointer-events: none;
+      transition: opacity 160ms ease, transform 160ms ease;
+    }
+
+    .map-toast.is-visible {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+
+
+
+    .profile-map-bottom-shell {
+      --profile-map-nav-width: min(
+        calc(100vw - var(--safe-left, 0px) - var(--safe-right, 0px) - 10px),
+        470px
+      );
+      position: fixed;
+      left: 50%;
+      bottom: calc(max(5px, env(safe-area-inset-bottom)));
+      z-index: 90;
+      width: var(--profile-map-nav-width);
+      aspect-ratio: 1100 / 215;
+      transform: translateX(-50%);
+      isolation: isolate;
+      pointer-events: auto;
+      filter: drop-shadow(0 -10px 28px rgba(0, 0, 0, 0.45));
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .profile-map-bottom-art {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    .profile-psd-bottom-button {
+      position: absolute;
+      z-index: 2;
+      display: block;
+      text-decoration: none;
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 140ms ease, filter 140ms ease;
+    }
+
+    .profile-psd-bottom-button:active {
+      transform: translateY(1px) scale(0.985);
+    }
+
+    .profile-psd-bottom-button[aria-current="page"] {
+      filter:
+        drop-shadow(0 0 10px rgba(255, 216, 135, 0.34))
+        drop-shadow(0 2px 6px rgba(0, 0, 0, 0.36));
+    }
+
+    .profile-psd-bottom-button.disabled {
+      pointer-events: none;
+      opacity: 0.92;
+      filter: grayscale(0.12) brightness(0.92);
+    }
+
+    .profile-psd-bottom-button img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-drag: none;
+      filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.28));
+    }
+
+    /* Жёсткая защита от затемняющих слоёв: карта и точки всегда выше любых декораций. */
+    .hd-map-page::after,
+    .map-board::before,
+    .map-board::after {
+      content: none !important;
+      display: none !important;
+      background: none !important;
+      box-shadow: none !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
+
+    .map-image,
+    .map-points-layer,
+    .map-point,
+    .map-point-icon-wrap,
+    .map-point-label {
+      opacity: 1 !important;
+      mix-blend-mode: normal !important;
+    }
+
+    @keyframes mapPulse {
+      0%, 100% { opacity: 0.34; transform: scale(0.92); }
+      50% { opacity: 0.92; transform: scale(1.08); }
+    }
+
+    @keyframes mapIconIdle {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-2px); }
+    }
+
+    @keyframes mapPortalGlow {
+      0%, 100% { box-shadow: 0 6px 14px rgba(0, 0, 0, 0.52), inset 0 0 12px rgba(0, 0, 0, 0.62), 0 0 0 rgba(94, 169, 255, 0); }
+      50% { box-shadow: 0 7px 16px rgba(0, 0, 0, 0.55), inset 0 0 12px rgba(0, 0, 0, 0.62), 0 0 18px rgba(94, 169, 255, 0.38); }
+    }
+
+    @keyframes mapMarketGlimmer {
+      0%, 74%, 100% { filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.66)) brightness(1); }
+      82% { filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.66)) brightness(1.28); }
+    }
+
+    @keyframes mapPortalAura {
+      0%, 100% { opacity: .54; transform: scale(.92); }
+      50% { opacity: .98; transform: scale(1.08); }
+    }
+
+    @keyframes mapPortalSpin {
+      0% { transform: rotate(0deg); opacity: .45; }
+      50% { opacity: .82; }
+      100% { transform: rotate(360deg); opacity: .45; }
+    }
+
+    @keyframes mapMagicBreath {
+      0%, 100% { opacity: .48; transform: scale(.94) translateY(1px); }
+      50% { opacity: .92; transform: scale(1.08) translateY(-1px); }
+    }
+
+    @keyframes mapMagicMote {
+      0%, 100% { opacity: 0; transform: translate3d(0, 8px, 0) scale(.7); }
+      18% { opacity: .92; }
+      64% { opacity: .56; }
+      100% { opacity: 0; transform: translate3d(2px, -12px, 0) scale(1.15); }
+    }
+
+    @keyframes mapCoinBlink {
+      0%, 70%, 100% { opacity: 0; transform: scale(.55); }
+      78% { opacity: .95; transform: scale(1.12); }
+      86% { opacity: .24; transform: scale(.86); }
+    }
+
+    @keyframes mapForgeSpark {
+      0%, 70%, 100% { opacity: 0; transform: translate3d(0, 5px, 0) scaleY(.45) rotate(var(--spark-rot, 0deg)); }
+      78% { opacity: .95; }
+      100% { opacity: 0; transform: translate3d(0, -14px, 0) scaleY(1.05) rotate(var(--spark-rot, 0deg)); }
+    }
+
+    @keyframes mapBladeShine {
+      0%, 62%, 100% { opacity: 0; transform: translateX(0) rotate(-28deg); }
+      70% { opacity: .82; }
+      82% { opacity: 0; transform: translateX(180%) rotate(-28deg); }
+    }
+
+    @keyframes mapTrailSpark {
+      0% { opacity: 0; transform: translate(-50%, -50%) scale(0.35); }
+      18% { opacity: 0.95; }
+      100% { opacity: 0; transform: translate(-50%, -86%) scale(1.45); }
+    }
+
+    @keyframes mapOpenReady {
+      0%, 100% { box-shadow: 0 9px 17px rgba(0, 0, 0, 0.36), inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 0 0 rgba(244, 200, 106, 0); }
+      50% { box-shadow: 0 9px 17px rgba(0, 0, 0, 0.36), inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 0 20px rgba(244, 200, 106, 0.36); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .map-live-effect,
+      .map-live-effect::before,
+      .map-live-effect::after {
+        animation: none !important;
+      }
+    }
+
+    @media (min-width: 760px) {
+      .hd-map-page {
+        padding-inline: 18px;
+      }
+
+      .map-shell {
+        gap: 12px;
+      }
+
+      .location-panel {
+        min-height: 108px;
+        padding-inline: 16px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      :root {
+        --nav-safe: 84px;
+      }
+
+      .hd-map-page {
+        padding-inline: 9px;
+      }
+
+      .map-shell {
+        gap: 7px;
+      }
+
+      .map-header {
+        min-height: 40px;
+        padding: 7px 10px;
+        border-radius: 15px;
+      }
+
+      .map-sound-toggle,
+      .map-compass {
+        width: 34px;
+        height: 34px;
+        font-size: 16px;
+      }
+
+      .map-board {
+        border-radius: 19px;
+      }
+
+      .map-image {
+        padding: 0;
+      }
+
+      .map-point {
+        min-width: 74px;
+      }
+
+      .map-point-label {
+        max-width: 104px;
+        padding-inline: 5px;
+      }
+
+      .profile-map-bottom-shell {
+        --profile-map-nav-width: min(calc(100vw - var(--safe-left, 0px) - var(--safe-right, 0px) - 6px), 420px);
+      }
+
+      .location-panel {
+        grid-template-columns: auto minmax(0, 1fr);
+        min-height: 116px;
+        gap: 9px;
+        padding: 9px;
+        border-radius: 18px;
+      }
+
+      .location-emblem {
+        width: 50px;
+        height: 50px;
+        border-radius: 15px;
+      }
+
+      .location-emblem img {
+        width: 47px;
+        height: 47px;
+      }
+
+      .location-open {
+        grid-column: 1 / -1;
+        width: 100%;
+        min-height: 38px;
+      }
+    }
+
+    @media (max-height: 670px) {
+      .map-kicker {
+        display: none;
+      }
+
+      .map-header {
+        min-height: 38px;
+        padding-block: 6px;
+      }
+
+      .location-panel {
+        min-height: 92px;
+      }
+
+      .location-emblem {
+        width: 48px;
+        height: 48px;
+      }
+
+      .location-description {
+        -webkit-line-clamp: 1;
+        min-height: 1.25em;
+      }
+
+      .location-open {
+        min-height: 36px;
+      }
+    }
+    @keyframes playerSoftAura {
+      0%, 100% { opacity: 0.58; transform: scale(0.92); }
+      50% { opacity: 0.92; transform: scale(1.02); }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="hd-map-page">
+    <div class="map-shell">
+      <header class="map-header" aria-label="Gludin Village">
+        <div class="map-title-wrap">
+          <span class="map-kicker">Карта города</span>
+          <h1 class="map-title">Gludin Village</h1>
+        </div>
+        <div class="map-header-actions">
+          <button class="map-sound-toggle" id="mapSoundToggle" type="button" aria-label="Звук включён" title="Звук включён">🔊</button>
+          <div class="map-compass" aria-hidden="true">✦</div>
+        </div>
+      </header>
+
+      <main class="map-board" id="mapBoard" aria-label="Городская карта">
+        <img id="cityMapImage" class="map-image" alt="Карта стартовой деревни" draggable="false" />
+        <div id="mapPointsLayer" class="map-points-layer" aria-label="Локации города"></div>
+        <div id="mapFallback" class="map-fallback" hidden></div>
+      </main>
+
+      <section class="location-panel" id="locationPanel" aria-live="polite">
+        <div class="location-emblem" id="locationEmblem" aria-hidden="true">
+          <span class="location-emblem-placeholder">✧</span>
+        </div>
+        <div class="location-copy">
+          <h2 class="location-name" id="locationName">Выбери локацию</h2>
+          <p class="location-description" id="locationDescription">Нажми на знак здания на карте, чтобы увидеть описание и подготовиться к переходу.</p>
+        </div>
+        <button class="location-open" id="locationOpen" type="button" disabled>Открыть</button>
+      </section>
+    </div>
+
+    <div class="map-toast" id="mapToast" role="status" aria-live="polite"></div>
+  </div>
+
+  <nav id="bottomNav" class="profile-map-bottom-shell" aria-label="Основное меню">
+    <img class="profile-map-bottom-art" src="./assets/ui/profile_redesign/art_profile_bottom.png" alt="" draggable="false">
+    <a class="profile-psd-bottom-button" href="index.html" aria-label="Персонаж" data-hud-link style="left:2.182%;top:8.837%;width:11.909%;height:82.791%;">
+      <img src="./assets/ui/profile_redesign/btn_profile_idle.png" alt="" draggable="false">
+    </a>
+    <a class="profile-psd-bottom-button" href="inventory.html" aria-label="Инвентарь" data-hud-link style="left:14.909%;top:9.302%;width:11.909%;height:82.326%;">
+      <img src="./assets/ui/profile_redesign/btn_inventory_idle.png" alt="" draggable="false">
+    </a>
+    <a class="profile-psd-bottom-button" href="map.html" aria-label="Карта" aria-current="page" data-hud-link style="left:27.636%;top:8.372%;width:11.909%;height:82.791%;">
+      <img src="./assets/ui/profile_redesign/btn_map_use.png" alt="" draggable="false">
+    </a>
+    <a class="profile-psd-bottom-button" href="journey.html" aria-label="Бои" data-hud-link style="left:38.909%;top:8.372%;width:11.273%;height:83.256%;">
+      <img src="./assets/ui/profile_redesign/btn_fight_idle.png" alt="" draggable="false">
+    </a>
+    <a class="profile-psd-bottom-button" href="clan.html" aria-label="Клан" data-hud-link style="left:50.182%;top:8.837%;width:11.364%;height:82.326%;">
+      <img src="./assets/ui/profile_redesign/btn_clan_idle.png" alt="" draggable="false">
+    </a>
+    <span class="profile-psd-bottom-button disabled" aria-label="Квесты" style="left:62.182%;top:9.767%;width:11.455%;height:82.791%;">
+      <img src="./assets/ui/profile_redesign/btn_quest_idle.png" alt="" draggable="false">
+    </span>
+    <a class="profile-psd-bottom-button" href="status.html" aria-label="Статус" data-hud-link style="left:74.455%;top:9.767%;width:11.727%;height:82.791%;">
+      <img src="./assets/ui/profile_redesign/btn_status_idle.png" alt="" draggable="false">
+    </a>
+    <a class="profile-psd-bottom-button" href="chat.html" aria-label="Чат" data-hud-link style="left:87.000%;top:8.837%;width:11.273%;height:82.791%;">
+      <img src="./assets/ui/profile_redesign/btn_chat_idle.png" alt="" draggable="false">
+    </a>
+  </nav>
+
+  <script src="common.js"></script>
+  <script>
+    // Меняем координаты точек только здесь.
+    // x/y — проценты относительно самой картинки карты, не всей рамки.
+    const mapPoints = [
+      {
+        id: "magicshop",
+        title: "Магические припасы",
+        description: "Лавка свитков, зелий и редких реагентов для тех, кто чувствует дыхание тьмы.",
+        icon: "assets/ui/map-icons/magicshop.png",
+        x: 52.2,
+        y: 31.3,
+        roadTarget: "magicshop_entry"
+      },
+      {
+        id: "weaponshop",
+        title: "Оружейник",
+        description: "Здесь выбирают клинки, луки и первое боевое снаряжение перед выходом за стены.",
+        icon: "assets/ui/map-icons/weapon.png",
+        x: 67,
+        y: 79,
+        roadTarget: "weaponshop_entry",
+        href: "weaponshop.html"
+      },
+      {
+        id: "portal",
+        title: "Портал",
+        description: "Древний узел перехода. Отсюда открываются дороги к дальним землям и опасным зонам.",
+        icon: "assets/ui/map-icons/portal.png",
+        x: 63.2,
+        y: 9.1,
+        roadTarget: "portal_entry"
+      },
+      {
+        id: "market",
+        title: "Рынок",
+        description: "Шумная торговая площадь: припасы, обмен, слухи и случайные находки странников.",
+        icon: "assets/ui/map-icons/market.png",
+        x: 31.6,
+        y: 64.8,
+        roadTarget: "market_entry"
+      },
+      {
+        id: "blacksmith",
+        title: "Кузнец",
+        description: "Наковальня, жар горна и работа с металлом. Здесь усиливают снаряжение и чинят броню.",
+        icon: "assets/ui/map-icons/blacksmith.png",
+        x: 28.1,
+        y: 80.5,
+        roadTarget: "blacksmith_entry"
+      }
+    ];
+
+    const mapSources = [
+      "assets/maps/cities/start_village/map.png",
+      "assets/maps/cities/start_village/map.jpg",
+      "assets/maps/cities/start_village/map.jpeg"
+    ];
+
+
+    // Невидимая дорожная сетка. Персонаж ходит только по этим узлам.
+    // Координаты — проценты относительно картинки карты.
+    // Маршрут отточен по белой разметке на скрине: центральный прямоугольник,
+    // верхняя линия к порталу/магии и нижняя линия к рынку/кузнецу/оружейнику.
+    const roadNodes = [
+      // Верхняя часть оставлена близкой к удачному варианту,
+      // но центральный спуск к рынку смещён левее.
+      { id: "center_lower", x: 40.2, y: 72.0 },
+      { id: "center_mid", x: 40.2, y: 48.0 },
+      { id: "upper_cross", x: 40.2, y: 31.2 },
+
+      // Верхняя дорога: магические припасы и портал.
+      { id: "upper_magic", x: 52.0, y: 31.2 },
+      { id: "magicshop_entry", x: 52.0, y: 37.0 },
+      { id: "upper_portal_turn", x: 63.2, y: 31.2 },
+      { id: "portal_entry", x: 63.2, y: 15.0 },
+
+      // Правая сторона обхода вокруг центрального здания.
+      { id: "center_right_mid", x: 56.1, y: 48.0 },
+      { id: "center_right_lower", x: 56.1, y: 72.0 },
+
+      // Нижняя дорога: опущена ниже, чтобы путь от рынка к оружейнику шёл ниже.
+      { id: "lower_left", x: 31.8, y: 72.0 },
+      { id: "market_entry", x: 33.2, y: 62.5 },
+      { id: "blacksmith_turn", x: 31.8, y: 79.8 },
+      { id: "blacksmith_entry", x: 28.3, y: 79.8 },
+
+      // Нижняя правая ветка: ещё ниже, как по последней разметке.
+      { id: "weapon_lower_drop", x: 56.8, y: 79.8 },
+      { id: "weaponshop_entry", x: 65.5, y: 79.8 }
+    ];
+
+    const roadLinks = [
+      // Центральная вертикаль.
+      ["center_lower", "center_mid"],
+      ["center_mid", "upper_cross"],
+
+      // Верхняя линия.
+      ["upper_cross", "upper_magic"],
+      ["upper_magic", "magicshop_entry"],
+      ["upper_magic", "upper_portal_turn"],
+      ["upper_portal_turn", "portal_entry"],
+
+      // Обход вокруг центрального здания.
+      ["center_mid", "center_right_mid"],
+      ["center_right_mid", "center_right_lower"],
+      ["center_right_lower", "center_lower"],
+
+      // Нижняя левая ветка: рынок и кузнец.
+      ["center_lower", "lower_left"],
+      ["lower_left", "market_entry"],
+      ["lower_left", "blacksmith_turn"],
+      ["blacksmith_turn", "blacksmith_entry"],
+
+      // Нижняя правая ветка: оружейник.
+      ["center_right_lower", "weapon_lower_drop"],
+      ["weapon_lower_drop", "weaponshop_entry"]
+    ];
+
+    const playerAssets = {
+      idle: "assets/characters/player/idle.png",
+      walk: "assets/characters/player/walk.gif"
+    };
+
+    const playerSpeed = 24; // процентных единиц карты в секунду
+
+    const mapShell = document.querySelector(".map-shell");
+    const mapHeader = document.querySelector(".map-header");
+    const mapBoard = document.getElementById("mapBoard");
+    const mapImage = document.getElementById("cityMapImage");
+    const pointsLayer = document.getElementById("mapPointsLayer");
+    const fallback = document.getElementById("mapFallback");
+    const locationPanel = document.getElementById("locationPanel");
+    const panelIcon = document.getElementById("locationEmblem");
+    const panelName = document.getElementById("locationName");
+    const panelDescription = document.getElementById("locationDescription");
+    const openButton = document.getElementById("locationOpen");
+    const soundToggle = document.getElementById("mapSoundToggle");
+    const bottomHud = document.getElementById("bottomNav");
+    const toast = document.getElementById("mapToast");
+
+    const mapStorageKey = "hd_map_last_position_v1";
+    const soundStorageKey = "hd_map_sound_enabled_v1";
+    const savedMapState = readSavedMapState();
+
+    let selectedPoint = savedMapState.pointId ? getPoint(savedMapState.pointId) : null;
+    let playerEl = null;
+    let playerSprite = null;
+    let trailLayer = null;
+    let currentRoadNodeId = getRoadNode(savedMapState.nodeId || "center_lower").id;
+    let currentPlayerPosition = getRoadNode(currentRoadNodeId);
+    let isMoving = false;
+    let movementToken = 0;
+    let toastTimer = null;
+    let audioCtx = null;
+    let soundEnabled = readSoundEnabled();
+
+    function readSavedMapState() {
+      try {
+        return JSON.parse(localStorage.getItem(mapStorageKey) || "{}") || {};
+      } catch (error) {
+        return {};
+      }
+    }
+
+    function saveMapState(pointId, nodeId) {
+      try {
+        localStorage.setItem(mapStorageKey, JSON.stringify({ pointId, nodeId }));
+      } catch (error) {
+        // localStorage может быть недоступен в некоторых webview — игра продолжит работать без сохранения.
+      }
+    }
+
+    function readSoundEnabled() {
+      try {
+        return localStorage.getItem(soundStorageKey) !== "0";
+      } catch (error) {
+        return true;
+      }
+    }
+
+    function saveSoundEnabled(value) {
+      try {
+        localStorage.setItem(soundStorageKey, value ? "1" : "0");
+      } catch (error) {
+        // Без сохранения звука карта всё равно работает.
+      }
+    }
+
+    function updateSoundToggle() {
+      if (!soundToggle) return;
+      soundToggle.textContent = soundEnabled ? "🔊" : "🔇";
+      soundToggle.classList.toggle("is-muted", !soundEnabled);
+      soundToggle.setAttribute("aria-label", soundEnabled ? "Звук включён" : "Звук выключен");
+      soundToggle.title = soundEnabled ? "Звук включён" : "Звук выключен";
+    }
+
+    function updateBottomNavReserve() {
+      if (!bottomHud) return;
+      const rect = bottomHud.getBoundingClientRect();
+      const reserve = Math.max(86, Math.ceil(rect.height + 18));
+      document.documentElement.style.setProperty("--nav-safe", reserve + "px");
+    }
+
+    function bindGameHud() {
+      if (!bottomHud) return;
+
+      bottomHud.querySelectorAll("[data-hud-link]").forEach((link) => {
+        link.addEventListener("click", () => playSound("click"));
+      });
+    }
+
+    function ensureAudioContext() {
+      if (!soundEnabled) return null;
+      const AudioConstructor = window.AudioContext || window.webkitAudioContext;
+      if (!AudioConstructor) return null;
+
+      if (!audioCtx) {
+        audioCtx = new AudioConstructor();
+      }
+
+      if (audioCtx.state === "suspended") {
+        audioCtx.resume().catch(() => {});
+      }
+
+      return audioCtx;
+    }
+
+    function tone(frequency, duration = 0.06, volume = 0.028, delay = 0) {
+      const ctx = ensureAudioContext();
+      if (!ctx) return;
+
+      const start = ctx.currentTime + delay;
+      const oscillator = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(frequency, start);
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(volume, start + 0.012);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+
+      oscillator.connect(gain);
+      gain.connect(ctx.destination);
+      oscillator.start(start);
+      oscillator.stop(start + duration + 0.02);
+    }
+
+    function playSound(type) {
+      if (!soundEnabled) return;
+
+      if (type === "click") {
+        tone(520, 0.045, 0.022);
+        return;
+      }
+
+      if (type === "step") {
+        tone(170, 0.032, 0.013);
+        return;
+      }
+
+      if (type === "arrive") {
+        tone(640, 0.08, 0.024);
+        tone(860, 0.11, 0.02, 0.07);
+        return;
+      }
+
+      if (type === "open") {
+        tone(420, 0.07, 0.024);
+        tone(690, 0.12, 0.019, 0.06);
+      }
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function renderPoints() {
+      pointsLayer.innerHTML = `
+        <div id="mapTrailLayer" class="map-trail-layer" aria-hidden="true"></div>
+        <div id="mapPlayer" class="map-player" aria-label="Персонаж" style="--px:${currentPlayerPosition.x};--py:${currentPlayerPosition.y}">
+          <img id="mapPlayerSprite" class="map-player-sprite" src="${escapeHtml(playerAssets.idle)}" alt="" draggable="false" />
+          <span class="map-player-fallback" aria-hidden="true">♟</span>
+        </div>
+        ${mapPoints.map((point) => `
+          <button
+            class="map-point"
+            type="button"
+            data-point-id="${escapeHtml(point.id)}"
+            style="--x:${Number(point.x)};--y:${Number(point.y)}"
+            aria-label="${escapeHtml(point.title)}"
+          >
+            <span class="map-point-icon-wrap" aria-hidden="true">
+              <img class="map-point-icon" src="${escapeHtml(point.icon)}" alt="" onerror="this.style.display='none'" />
+              <span class="map-live-effect effect-${escapeHtml(point.id)}" aria-hidden="true"></span>
+            </span>
+            <span class="map-point-label">${escapeHtml(point.title)}</span>
+          </button>
+        `).join("")}
+      `;
+
+      playerEl = document.getElementById("mapPlayer");
+      playerSprite = document.getElementById("mapPlayerSprite");
+      trailLayer = document.getElementById("mapTrailLayer");
+
+      if (playerSprite) {
+        playerSprite.onerror = () => playerEl?.classList.add("has-no-sprite");
+      }
+
+      pointsLayer.querySelectorAll(".map-point").forEach((button) => {
+        button.addEventListener("click", () => {
+          const point = mapPoints.find((item) => item.id === button.dataset.pointId);
+          if (point) {
+            playSound("click");
+            moveToPoint(point.id);
+          }
+        });
+      });
+
+      if (selectedPoint) {
+        updateActivePoint(selectedPoint.id);
+      }
+    }
+
+    function getRoadNode(nodeId) {
+      return roadNodes.find((node) => node.id === nodeId) || roadNodes[0];
+    }
+
+    function getPoint(pointId) {
+      return mapPoints.find((item) => item.id === pointId);
+    }
+
+    function distanceBetweenNodes(a, b) {
+      const dx = a.x - b.x;
+      const dy = a.y - b.y;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    function updateActivePoint(pointId) {
+      pointsLayer.querySelectorAll(".map-point").forEach((button) => {
+        button.classList.toggle("is-active", button.dataset.pointId === pointId);
+      });
+    }
+
+    function setPlayerSprite(state) {
+      if (!playerSprite) return;
+      const nextSrc = state === "walk" ? playerAssets.walk : playerAssets.idle;
+      if (playerSprite.getAttribute("src") !== nextSrc) {
+        playerSprite.src = nextSrc;
+      }
+    }
+
+    function setPlayerPosition(position, duration = 0) {
+      if (!playerEl || !position) return;
+
+      playerEl.style.transition = duration > 0
+        ? `left ${duration}ms linear, top ${duration}ms linear, transform 140ms ease`
+        : "none";
+      playerEl.style.setProperty("--px", Number(position.x).toFixed(3));
+      playerEl.style.setProperty("--py", Number(position.y).toFixed(3));
+      currentPlayerPosition = { x: position.x, y: position.y };
+    }
+
+    function facePlayerTo(from, to) {
+      if (!playerEl || !from || !to) return;
+      playerEl.classList.toggle("is-facing-left", to.x < from.x);
+    }
+
+    function wait(ms) {
+      return new Promise((resolve) => window.setTimeout(resolve, ms));
+    }
+
+    function spawnTrailSpark(position) {
+      if (!trailLayer || !position) return;
+
+      const spark = document.createElement("span");
+      spark.className = "map-trail-spark";
+      spark.style.setProperty("--sx", Number(position.x).toFixed(3));
+      spark.style.setProperty("--sy", Number(position.y).toFixed(3));
+      trailLayer.appendChild(spark);
+
+      while (trailLayer.children.length > 5) {
+        trailLayer.firstElementChild?.remove();
+      }
+
+      window.setTimeout(() => spark.remove(), 800);
+    }
+
+    function animateSegmentTrail(from, to, duration, token) {
+      return new Promise((resolve) => {
+        const startedAt = performance.now();
+        let lastSparkAt = -999;
+        let lastStepAt = -999;
+
+        function frame(now) {
+          if (token !== movementToken) {
+            resolve(false);
+            return;
+          }
+
+          const elapsed = now - startedAt;
+          const progress = Math.min(1, elapsed / Math.max(1, duration));
+          const position = {
+            x: from.x + (to.x - from.x) * progress,
+            y: from.y + (to.y - from.y) * progress
+          };
+
+          if (elapsed - lastSparkAt > 230) {
+            spawnTrailSpark(position);
+            lastSparkAt = elapsed;
+          }
+
+          if (elapsed - lastStepAt > 380) {
+            playSound("step");
+            lastStepAt = elapsed;
+          }
+
+          if (progress < 1) {
+            requestAnimationFrame(frame);
+          } else {
+            resolve(true);
+          }
+        }
+
+        requestAnimationFrame(frame);
+      });
+    }
+
+    function findRoadPath(startId, endId) {
+      if (startId === endId) return [getRoadNode(startId)];
+
+      const nodeIds = roadNodes.map((node) => node.id);
+      const distances = Object.fromEntries(nodeIds.map((id) => [id, Infinity]));
+      const previous = Object.fromEntries(nodeIds.map((id) => [id, null]));
+      const visited = new Set();
+
+      distances[startId] = 0;
+
+      while (visited.size < nodeIds.length) {
+        let currentId = null;
+        let bestDistance = Infinity;
+
+        nodeIds.forEach((id) => {
+          if (!visited.has(id) && distances[id] < bestDistance) {
+            currentId = id;
+            bestDistance = distances[id];
+          }
+        });
+
+        if (!currentId || currentId === endId) break;
+        visited.add(currentId);
+
+        roadLinks.forEach(([a, b]) => {
+          if (a !== currentId && b !== currentId) return;
+          const neighborId = a === currentId ? b : a;
+          if (visited.has(neighborId)) return;
+
+          const currentNode = getRoadNode(currentId);
+          const neighborNode = getRoadNode(neighborId);
+          const nextDistance = distances[currentId] + distanceBetweenNodes(currentNode, neighborNode);
+
+          if (nextDistance < distances[neighborId]) {
+            distances[neighborId] = nextDistance;
+            previous[neighborId] = currentId;
+          }
+        });
+      }
+
+      const pathIds = [];
+      let cursor = endId;
+
+      while (cursor) {
+        pathIds.unshift(cursor);
+        cursor = previous[cursor];
+      }
+
+      if (pathIds[0] !== startId) {
+        return [getRoadNode(startId), getRoadNode(endId)];
+      }
+
+      return pathIds.map(getRoadNode);
+    }
+
+    function setPanelMoving(point) {
+      selectedPoint = point;
+      updateActivePoint(point.id);
+      panelIcon.innerHTML = `<img src="${escapeHtml(point.icon)}" alt="" onerror="this.replaceWith(document.createTextNode('✧'))" />`;
+      panelName.textContent = point.title;
+      panelDescription.textContent = "Идём к локации...";
+      openButton.disabled = true;
+      openButton.classList.remove("is-ready");
+      openButton.textContent = "Идём…";
+      openButton.dataset.pointId = point.id;
+    }
+
+    function setPanelArrived(point, options = {}) {
+      selectedPoint = point;
+      updateActivePoint(point.id);
+      panelIcon.innerHTML = `<img src="${escapeHtml(point.icon)}" alt="" onerror="this.replaceWith(document.createTextNode('✧'))" />`;
+      panelName.textContent = point.title;
+      panelDescription.textContent = "Герой у входа. Можно войти.";
+      openButton.disabled = false;
+      openButton.classList.add("is-ready");
+      openButton.textContent = "Открыть";
+      openButton.dataset.pointId = point.id;
+      saveMapState(point.id, currentRoadNodeId);
+
+      if (!options.silent) {
+        playSound("arrive");
+        if (navigator.vibrate) {
+          navigator.vibrate(18);
+        }
+      }
+    }
+
+    async function moveToPoint(pointId) {
+      const point = getPoint(pointId);
+      if (!point) return;
+
+      if (isMoving) {
+        showToast("Герой уже идёт. Дождись прибытия к точке.");
+        return;
+      }
+
+      const targetNodeId = point.roadTarget;
+      const targetNode = getRoadNode(targetNodeId);
+
+      setPanelMoving(point);
+
+      if (currentRoadNodeId === targetNodeId) {
+        setPlayerSprite("idle");
+        playerEl?.classList.remove("is-walking");
+        setPanelArrived(point);
+        return;
+      }
+
+      const route = findRoadPath(currentRoadNodeId, targetNodeId);
+      const token = ++movementToken;
+      isMoving = true;
+      openButton.disabled = true;
+      setPlayerSprite("walk");
+      playerEl?.classList.add("is-walking");
+
+      for (let i = 1; i < route.length; i += 1) {
+        if (token !== movementToken) return;
+
+        const from = route[i - 1];
+        const to = route[i];
+        const distance = distanceBetweenNodes(from, to);
+        const duration = Math.max(260, Math.min(980, Math.round((distance / playerSpeed) * 1000)));
+
+        facePlayerTo(from, to);
+        setPlayerPosition(to, duration);
+        const completed = await animateSegmentTrail(from, to, duration + 26, token);
+        if (!completed) return;
+        currentRoadNodeId = to.id;
+      }
+
+      if (token !== movementToken) return;
+
+      isMoving = false;
+      setPlayerSprite("idle");
+      playerEl?.classList.remove("is-walking");
+      setPlayerPosition(targetNode, 0);
+      setPanelArrived(point);
+    }
+
+    function fitMapBoardToImage() {
+      if (!mapImage.naturalWidth || !mapImage.naturalHeight || !mapShell || !mapHeader || !locationPanel) return;
+
+      const aspect = mapImage.naturalWidth / Math.max(1, mapImage.naturalHeight);
+      const shellRect = mapShell.getBoundingClientRect();
+      const headerRect = mapHeader.getBoundingClientRect();
+      const panelRect = locationPanel.getBoundingClientRect();
+      const shellStyles = getComputedStyle(mapShell);
+      const gap = parseFloat(shellStyles.rowGap || shellStyles.gap) || 0;
+
+      const availableWidth = Math.max(220, shellRect.width);
+      const availableHeight = Math.max(160, shellRect.height - headerRect.height - panelRect.height - gap * 2);
+
+      let boardWidth = Math.min(availableWidth, availableHeight * aspect);
+      let boardHeight = boardWidth / aspect;
+
+      if (boardHeight > availableHeight) {
+        boardHeight = availableHeight;
+        boardWidth = boardHeight * aspect;
+      }
+
+      mapBoard.style.setProperty("--map-aspect", String(aspect));
+      mapBoard.style.setProperty("--map-board-width", `${Math.floor(boardWidth)}px`);
+      mapBoard.style.setProperty("--map-board-height", `${Math.floor(boardHeight)}px`);
+    }
+
+    function resizeMapLayout() {
+      updateBottomNavReserve();
+      fitMapBoardToImage();
+      syncPointsLayerToRenderedMap();
+    }
+
+    function syncPointsLayerToRenderedMap() {
+      if (!mapImage.naturalWidth || !mapImage.naturalHeight) return;
+
+      const boardRect = mapBoard.getBoundingClientRect();
+      const paddingLeft = parseFloat(getComputedStyle(mapImage).paddingLeft) || 0;
+      const paddingRight = parseFloat(getComputedStyle(mapImage).paddingRight) || 0;
+      const paddingTop = parseFloat(getComputedStyle(mapImage).paddingTop) || 0;
+      const paddingBottom = parseFloat(getComputedStyle(mapImage).paddingBottom) || 0;
+
+      const availableWidth = Math.max(0, boardRect.width - paddingLeft - paddingRight);
+      const availableHeight = Math.max(0, boardRect.height - paddingTop - paddingBottom);
+      const imageRatio = mapImage.naturalWidth / mapImage.naturalHeight;
+      const boardRatio = availableWidth / Math.max(1, availableHeight);
+
+      let renderedWidth;
+      let renderedHeight;
+
+      if (boardRatio > imageRatio) {
+        renderedHeight = availableHeight;
+        renderedWidth = renderedHeight * imageRatio;
+      } else {
+        renderedWidth = availableWidth;
+        renderedHeight = renderedWidth / imageRatio;
+      }
+
+      const left = paddingLeft + (availableWidth - renderedWidth) / 2;
+      const top = paddingTop + (availableHeight - renderedHeight) / 2;
+
+      pointsLayer.style.left = `${left}px`;
+      pointsLayer.style.top = `${top}px`;
+      pointsLayer.style.width = `${renderedWidth}px`;
+      pointsLayer.style.height = `${renderedHeight}px`;
+    }
+
+    function showMapFallback() {
+      mapBoard.classList.remove("is-loaded");
+      pointsLayer.innerHTML = "";
+      fallback.hidden = false;
+      fallback.innerHTML = `
+        <div>
+          <strong>Карта не найдена</strong>
+          Проверь, что файл лежит по пути:<br>
+          <code>assets/maps/cities/start_village/map.png</code>
+        </div>
+      `;
+    }
+
+    function loadMapSource(index = 0) {
+      const source = mapSources[index];
+      if (!source) {
+        showMapFallback();
+        return;
+      }
+
+      mapImage.onload = () => {
+        fallback.hidden = true;
+        mapBoard.classList.add("is-loaded");
+        renderPoints();
+        setPlayerPosition(currentPlayerPosition, 0);
+        if (selectedPoint) {
+          setPanelArrived(selectedPoint, { silent: true });
+        }
+        requestAnimationFrame(resizeMapLayout);
+      };
+
+      mapImage.onerror = () => loadMapSource(index + 1);
+      mapImage.src = source;
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("is-visible");
+      window.clearTimeout(toastTimer);
+      toastTimer = window.setTimeout(() => toast.classList.remove("is-visible"), 1600);
+    }
+
+    function getLocationHref(point) {
+      if (!point || !point.href) return "";
+
+      try {
+        const url = new URL(point.href, window.location.href);
+        const currentParams = new URLSearchParams(window.location.search);
+
+        currentParams.forEach((value, key) => {
+          if (!url.searchParams.has(key)) {
+            url.searchParams.set(key, value);
+          }
+        });
+
+        return url.href;
+      } catch (error) {
+        return point.href;
+      }
+    }
+
+    openButton.addEventListener("click", () => {
+      if (!selectedPoint || openButton.disabled) return;
+
+      if (isMoving) {
+        showToast("Герой ещё идёт к локации.");
+        return;
+      }
+
+      playSound("open");
+      saveMapState(selectedPoint.id, currentRoadNodeId);
+
+      const href = getLocationHref(selectedPoint);
+      if (href) {
+        showToast(`Входим: ${selectedPoint.title}...`);
+        window.setTimeout(() => {
+          window.location.href = href;
+        }, 180);
+        return;
+      }
+
+      showToast(`${selectedPoint.title}: переход пока не подключён.`);
+    });
+
+    soundToggle?.addEventListener("click", () => {
+      soundEnabled = !soundEnabled;
+      saveSoundEnabled(soundEnabled);
+      updateSoundToggle();
+
+      if (soundEnabled) {
+        playSound("click");
+        showToast("Звук включён.");
+      } else {
+        showToast("Звук выключен.");
+      }
+    });
+
+    window.addEventListener("resize", () => requestAnimationFrame(resizeMapLayout));
+    window.addEventListener("orientationchange", () => window.setTimeout(resizeMapLayout, 250));
+
+    if ("ResizeObserver" in window) {
+      const observer = new ResizeObserver(() => requestAnimationFrame(resizeMapLayout));
+      observer.observe(mapShell);
+      observer.observe(locationPanel);
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      updateSoundToggle();
+      bindGameHud();
+      loadMapSource();
+    });
+  </script>
+</body>
+</html>
