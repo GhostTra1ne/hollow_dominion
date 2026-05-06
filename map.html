@@ -1,11 +1,23 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Hollow Dominion — Карта города</title>
   <!-- map_fixed_v19_living_city: живые эффекты города + персонаж поверх всех точек -->
-  <link rel="stylesheet" href="common.css" />
+  <script>
+    const APP_VERSION = '20260506-telegram-157';
+    (() => {
+      const url = new URL(window.location.href);
+      if (url.searchParams.get('appv') !== APP_VERSION) {
+        url.searchParams.set('appv', APP_VERSION);
+        window.location.replace(url.toString());
+        return;
+      }
+      window.__HD_APP_VERSION__ = APP_VERSION;
+    })();
+  </script>
+  <link rel="stylesheet" href="common.css?v=20260506-telegram-157" />
   <style>
     :root {
       --map-gold: #f4c86a;
@@ -1117,36 +1129,12 @@
     <div class="map-toast" id="mapToast" role="status" aria-live="polite"></div>
   </div>
 
-  <nav id="bottomNav" class="profile-map-bottom-shell" aria-label="Основное меню">
-    <img class="profile-map-bottom-art" src="./assets/ui/profile_redesign/art_profile_bottom.png" alt="" draggable="false">
-    <a class="profile-psd-bottom-button" href="index.html" aria-label="Персонаж" data-hud-link style="left:2.182%;top:8.837%;width:11.909%;height:82.791%;">
-      <img src="./assets/ui/profile_redesign/btn_profile_idle.png" alt="" draggable="false">
-    </a>
-    <a class="profile-psd-bottom-button" href="inventory.html" aria-label="Инвентарь" data-hud-link style="left:14.909%;top:9.302%;width:11.909%;height:82.326%;">
-      <img src="./assets/ui/profile_redesign/btn_inventory_idle.png" alt="" draggable="false">
-    </a>
-    <a class="profile-psd-bottom-button" href="map.html" aria-label="Карта" aria-current="page" data-hud-link style="left:27.636%;top:8.372%;width:11.909%;height:82.791%;">
-      <img src="./assets/ui/profile_redesign/btn_map_use.png" alt="" draggable="false">
-    </a>
-    <a class="profile-psd-bottom-button" href="journey.html" aria-label="Бои" data-hud-link style="left:38.909%;top:8.372%;width:11.273%;height:83.256%;">
-      <img src="./assets/ui/profile_redesign/btn_fight_idle.png" alt="" draggable="false">
-    </a>
-    <a class="profile-psd-bottom-button" href="clan.html" aria-label="Клан" data-hud-link style="left:50.182%;top:8.837%;width:11.364%;height:82.326%;">
-      <img src="./assets/ui/profile_redesign/btn_clan_idle.png" alt="" draggable="false">
-    </a>
-    <span class="profile-psd-bottom-button disabled" aria-label="Квесты" style="left:62.182%;top:9.767%;width:11.455%;height:82.791%;">
-      <img src="./assets/ui/profile_redesign/btn_quest_idle.png" alt="" draggable="false">
-    </span>
-    <a class="profile-psd-bottom-button" href="status.html" aria-label="Статус" data-hud-link style="left:74.455%;top:9.767%;width:11.727%;height:82.791%;">
-      <img src="./assets/ui/profile_redesign/btn_status_idle.png" alt="" draggable="false">
-    </a>
-    <a class="profile-psd-bottom-button" href="chat.html" aria-label="Чат" data-hud-link style="left:87.000%;top:8.837%;width:11.273%;height:82.791%;">
-      <img src="./assets/ui/profile_redesign/btn_chat_idle.png" alt="" draggable="false">
-    </a>
-  </nav>
+  <div id="bottomNav"></div>
 
-  <script src="common.js"></script>
+  <script src="common.js?v=20260506-telegram-157"></script>
   <script>
+    const ASSET_VERSION = window.__HD_APP_VERSION__ || '20260506-telegram-157';
+
     // Меняем координаты точек только здесь.
     // x/y — проценты относительно самой картинки карты, не всей рамки.
     const mapPoints = [
@@ -1198,9 +1186,9 @@
     ];
 
     const mapSources = [
-      "assets/maps/cities/start_village/map.png",
-      "assets/maps/cities/start_village/map.jpg",
-      "assets/maps/cities/start_village/map.jpeg"
+      `assets/maps/cities/start_village/map.png?v=${encodeURIComponent(ASSET_VERSION)}`,
+      `assets/maps/cities/start_village/map.jpg?v=${encodeURIComponent(ASSET_VERSION)}`,
+      `assets/maps/cities/start_village/map.jpeg?v=${encodeURIComponent(ASSET_VERSION)}`
     ];
 
 
@@ -1275,6 +1263,9 @@
     const soundToggle = document.getElementById("mapSoundToggle");
     const bottomHud = document.getElementById("bottomNav");
     const toast = document.getElementById("mapToast");
+    const pointDestinations = {
+      weaponshop: "weaponshop.html"
+    };
 
     const mapStorageKey = "hd_map_last_position_v1";
     const soundStorageKey = "hd_map_sound_enabled_v1";
@@ -1342,7 +1333,7 @@
     function bindGameHud() {
       if (!bottomHud) return;
 
-      bottomHud.querySelectorAll("[data-hud-link]").forEach((link) => {
+      bottomHud.querySelectorAll("a[href]").forEach((link) => {
         link.addEventListener("click", () => playSound("click"));
       });
     }
@@ -1817,8 +1808,17 @@
 
     openButton.addEventListener("click", () => {
       if (!selectedPoint || openButton.disabled) return;
+      const destination = pointDestinations[selectedPoint.id];
+      if (destination) {
+        playSound("open");
+        const nextHref = typeof window.HD_WITH_APP_PARAMS === "function"
+          ? window.HD_WITH_APP_PARAMS(destination)
+          : destination;
+        window.location.href = nextHref;
+        return;
+      }
       playSound("open");
-      showToast(`${selectedPoint.title}: переход будет подключён на следующем шаге.`);
+      showToast(`${selectedPoint.title}: РїРµСЂРµС…РѕРґ Р±СѓРґРµС‚ РїРѕРґРєР»СЋС‡С‘РЅ РЅР° СЃР»РµРґСѓСЋС‰РµРј С€Р°РіРµ.`);
     });
 
     soundToggle?.addEventListener("click", () => {
@@ -1845,9 +1845,14 @@
 
     document.addEventListener("DOMContentLoaded", () => {
       updateSoundToggle();
+      if (typeof window.renderBottomNav === "function" && bottomHud) {
+        bottomHud.innerHTML = window.renderBottomNav("map");
+      }
       bindGameHud();
+      updateBottomNavReserve();
       loadMapSource();
     });
   </script>
 </body>
 </html>
+

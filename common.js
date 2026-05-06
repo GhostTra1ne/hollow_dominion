@@ -668,6 +668,12 @@ async function bootstrapAppState() {
 
 window.HD_BOOTSTRAP_APP_STATE = bootstrapAppState;
 window.HD_CLEAR_SAVED_STATE = clearSavedState;
+window.HD_LOAD_STATE = loadState;
+window.HD_SAVE_STATE = saveState;
+window.HD_WITH_APP_PARAMS = withAppParams;
+window.HD_GET_CURRENT_CITY = getCurrentCity;
+window.HD_GET_CLASS_NAME = getClassName;
+window.HD_CITIES = cities;
 window.addEventListener('hd:remote-state-replaced', () => {
   window.location.reload();
 });

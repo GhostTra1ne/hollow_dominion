@@ -4,6 +4,20 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Оружейник</title>
+  <script>
+    const APP_VERSION = '20260506-telegram-157';
+    (() => {
+      const url = new URL(window.location.href);
+      if (url.searchParams.get('appv') !== APP_VERSION) {
+        url.searchParams.set('appv', APP_VERSION);
+        window.location.replace(url.toString());
+        return;
+      }
+      window.__HD_APP_VERSION__ = APP_VERSION;
+    })();
+  </script>
+  <script src="common.js?v=20260506-telegram-157"></script>
+  <script src="item-catalog.js?v=20260506-telegram-157"></script>
   <style>
     :root {
       --gold: #e8bf78;
@@ -858,6 +872,13 @@
       }
     }
 
+    .item-icon img,
+    .details-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 3px 6px rgba(0, 0, 0, .45));
+    }
   </style>
 </head>
 <body>
@@ -923,7 +944,18 @@
     const SCENE_IMAGE = 'assets/locations/weaponshop/scene_clean.png';
     const BANNER_IMAGE = 'assets/locations/weaponshop/banner.png';
     const MAP_RETURN = 'map.html';
-    const STORAGE_KEY = 'hollow_dominion_weaponshop_trade_v1';
+    const STORAGE_KEY = 'hollow_dominion_weaponshop_trade_v2';
+    const SHOP_STOCK = [
+      { name: 'Short Sword', stock: 3 },
+      { name: 'Dagger', stock: 4 },
+      { name: 'Bow', stock: 2 },
+      { name: 'Morning Star', stock: 2 },
+      { name: 'Small Shield', stock: 3 },
+      { name: 'Leather Shirt', stock: 1 },
+      { name: 'Leather Pants', stock: 1 },
+      { name: 'Leather Gloves', stock: 1 },
+      { name: 'Leather Sandals', stock: 1 }
+    ];
 
     const dialogueText = document.getElementById('dialogueText');
     const choicesWrap = document.getElementById('choices');
@@ -942,6 +974,7 @@
     const detailsDesc = document.getElementById('detailsDesc');
     const detailsPrice = document.getElementById('detailsPrice');
     const tradeAction = document.getElementById('tradeAction');
+    const speakerName = document.querySelector('.speaker-name');
 
     const itemTemplates = {
       iron_sword: { id: 'iron_sword', name: 'Железный меч', icon: '⚔️', rarity: 'common', buyPrice: 90, sellPrice: 34, desc: 'Надёжный клинок для первых вылазок за стены.' },
@@ -989,36 +1022,275 @@
       { id: 'leave', label: 'Уйти' }
     ];
 
+    let appState = null;
     let currentState = 'intro';
     let currentFullText = states.intro;
     let typeTimer = null;
     let isTyping = false;
-    let tradeState = loadTradeState();
+    let merchantState = loadMerchantState();
     let tradeMode = 'none';
     let selectedItemId = null;
 
-    function cloneDefaultState() { return JSON.parse(JSON.stringify(defaultTradeState)); }
+    function escapeHtml(value) {
+      return String(value || '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
 
-    function loadTradeState() {
+    function withVersion(path) {
+      const version = window.__HD_APP_VERSION__;
+      if (!version) return path;
+      return `${path}${path.includes('?') ? '&' : '?'}v=${encodeURIComponent(version)}`;
+    }
+
+    function getReturnHref() {
+      return typeof window.HD_WITH_APP_PARAMS === 'function'
+        ? window.HD_WITH_APP_PARAMS(MAP_RETURN)
+        : MAP_RETURN;
+    }
+
+    function getItemKey(name) {
+      if (typeof window.HD_CANONICAL_ITEM_KEY === 'function') {
+        return window.HD_CANONICAL_ITEM_KEY(name);
+      }
+      if (typeof window.HD_NORMALIZE_ITEM_NAME === 'function') {
+        return window.HD_NORMALIZE_ITEM_NAME(name);
+      }
+      return String(name || '').trim().toLowerCase();
+    }
+
+    function resolveBlueprint(name) {
+      if (typeof window.HD_RESOLVE_ITEM_BLUEPRINT === 'function') {
+        return window.HD_RESOLVE_ITEM_BLUEPRINT(name);
+      }
+      return null;
+    }
+
+    function cloneDefaultState() {
+      return {
+        merchant: SHOP_STOCK.map((entry) => ({
+          key: getItemKey(entry.name),
+          name: entry.name,
+          stock: entry.stock
+        }))
+      };
+    }
+
+    function loadMerchantState() {
       try {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (!saved) return cloneDefaultState();
         const parsed = JSON.parse(saved);
-        if (!parsed || !Array.isArray(parsed.merchant) || !Array.isArray(parsed.player)) return cloneDefaultState();
+        if (!parsed || !Array.isArray(parsed.merchant)) return cloneDefaultState();
+
+        const savedByKey = new Map(parsed.merchant.map((entry) => [String(entry.key || ''), entry]));
         return {
-          gold: Number.isFinite(parsed.gold) ? parsed.gold : defaultTradeState.gold,
-          merchant: parsed.merchant,
-          player: parsed.player
+          merchant: SHOP_STOCK.map((entry) => {
+            const key = getItemKey(entry.name);
+            const savedEntry = savedByKey.get(key);
+            return {
+              key,
+              name: entry.name,
+              stock: Number.isFinite(Number(savedEntry?.stock)) ? Number(savedEntry.stock) : entry.stock
+            };
+          })
         };
       } catch (error) {
         return cloneDefaultState();
       }
     }
 
-    function saveTradeState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(tradeState)); }
+    function saveMerchantState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(merchantState));
+    }
+
+    function createUid(prefix = 'item') {
+      const tail = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+        ? crypto.randomUUID().slice(0, 8)
+        : Math.random().toString(36).slice(2, 10);
+      return `${prefix}-${tail}`;
+    }
+
+    function parseStack(value) {
+      const match = String(value || '').match(/^\s*(\d+)\s*x\s*(.+?)\s*$/i);
+      if (!match) return null;
+      return { count: Number(match[1]), baseName: match[2] };
+    }
+
+    function formatStack(name, count) {
+      return count > 1 ? `${count} x ${name}` : name;
+    }
+
+    function getBaseItemName(entry) {
+      const stack = parseStack(entry?.item);
+      return String(stack ? stack.baseName : entry?.item || '').trim();
+    }
+
+    function isEquipped(entry) {
+      return String(entry?.type || '').toLowerCase().includes('над');
+    }
+
+    function getHero() {
+      return appState?.hero || null;
+    }
+
+    function getGold() {
+      return Number(getHero()?.adena || 0);
+    }
+
+    function getClassLabel() {
+      return typeof window.HD_GET_CLASS_NAME === 'function'
+        ? window.HD_GET_CLASS_NAME(getHero()?.classId)
+        : 'Герой';
+    }
+
+    function getSlotLabelForFamily(family, fallback = 'Сумка') {
+      const labels = {
+        weapon: 'Оружие',
+        shield: 'Щит',
+        head: 'Шлем',
+        body: 'Тело',
+        legs: 'Низ',
+        gloves: 'Перчатки',
+        boots: 'Ботинки',
+        necklace: 'Ожерелье',
+        earring: 'Серьга',
+        ring: 'Кольцо'
+      };
+      return labels[family] || fallback;
+    }
+
+    function buildInventoryEntry(blueprint, count = 1) {
+      const isWearable = blueprint?.category === 'wearable' || Boolean(blueprint?.family);
+      return {
+        uid: createUid('shop'),
+        slot: isWearable
+          ? getSlotLabelForFamily(blueprint.family, blueprint.slotLabel || 'Сумка')
+          : (blueprint?.slotLabel || 'Сумка'),
+        item: formatStack(blueprint.name, count),
+        type: 'Сумка',
+        category: blueprint?.category || 'general',
+        equipFamily: isWearable ? blueprint.family || '' : '',
+        equipSlot: ''
+      };
+    }
+
+    function addInventoryItem(blueprint, count = 1) {
+      const hero = getHero();
+      if (!hero || !blueprint) return false;
+
+      const isWearable = blueprint.category === 'wearable' || Boolean(blueprint.family);
+      hero.inventory = hero.inventory || [];
+
+      if (!isWearable) {
+        const key = getItemKey(blueprint.name);
+        const existing = hero.inventory.find((entry) => (
+          !isEquipped(entry) && getItemKey(getBaseItemName(entry)) === key
+        ));
+
+        if (existing) {
+          const stack = parseStack(existing.item);
+          const nextCount = Number(stack?.count || 1) + count;
+          existing.item = formatStack(blueprint.name, nextCount);
+          return true;
+        }
+      }
+
+      hero.inventory.push(buildInventoryEntry(blueprint, count));
+      return true;
+    }
+
+    function getSellPrice(blueprint) {
+      const basePrice = Number(blueprint?.price || 0);
+      return Math.max(1, Math.floor(basePrice * 0.35));
+    }
 
     function getTemplate(id) {
       return itemTemplates[id] || { id, name: 'Неизвестный предмет', icon: '?', rarity: 'common', buyPrice: 0, sellPrice: 0, desc: 'Описание предмета не найдено.' };
+    }
+
+    function persistGameState() {
+      if (!appState) return;
+      if (typeof window.HD_RECOMPUTE_HERO_STATS === 'function') {
+        window.HD_RECOMPUTE_HERO_STATS(appState);
+      }
+      if (typeof window.HD_SAVE_STATE === 'function') {
+        window.HD_SAVE_STATE(appState, { immediate: true });
+      }
+    }
+
+    function getHeroInventory() {
+      const hero = getHero();
+      if (!hero) return [];
+      hero.inventory = Array.isArray(hero.inventory) ? hero.inventory : [];
+      return hero.inventory;
+    }
+
+    function renderItemIcon(target, blueprint) {
+      const icon = String(blueprint?.icon || '').trim();
+      if (!icon) {
+        target.textContent = '?';
+        return;
+      }
+      target.innerHTML = `<img src="${escapeHtml(withVersion(icon))}" alt="${escapeHtml(blueprint?.name || 'item')}" loading="lazy">`;
+    }
+
+    function getMerchantList() {
+      return (merchantState.merchant || [])
+        .map((entry) => {
+          const blueprint = resolveBlueprint(entry.name || entry.key);
+          if (!blueprint) return null;
+          const stock = Number(entry.stock || 0);
+          if (stock <= 0) return null;
+          return {
+            id: `buy:${entry.key}`,
+            mode: 'buy',
+            key: entry.key,
+            name: blueprint.name,
+            stock,
+            price: Number(blueprint.price || 0),
+            blueprint
+          };
+        })
+        .filter(Boolean);
+    }
+
+    function getSellList() {
+      return getHeroInventory()
+        .map((entry, index) => {
+          if (isEquipped(entry)) return null;
+          const baseName = getBaseItemName(entry);
+          const blueprint = resolveBlueprint(baseName);
+          if (!blueprint) return null;
+          if (String(blueprint.category || '').toLowerCase() === 'quest') return null;
+          const stack = parseStack(entry.item);
+          const count = Math.max(1, Number(stack?.count || 1));
+          const price = getSellPrice(blueprint);
+          if (price <= 0) return null;
+          return {
+            id: `sell:${index}:${getItemKey(baseName)}`,
+            mode: 'sell',
+            index,
+            count,
+            price,
+            blueprint,
+            entry
+          };
+        })
+        .filter(Boolean);
+    }
+
+    function currentTradeList() {
+      if (tradeMode === 'buy') return getMerchantList();
+      if (tradeMode === 'sell') return getSellList();
+      return [];
+    }
+
+    function findTradeEntry(itemId) {
+      return currentTradeList().find((entry) => entry.id === itemId) || null;
     }
 
     function stopTyping() {
@@ -1088,7 +1360,7 @@
       typeDialogue(states[stateKey], () => {
         choicesWrap.classList.remove('is-hidden');
         if (stateKey === 'leave') {
-          window.setTimeout(() => { window.location.href = MAP_RETURN; }, 650);
+          window.setTimeout(() => { window.location.href = getReturnHref(); }, 650);
         }
       });
     }
@@ -1222,13 +1494,157 @@
       }
     }
 
+    function currentTradeList() {
+      if (tradeMode === 'buy') return getMerchantList();
+      if (tradeMode === 'sell') return getSellList();
+      return [];
+    }
+
+    function findTradeEntry(itemId) {
+      return currentTradeList().find((entry) => entry.id === itemId) || null;
+    }
+
+    function renderTrade() {
+      goldValue.textContent = String(getGold());
+      tradeGrid.innerHTML = '';
+      tradeTitle.textContent = tradeMode === 'buy' ? '\u0422\u043e\u0432\u0430\u0440\u044b Arodin' : '\u0412\u0435\u0449\u0438 \u0433\u0435\u0440\u043e\u044f';
+      const list = currentTradeList();
+
+      if (!list.length) {
+        const note = document.createElement('div');
+        note.className = 'empty-note';
+        note.textContent = tradeMode === 'buy'
+          ? '\u0422\u043e\u0432\u0430\u0440\u044b \u0437\u0430\u043a\u043e\u043d\u0447\u0438\u043b\u0438\u0441\u044c. \u0417\u0430\u0433\u043b\u044f\u043d\u0438 \u043f\u043e\u0437\u0436\u0435.'
+          : '\u0412 \u0441\u0443\u043c\u043a\u0435 \u043d\u0435\u0442 \u0432\u0435\u0449\u0435\u0439, \u043a\u043e\u0442\u043e\u0440\u044b\u0435 \u043c\u043e\u0436\u043d\u043e \u043f\u0440\u043e\u0434\u0430\u0442\u044c.';
+        tradeGrid.appendChild(note);
+        renderTradeDetails(null);
+        return;
+      }
+
+      list.forEach((entry) => {
+        const count = entry.mode === 'buy' ? entry.stock : entry.count;
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'item-card' + (entry.id === selectedItemId ? ' is-selected' : '');
+        card.innerHTML = `
+          <div class="item-icon"></div>
+          <div class="item-name">${escapeHtml(entry.blueprint.name)}</div>
+          <div class="item-meta"><span>x${count}</span><span>\u{1FA99} ${entry.price}</span></div>
+        `;
+        renderItemIcon(card.querySelector('.item-icon'), entry.blueprint);
+        card.addEventListener('click', (event) => {
+          event.stopPropagation();
+          selectedItemId = entry.id;
+          renderTrade();
+          renderTradeDetails(entry.id);
+        });
+        tradeGrid.appendChild(card);
+      });
+
+      if (!selectedItemId || !findTradeEntry(selectedItemId)) {
+        selectedItemId = list[0]?.id || null;
+      }
+      renderTradeDetails(selectedItemId);
+    }
+
+    function renderTradeDetails(itemId) {
+      const entry = itemId ? findTradeEntry(itemId) : null;
+      if (!entry) {
+        detailsIcon.textContent = '?';
+        detailsName.textContent = '\u0412\u044b\u0431\u0435\u0440\u0438 \u043f\u0440\u0435\u0434\u043c\u0435\u0442';
+        detailsDesc.textContent = tradeMode === 'buy'
+          ? '\u041d\u0430\u0436\u043c\u0438 \u043d\u0430 \u0442\u043e\u0432\u0430\u0440 \u0442\u043e\u0440\u0433\u043e\u0432\u0446\u0430, \u0447\u0442\u043e\u0431\u044b \u0443\u0432\u0438\u0434\u0435\u0442\u044c \u043e\u043f\u0438\u0441\u0430\u043d\u0438\u0435 \u0438 \u043a\u0443\u043f\u0438\u0442\u044c \u0435\u0433\u043e.'
+          : '\u041d\u0430\u0436\u043c\u0438 \u043d\u0430 \u043f\u0440\u0435\u0434\u043c\u0435\u0442 \u0438\u0437 \u0441\u0443\u043c\u043a\u0438, \u0447\u0442\u043e\u0431\u044b \u0443\u0432\u0438\u0434\u0435\u0442\u044c \u0446\u0435\u043d\u0443 \u043f\u0440\u043e\u0434\u0430\u0436\u0438.';
+        detailsPrice.textContent = '\u0426\u0435\u043d\u0430: -';
+        tradeAction.textContent = '\u0412\u044b\u0431\u0435\u0440\u0438 \u043f\u0440\u0435\u0434\u043c\u0435\u0442';
+        tradeAction.disabled = true;
+        return;
+      }
+
+      renderItemIcon(detailsIcon, entry.blueprint);
+      detailsName.textContent = entry.blueprint.name;
+      detailsDesc.textContent = entry.blueprint.desc || '\u0411\u0435\u0437 \u043e\u043f\u0438\u0441\u0430\u043d\u0438\u044f.';
+      detailsPrice.textContent = tradeMode === 'buy'
+        ? `\u0426\u0435\u043d\u0430 \u043f\u043e\u043a\u0443\u043f\u043a\u0438: ${entry.price} \u0430\u0434\u0435\u043d`
+        : `\u0426\u0435\u043d\u0430 \u043f\u0440\u043e\u0434\u0430\u0436\u0438: ${entry.price} \u0430\u0434\u0435\u043d`;
+      tradeAction.disabled = tradeMode === 'buy' ? getGold() < entry.price : false;
+      tradeAction.textContent = tradeMode === 'buy'
+        ? `\u041a\u0443\u043f\u0438\u0442\u044c \u0437\u0430 ${entry.price}`
+        : `\u041f\u0440\u043e\u0434\u0430\u0442\u044c \u0437\u0430 ${entry.price}`;
+    }
+
+    function performBuy(entry) {
+      const hero = getHero();
+      if (!hero) return;
+      const merchantEntry = (merchantState.merchant || []).find((item) => item.key === entry.key);
+      if (!merchantEntry || Number(merchantEntry.stock || 0) <= 0) {
+        typeDialogue('\u042d\u0442\u043e\u0442 \u0442\u043e\u0432\u0430\u0440 \u0443\u0436\u0435 \u0437\u0430\u043a\u043e\u043d\u0447\u0438\u043b\u0441\u044f.', () => choicesWrap.classList.remove('is-hidden'));
+        renderTrade();
+        return;
+      }
+      if (getGold() < entry.price) {
+        typeDialogue('\u041d\u0435 \u0445\u0432\u0430\u0442\u0430\u0435\u0442 \u0430\u0434\u0435\u043d\u044b \u0434\u043b\u044f \u043f\u043e\u043a\u0443\u043f\u043a\u0438.', () => choicesWrap.classList.remove('is-hidden'));
+        renderTrade();
+        return;
+      }
+      hero.adena = getGold() - entry.price;
+      merchantEntry.stock = Math.max(0, Number(merchantEntry.stock || 0) - 1);
+      addInventoryItem(entry.blueprint, 1);
+      saveMerchantState();
+      persistGameState();
+      selectedItemId = null;
+      renderTrade();
+      typeDialogue(`\u0417\u0430\u0431\u0438\u0440\u0430\u0439: ${entry.blueprint.name}.`, () => choicesWrap.classList.remove('is-hidden'));
+    }
+
+    function performSell(entry) {
+      const hero = getHero();
+      const inventory = getHeroInventory();
+      if (!hero || !inventory[entry.index]) {
+        typeDialogue('\u042d\u0442\u043e\u0433\u043e \u043f\u0440\u0435\u0434\u043c\u0435\u0442\u0430 \u0443\u0436\u0435 \u043d\u0435\u0442 \u0432 \u0441\u0443\u043c\u043a\u0435.', () => choicesWrap.classList.remove('is-hidden'));
+        renderTrade();
+        return;
+      }
+
+      const target = inventory[entry.index];
+      const stack = parseStack(target.item);
+      const nextCount = Math.max(0, Number(stack?.count || 1) - 1);
+      if (nextCount <= 0) {
+        inventory.splice(entry.index, 1);
+      } else {
+        target.item = formatStack(entry.blueprint.name, nextCount);
+      }
+
+      hero.adena = getGold() + entry.price;
+      persistGameState();
+      selectedItemId = null;
+      renderTrade();
+      typeDialogue(`\u0411\u0435\u0440\u0443 ${entry.blueprint.name}. \u0412\u043e\u0442 \u0442\u0432\u043e\u0438 ${entry.price} \u0430\u0434\u0435\u043d.`, () => choicesWrap.classList.remove('is-hidden'));
+    }
+
+    function performTrade() {
+      if (!selectedItemId || tradeMode === 'none') return;
+      const entry = findTradeEntry(selectedItemId);
+      if (!entry) {
+        renderTradeDetails(null);
+        return;
+      }
+      if (entry.mode === 'buy') {
+        performBuy(entry);
+        return;
+      }
+      if (entry.mode === 'sell') {
+        performSell(entry);
+      }
+    }
+
     dialogueBox.addEventListener('click', finishTyping);
     tradePanel.addEventListener('click', (event) => event.stopPropagation());
     tradeAction.addEventListener('click', (event) => {
       event.stopPropagation();
       performTrade();
     });
-    backButton.addEventListener('click', () => { window.location.href = MAP_RETURN; });
+    backButton.addEventListener('click', () => { window.location.href = getReturnHref(); });
 
     function wireAsset(imgEl, src, { hideHintOnSuccess = false } = {}) {
       imgEl.addEventListener('load', () => {
@@ -1236,13 +1652,37 @@
         if (hideHintOnSuccess) assetHint.classList.add('hidden');
       });
       imgEl.addEventListener('error', () => { imgEl.classList.add('hidden'); });
-      imgEl.src = src;
+      imgEl.src = withVersion(src);
     }
 
-    wireAsset(sceneBase, SCENE_IMAGE, { hideHintOnSuccess: true });
-    wireAsset(dialogueBanner, BANNER_IMAGE);
-    renderChoices();
-    setState('intro');
+    async function initWeaponshop() {
+      wireAsset(sceneBase, SCENE_IMAGE, { hideHintOnSuccess: true });
+      wireAsset(dialogueBanner, BANNER_IMAGE);
+      renderChoices();
+
+      if (typeof window.HD_BOOTSTRAP_APP_STATE === 'function') {
+        appState = await window.HD_BOOTSTRAP_APP_STATE();
+      } else if (typeof window.HD_LOAD_STATE === 'function') {
+        appState = window.HD_LOAD_STATE();
+      }
+
+      if (!getHero()) {
+        window.location.href = typeof window.HD_WITH_APP_PARAMS === 'function'
+          ? window.HD_WITH_APP_PARAMS('index.html')
+          : 'index.html';
+        return;
+      }
+
+      speakerName.textContent = `Arodin • ${getClassLabel()}`;
+      goldValue.textContent = String(getGold());
+      setState('intro');
+    }
+
+    initWeaponshop().catch((error) => {
+      console.error('weaponshop init failed', error);
+      renderChoices();
+      setState('intro');
+    });
   </script>
 </body>
 </html>
